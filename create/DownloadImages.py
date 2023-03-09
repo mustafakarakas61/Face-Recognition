@@ -51,7 +51,7 @@ def downloadImages(URLs, name, count, folder):
                 failedUrls.append(i + 1)
         if len(failedUrls) > 0:
             print("Toplam " + str(
-                len(failedUrls)) + " adet URL'den resim indirilemedi. İnen görseller silinecektir. \nAşağıda verilen satır numaralarında bulunan url'Leri değiştirin:")
+                len(failedUrls)) + " adet URL'den resim indirilemedi. İnen görseller silinecektir. \nAşağıda verilen satır numaralarında bulunan url'Leri değiştirin: \nDosya : " + URLs)
             print(failedUrls)
             for i in range(1, count + 1):
                 if i not in failedUrls:
@@ -66,7 +66,7 @@ def downloadImages(URLs, name, count, folder):
 
 
 # Eğitim seti için
-# downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain)
+#downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain)
 
 # Doğrulama seti için
 downloadImages(URLsValidation, personName, countValidationImage, folderNameFolderInValidation)
