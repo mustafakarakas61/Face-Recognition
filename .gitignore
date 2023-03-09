@@ -129,9 +129,7 @@ dmypy.json
 .pyre/
 
 # Ignore
-datasets/myset/train/*
-datasets/myset/validation/*
-datasets/myset/test/*
+datasets/*
 models/txts/*
 
 # No Ignore
