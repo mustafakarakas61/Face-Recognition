@@ -10,9 +10,11 @@ countTrainImage = 10
 countValidationImage = 10
 
 # PATHS
-URLsTrain = "C:/Project/Proje-2/face_recognition/create/URLsTrain.txt"
-URLsValidation = "C:/Project/Proje-2/face_recognition/create/URLsValidation.txt"
+pathCreate = "C:/Project/Proje-2/face_recognition/create/"
 pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
+URLsTrain = pathCreate + "URLsTrain.txt"
+URLsValidation = pathCreate + "URLsValidation.txt"
+URLsTest = pathCreate + "URLsTest.txt"
 folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + personName
 folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + personName
 folderNameFolderInTest = pathDatasets + datasetName + "/test"
@@ -29,6 +31,7 @@ def downloadImages(URLs, name, count, folder):
 
     # Dosyadaki satır sayısını kontrol edelim
     if len(urls) == count:
+        failedUrls = []
         for i, url in enumerate(urls):
             try:
                 filePath = folder + "/" + name + "_" + str(i + 1) + ".jpg"
@@ -45,9 +48,28 @@ def downloadImages(URLs, name, count, folder):
                 print(filePath + " indirildi.")
             except:
                 print(url.strip() + " indirilemedi.")
+                failedUrls.append(i + 1)
+        if len(failedUrls) > 0:
+            print("Toplam " + str(
+                len(failedUrls)) + " adet URL'den resim indirilemedi. İnen görseller silinecektir. \nAşağıda verilen satır numaralarında bulunan url'Leri değiştirin:")
+            print(failedUrls)
+            for i in range(1, count + 1):
+                if i not in failedUrls:
+                    filePath = folder + "/" + name + "_" + str(i) + ".jpg"
+                    if not os.path.exists(filePath):
+                        break
+                    os.remove(filePath)
+        else:
+            print("Tüm resimler başarıyla indirildi.")
     else:
         print("Dosyadaki satır sayısı (" + len(urls) + ")," + count + " sayısı kadar olmalıdır.")
 
 
 # Eğitim seti için
-downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain)
+# downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain)
+
+# Doğrulama seti için
+downloadImages(URLsValidation, personName, countValidationImage, folderNameFolderInValidation)
+
+# Test seti için
+# downloadImages(URLsTest,"test", 1 , folderNameFolderInTest)
