@@ -20,8 +20,8 @@ def randomString(length):
 
 # PATHS
 modelName = datasetName + "_" + randomString(6)
-pathModel = "C:/Project/Proje-2/face_recognition/models/"
-pathTxts = pathModel + "txts/"
+pathModels = "C:/Project/Proje-2/face_recognition/models/"
+pathTxts = pathModels + "txts/"
 pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
 trainSource = pathDatasets + datasetName + "/train"
 validationSource = pathDatasets + datasetName + "/validation"
@@ -82,7 +82,7 @@ model.add(layers.Flatten())
 model.add(layers.Dense(64))
 model.add(layers.Activation('relu'))
 model.add(layers.Dropout(0.5))
-model.add(layers.Dense(16))
+model.add(layers.Dense(4)) # sınıf sayısı
 model.add(layers.Activation('sigmoid'))
 # MODEL ÖZETİ
 model.summary()
@@ -128,6 +128,6 @@ result = model.predict(testImage, verbose=0)
 print("Tahmin şu şekildedir : ", ResultMap[np.argmax(result)])
 
 # MODEL KAYDET
-model.save(pathModel + modelName + '.h5')
+model.save(pathModels + modelName + '.h5')
 
 print('Model {} ismiyle başarıyla kaydedildi.'.format(modelName + '.h5'))

@@ -10,11 +10,11 @@ countTrainImage = 10
 countValidationImage = 10
 
 # PATHS
-pathCreate = "C:/Project/Proje-2/face_recognition/create/"
+pathTxt = "C:/Project/Proje-2/face_recognition/txt/"
 pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
-URLsTrain = pathCreate + "URLsTrain.txt"
-URLsValidation = pathCreate + "URLsValidation.txt"
-URLsTest = pathCreate + "URLsTest.txt"
+URLsTrain = pathTxt + "URLsTrain.txt"
+URLsValidation = pathTxt + "URLsValidation.txt"
+URLsTest = pathTxt + "URLsTest.txt"
 folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + personName
 folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + personName
 folderNameFolderInTest = pathDatasets + datasetName + "/test"

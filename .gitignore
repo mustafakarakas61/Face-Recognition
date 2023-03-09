@@ -130,10 +130,10 @@ dmypy.json
 
 # Ignore
 datasets/*
-models/txts/*
+models/*
 
 # No Ignore
 !datasets/myset/train/.gitkeep
 !datasets/myset/validation/.gitkeep
 !datasets/myset/test/.gitkeep
-!models/txts/.gitkeep
+!models/txts/

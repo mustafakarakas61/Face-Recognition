@@ -48,10 +48,10 @@ def createImages(name, count, folder):
 
 
 # Eğitim seti için
-createImages(personName, countTrainImage, folderNameFolderInTrain)
+# createImages(personName, countTrainImage, folderNameFolderInTrain)
 
 # Doğrulama seti için
-createImages(personName, countValidationImage, folderNameFolderInValidation)
+# createImages(personName, countValidationImage, folderNameFolderInValidation)
 
 # Test için
-# createImages("test", 1, folderNameFolderInTest)
+createImages("test", 1, folderNameFolderInTest)
