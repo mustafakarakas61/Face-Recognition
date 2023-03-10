@@ -4,6 +4,15 @@ import string
 import random
 
 
+def checkURLsDublicates(filename):
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        if len(lines) == len(set(lines)):
+            return True
+        else:
+            return False
+
+
 def getFolderList(path):
     folders = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
     print(folders)

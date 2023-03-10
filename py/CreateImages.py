@@ -22,14 +22,16 @@ folderNameFolderInTest = pathDatasets + datasetName + "/test/"
 
 
 # Generate Images
-def createImages(name, count, folder, status):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+def createImages(type, name, count, folder, status):
+    asciiFolder = folder.translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii"))
+    asciiName = name.translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii"))
+    if not os.path.exists(asciiFolder):
+        os.makedirs(asciiFolder)
 
     # Kamera başlatma
     camera = cv2.VideoCapture(0)
 
-    print("Lütfen kameranın açık olduğundan emin olun ve 3 saniye içinde kameraya bakın.")
+    print(type + " için lütfen kameranın açık olduğundan emin olun ve 3 saniye içinde kameraya bakın.")
     time.sleep(1)
     print("3")
     time.sleep(1)
@@ -46,9 +48,10 @@ def createImages(name, count, folder, status):
             cv2.imshow("Kameraya bakın ve 1 saniye bekleyin. " + str(count - i) + ". resim.", fileName)
 
             if status:
-                filePath = folder + "/" + name + ".jpg"
+                filePath = asciiFolder + "/" + asciiName + ".jpg"
             else:
-                filePath = folder + "/" + name + "_" + str(i + 1) + ".jpg"
+                filePath = asciiFolder + "/" + asciiName + "_" + str(i + 1) + ".jpg"
+
             cv2.imwrite(filePath, fileName)
             i += 1
             time.sleep(1)
@@ -56,15 +59,22 @@ def createImages(name, count, folder, status):
     camera.release()
     cv2.destroyAllWindows()
 
+    # Resim ve klasör adlarını değiştirme
+    if not name.__eq__(asciiName):
+        os.rename(asciiFolder, folder)
+        for i, file in enumerate(os.listdir(folder)):
+            os.rename(os.path.join(folder, file),
+                      os.path.join(folder, name + "_" + str(i + 1) + ".jpg"))
+
 
 # Eğitim seti için
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
-    createImages(personName, countTrainImage, folderNameFolderInTrain, False)
+    createImages("Train", personName, countTrainImage, folderNameFolderInTrain, False)
 
 # Doğrulama seti için
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
-    createImages(personName, countValidationImage, folderNameFolderInValidation, False)
+    createImages("Validation", personName, countValidationImage, folderNameFolderInValidation, False)
 
 # Test için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
-    createImages("test_" + str(randomInt(6)), 1, folderNameFolderInTest, True)
+    createImages("Test", "test_" + str(randomInt(6)), 1, folderNameFolderInTest, True)
