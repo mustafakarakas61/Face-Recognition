@@ -136,4 +136,5 @@ models/*
 !datasets/myset/train/.gitkeep
 !datasets/myset/validation/.gitkeep
 !datasets/myset/test/.gitkeep
+!txt/success/.gitkeep
 !models/txts/

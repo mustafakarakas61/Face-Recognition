@@ -2,23 +2,23 @@ import cv2
 import os
 import time
 
-from utils.Utils import randomString
+from utils.Utils import randomInt
 
 # SETS
 isUseTrain = input("Train? (y,n): ")
 isUseValidation = input("Validation? (y,n): ")
 isUseTest = input("Test? (y,n): ")
-if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
-    personName = input("Lütfen isminizi giriniz: ")
 datasetName = "myset"
 countTrainImage = 10
 countValidationImage = 10
 
 # PATHS
 pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
-folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + personName
-folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + personName
-folderNameFolderInTest = pathDatasets + datasetName + "/test"
+if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
+    personName = input("Lütfen isminizi giriniz: ")
+    folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + personName
+    folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + personName
+folderNameFolderInTest = pathDatasets + datasetName + "/test/"
 
 
 # Generate Images
@@ -67,4 +67,4 @@ if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
 
 # Test için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
-    createImages(randomString(6), 1, folderNameFolderInTest, True)
+    createImages("test_" + str(randomInt(6)), 1, folderNameFolderInTest, True)

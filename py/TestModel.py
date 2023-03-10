@@ -1,8 +1,9 @@
 import os
-import glob
 import numpy as np
 from keras.models import load_model
 from keras.api.keras.preprocessing import image
+
+from utils.Utils import getFileList
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -12,15 +13,6 @@ pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
 pathModels = "C:/Project/Proje-2/face_recognition/models/"
 trainSource = pathDatasets + datasetName + "/train"
 pathTestImage = pathDatasets + datasetName + "/test/"
-
-
-def getFileList(path, extension):
-    fileList = glob.glob(os.path.join(path, '*.' + extension))
-    print("Mevcut dosyalar:")
-    for filePath in fileList:
-        fileName = os.path.basename(filePath)
-        print(fileName)
-
 
 # input 1
 getFileList(pathModels, "h5")
