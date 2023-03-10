@@ -9,7 +9,8 @@ from utils.Utils import randomString
 
 # SETS
 datasetName = "myset"
-countEpochs = 100
+countEpochs = 1000
+size = 150
 # testImageName = "test_1.jpg"
 
 # PATHS
@@ -29,13 +30,13 @@ validationDatagen = image.ImageDataGenerator()
 
 trainGenerator = trainDatagen.flow_from_directory(
     trainSource,
-    target_size=(150, 150),
+    target_size=(size, size),
     batch_size=32,
     class_mode='categorical'
 )
 validationGenerator = validationDatagen.flow_from_directory(
     validationSource,
-    target_size=(150, 150),
+    target_size=(size, size),
     batch_size=32,
     class_mode='categorical'
 )
@@ -56,7 +57,7 @@ print("Yüzün ve ID'nin Haritalanması : \n", ResultMap)
 # print("Çıkış nöronlarının sayısı : ", outputNeurons)
 
 # MODEL OLUŞTURMA - CNN BAŞLATILMASI
-inputShape = (150, 150, 3)
+inputShape = (size, size, 3)
 model = models.Sequential()
 
 model.add(layers.Conv2D(32, (3, 3), input_shape=inputShape))
@@ -105,7 +106,7 @@ print("Toplam geçen süre : ", round(endTime - startTime) / 60, "dakika")
 x_train, y_train = trainGenerator.next()
 x_val, y_val = validationGenerator.next()
 
-modelName = datasetName + "_" + str(len(trainClasses)) + "_" + str(countEpochs)
+modelName = datasetName + "_" + str(len(trainClasses)) + "_" + str(countEpochs) + "_" + randomString(3)
 
 with open(pathTxts + modelName + '.txt', 'w') as file:
     file.write('Epoch\tLoss\tAccuracy\tVal_Loss\tVal_Accuracy\n')
