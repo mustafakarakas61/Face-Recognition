@@ -6,10 +6,11 @@ from PIL import Image
 from utils.Utils import randomString
 
 # SETS
-personName = input("Lütfen isminizi giriniz: ")
 isUseTrain = input("Train? (y,n): ")
 isUseValidation = input("Validation? (y,n): ")
 isUseTest = input("Test? (y,n): ")
+if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
+    personName = input("Lütfen isminizi giriniz: ")
 datasetName = "myset"
 countTrainImage = 10
 countValidationImage = 10
@@ -26,7 +27,7 @@ folderNameFolderInTest = pathDatasets + datasetName + "/test"
 
 
 # Download Images
-def downloadImages(URLs, name, count, folder):
+def downloadImages(URLs, name, count, folder, status):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -39,8 +40,10 @@ def downloadImages(URLs, name, count, folder):
         failedUrls = []
         for i, url in enumerate(urls):
             try:
-                filePath = folder + "/" + name + "_" + str(i + 1) + ".jpg"
-
+                if status:
+                    filePath = folder + "/" + name + ".jpg"
+                else:
+                    filePath = folder + "/" + name + "_" + str(i + 1) + ".jpg"
                 response = requests.get(url.strip())
 
                 img = Image.open(io.BytesIO(response.content))
@@ -72,12 +75,12 @@ def downloadImages(URLs, name, count, folder):
 
 # Eğitim seti için
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
-    downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain)
+    downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain, False)
 
 # Doğrulama seti için
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
-    downloadImages(URLsValidation, personName, countValidationImage, folderNameFolderInValidation)
+    downloadImages(URLsValidation, personName, countValidationImage, folderNameFolderInValidation, False)
 
 # Test seti için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
-    downloadImages(URLsTest, personName + "_" + randomString(3), 1, folderNameFolderInTest)
+    downloadImages(URLsTest, personName + "_" + randomString(3), 1, folderNameFolderInTest, True)

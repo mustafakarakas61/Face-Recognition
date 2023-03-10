@@ -5,10 +5,11 @@ import time
 from utils.Utils import randomString
 
 # SETS
-personName = input("Lütfen isminizi giriniz: ")
 isUseTrain = input("Train? (y,n): ")
 isUseValidation = input("Validation? (y,n): ")
 isUseTest = input("Test? (y,n): ")
+if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
+    personName = input("Lütfen isminizi giriniz: ")
 datasetName = "myset"
 countTrainImage = 10
 countValidationImage = 10
@@ -21,7 +22,7 @@ folderNameFolderInTest = pathDatasets + datasetName + "/test"
 
 
 # Generate Images
-def createImages(name, count, folder):
+def createImages(name, count, folder, status):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -43,7 +44,11 @@ def createImages(name, count, folder):
 
         if ret:
             cv2.imshow("Kameraya bakın ve 1 saniye bekleyin. " + str(count - i) + ". resim.", fileName)
-            filePath = folder + "/" + name + "_" + str(i + 1) + ".jpg"
+
+            if status:
+                filePath = folder + "/" + name + ".jpg"
+            else:
+                filePath = folder + "/" + name + "_" + str(i + 1) + ".jpg"
             cv2.imwrite(filePath, fileName)
             i += 1
             time.sleep(1)
@@ -54,12 +59,12 @@ def createImages(name, count, folder):
 
 # Eğitim seti için
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
-    createImages(personName, countTrainImage, folderNameFolderInTrain)
+    createImages(personName, countTrainImage, folderNameFolderInTrain, False)
 
 # Doğrulama seti için
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
-    createImages(personName, countValidationImage, folderNameFolderInValidation)
+    createImages(personName, countValidationImage, folderNameFolderInValidation, False)
 
 # Test için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
-    createImages(personName + "_" + randomString(3), 1, folderNameFolderInTest)
+    createImages(randomString(6), 1, folderNameFolderInTest, True)

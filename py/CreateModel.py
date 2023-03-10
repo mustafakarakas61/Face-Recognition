@@ -9,6 +9,7 @@ from utils.Utils import randomString
 
 # SETS
 datasetName = "myset"
+countEpochs = 100
 # testImageName = "test_1.jpg"
 
 # PATHS
@@ -75,7 +76,7 @@ model.add(layers.Flatten())
 model.add(layers.Dense(64))
 model.add(layers.Activation('relu'))
 model.add(layers.Dropout(0.5))
-model.add(layers.Dense(4))  # sınıf sayısı
+model.add(layers.Dense(len(trainClasses)))  # sınıf sayısı
 model.add(layers.Activation('sigmoid'))
 # MODEL ÖZETİ
 model.summary()
@@ -93,7 +94,7 @@ startTime = time.time()
 model.fit(
     trainGenerator,
     steps_per_epoch=len(trainGenerator),
-    epochs=100,
+    epochs=countEpochs,
     validation_data=validationGenerator,
     validation_steps=len(validationGenerator)
 )
@@ -107,7 +108,7 @@ x_val, y_val = validationGenerator.next()
 
 with open(pathTxts + modelName + '.txt', 'w') as file:
     file.write('Epoch\tLoss\tAccuracy\tVal_Loss\tVal_Accuracy\n')
-    for epoch in range(100):
+    for epoch in range(countEpochs):
         loss, accuracy = model.train_on_batch(x_train, y_train)
         val_loss, val_accuracy = model.test_on_batch(x_val, y_val)
         file.write('{}\t{}\t{}\t{}\t{}\n'.format(epoch + 1, loss, accuracy, val_loss, val_accuracy))
