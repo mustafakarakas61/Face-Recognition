@@ -8,13 +8,14 @@ from utils.Utils import randomInt, getFolderList, checkURLsDublicates
 
 getFolderList("C:/Project/Proje-2/face_recognition/datasets/myset/train")
 # SETS
-personName = input("Lütfen ismi girin: ")
+countTrainImage = 10
+countValidationImage = 10
+countTestImage = 1
+personName = input("Lütfen bir isim girin ya da bir isim seçin : ")
 isUseTrain = input("Train? (y,n): ")
 isUseValidation = input("Validation? (y,n): ")
 isUseTest = input("Test? (y,n): ")
 datasetName = "myset"
-countTrainImage = 10
-countValidationImage = 10
 
 # PATHS
 pathTxt = "C:/Project/Proje-2/face_recognition/txt/"
@@ -119,4 +120,4 @@ if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
 
 # Test seti için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
-    downloadImages("Test", URLsTest, personName, 1, folderNameFolderInTest, True)
+    downloadImages("Test", URLsTest, personName, countTestImage, folderNameFolderInTest, True)
