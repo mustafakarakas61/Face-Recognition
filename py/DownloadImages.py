@@ -5,6 +5,9 @@ from PIL import Image
 
 # SETS
 personName = input("Lütfen isminizi giriniz: ")
+isUseTrain = input("Train? (y,n): ")
+isUseValidation = input("Validation? (y,n): ")
+isUseTest = input("Test? (y,n): ")
 datasetName = "myset"
 countTrainImage = 10
 countValidationImage = 10
@@ -66,10 +69,13 @@ def downloadImages(URLs, name, count, folder):
 
 
 # Eğitim seti için
-#downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain)
+if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
+    downloadImages(URLsTrain, personName, countTrainImage, folderNameFolderInTrain)
 
 # Doğrulama seti için
-downloadImages(URLsValidation, personName, countValidationImage, folderNameFolderInValidation)
+if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
+    downloadImages(URLsValidation, personName, countValidationImage, folderNameFolderInValidation)
 
 # Test seti için
-# downloadImages(URLsTest,"test", 1 , folderNameFolderInTest)
+if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
+    downloadImages(URLsTest, personName, 1, folderNameFolderInTest)

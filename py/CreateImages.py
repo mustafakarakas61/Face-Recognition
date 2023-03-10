@@ -4,6 +4,9 @@ import time
 
 # SETS
 personName = input("Lütfen isminizi giriniz: ")
+isUseTrain = input("Train? (y,n): ")
+isUseValidation = input("Validation? (y,n): ")
+isUseTest = input("Test? (y,n): ")
 datasetName = "myset"
 countTrainImage = 10
 countValidationImage = 10
@@ -48,10 +51,13 @@ def createImages(name, count, folder):
 
 
 # Eğitim seti için
-# createImages(personName, countTrainImage, folderNameFolderInTrain)
+if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
+    createImages(personName, countTrainImage, folderNameFolderInTrain)
 
 # Doğrulama seti için
-# createImages(personName, countValidationImage, folderNameFolderInValidation)
+if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
+    createImages(personName, countValidationImage, folderNameFolderInValidation)
 
 # Test için
-createImages("test", 1, folderNameFolderInTest)
+if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
+    createImages(personName, 1, folderNameFolderInTest)
