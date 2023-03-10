@@ -1,7 +1,17 @@
 import glob
 import os
+import shutil
 import string
 import random
+
+
+def switchFiles(srcFolder, destFolder):
+    for item in os.listdir(srcFolder):
+        # Dosya veya klasör mü kontrol et
+        itemPath = os.path.join(srcFolder, item)
+        if os.path.isfile(itemPath):
+            if itemPath.endswith(".jpg"):
+                shutil.move(itemPath, destFolder)
 
 
 def checkURLsDublicates(filename):

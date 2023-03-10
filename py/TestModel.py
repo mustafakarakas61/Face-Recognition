@@ -20,7 +20,8 @@ modelName = input("Lütfen kullanılacak modeli seçiniz: ")
 
 # input 2
 getFileList(pathTestImage, "jpg")
-testImageName = input("Lütfen test için bir resim ismi giriniz: ")
+# testImageName = input("Lütfen test için bir resim ismi giriniz: ")
+testImageName = "test_291917.jpg"
 
 testModel = load_model(pathModels + modelName)
 testImage = image.load_img(pathTestImage + testImageName, target_size=(150, 150))
@@ -41,10 +42,10 @@ trainSet = trainDatagen.flow_from_directory(
     class_mode='categorical'
 )
 
-trainClasses = trainSet.class_indices
+# trainClasses = trainSet.class_indices
 
 ResultMap = {}
-for faceValue, faceName in zip(trainClasses.values(), trainClasses.keys()):
+for faceValue, faceName in zip(trainSet.class_indices.values(), trainSet.class_indices.keys()):
     ResultMap[faceValue] = faceName
 
 print('####' * 10)

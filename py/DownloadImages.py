@@ -4,14 +4,13 @@ import shutil
 import requests
 from PIL import Image
 
+from py.ExtractFaces import extractFace
 from utils.Utils import randomInt, getFolderList, checkURLsDublicates
 
-getFolderList("C:/Project/Proje-2/face_recognition/datasets/myset/train")
 # SETS
-countTrainImage = 10
-countValidationImage = 10
+countTrainImage = 15
+countValidationImage = 5
 countTestImage = 1
-personName = input("Lütfen bir isim girin ya da bir isim seçin : ")
 isUseTrain = input("Train? (y,n): ")
 isUseValidation = input("Validation? (y,n): ")
 isUseTest = input("Test? (y,n): ")
@@ -24,8 +23,16 @@ pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
 URLsTrain = pathTxt + "URLsTrain.txt"
 URLsValidation = pathTxt + "URLsValidation.txt"
 URLsTest = pathTxt + "URLsTest.txt"
-folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + personName
-folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + personName
+
+if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
+    getFolderList("C:/Project/Proje-2/face_recognition/datasets/myset/train")
+    personName = input("Lütfen bir isim girin ya da bir isim seçin: ")
+    folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + personName
+    if not os.path.exists(folderNameFolderInTrain):
+        os.makedirs(folderNameFolderInTrain)
+    folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + personName
+    if not os.path.exists(folderNameFolderInValidation):
+        os.makedirs(folderNameFolderInValidation)
 folderNameFolderInTest = pathDatasets + datasetName + "/test/"
 
 
@@ -53,7 +60,7 @@ def downloadImages(type, URLs, name, count, folder, status):
                     response = requests.get(url.strip())
 
                     img = Image.open(io.BytesIO(response.content))
-                    img = img.resize((640, 480))
+                    # img = img.resize((640, 480))
                     img.save(filePath)
 
                     # with open(fileName, "wb") as f:
@@ -113,10 +120,12 @@ def downloadImages(type, URLs, name, count, folder, status):
 # Eğitim seti için
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
     downloadImages("Train", URLsTrain, personName, countTrainImage, folderNameFolderInTrain, False)
+    extractFace(personName, folderNameFolderInTrain)
 
 # Doğrulama seti için
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
     downloadImages("Validation", URLsValidation, personName, countValidationImage, folderNameFolderInValidation, False)
+    extractFace(personName, folderNameFolderInValidation)
 
 # Test seti için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):

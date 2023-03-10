@@ -13,7 +13,6 @@ countEpochs = 100
 # testImageName = "test_1.jpg"
 
 # PATHS
-modelName = datasetName + "_" + randomString(6)
 pathModels = "C:/Project/Proje-2/face_recognition/models/"
 pathTxts = pathModels + "txts/"
 pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
@@ -77,7 +76,7 @@ model.add(layers.Dense(64))
 model.add(layers.Activation('relu'))
 model.add(layers.Dropout(0.5))
 model.add(layers.Dense(len(trainClasses)))  # sınıf sayısı
-model.add(layers.Activation('sigmoid'))
+model.add(layers.Activation('softmax'))  # sigmoid softmax
 # MODEL ÖZETİ
 model.summary()
 # GRAFİK KARTI UYARISINDAN KURTULMAK İÇİN
@@ -101,10 +100,12 @@ model.fit(
 
 endTime = time.time()
 
-print("Toplam geçen süre : ", round(endTime - startTime) / 60, "minutes")
+print("Toplam geçen süre : ", round(endTime - startTime) / 60, "dakika")
 
 x_train, y_train = trainGenerator.next()
 x_val, y_val = validationGenerator.next()
+
+modelName = datasetName + "_" + str(len(trainClasses)) + "_" + str(countEpochs)
 
 with open(pathTxts + modelName + '.txt', 'w') as file:
     file.write('Epoch\tLoss\tAccuracy\tVal_Loss\tVal_Accuracy\n')

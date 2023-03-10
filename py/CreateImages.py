@@ -2,6 +2,7 @@ import cv2
 import os
 import time
 
+from py.ExtractFaces import extractFace
 from utils.Utils import randomInt
 
 # SETS
@@ -17,16 +18,21 @@ pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
     personName = input("Lütfen isminizi giriniz: ")
     folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + personName
+    if not os.path.exists(folderNameFolderInTrain):
+        os.makedirs(folderNameFolderInTrain)
     folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + personName
+    if not os.path.exists(folderNameFolderInValidation):
+        os.makedirs(folderNameFolderInValidation)
 folderNameFolderInTest = pathDatasets + datasetName + "/test/"
+if not os.path.exists(folderNameFolderInTest):
+    os.makedirs(folderNameFolderInTest)
 
 
 # Generate Images
 def createImages(type, name, count, folder, status):
     asciiFolder = folder.translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii"))
     asciiName = name.translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii"))
-    if not os.path.exists(asciiFolder):
-        os.makedirs(asciiFolder)
+    os.rename(folder, asciiFolder)
 
     # Kamera başlatma
     camera = cv2.VideoCapture(0)
@@ -64,16 +70,18 @@ def createImages(type, name, count, folder, status):
         os.rename(asciiFolder, folder)
         for i, file in enumerate(os.listdir(folder)):
             os.rename(os.path.join(folder, file),
-                      os.path.join(folder, name + "_" + str(i + 1) + ".jpg"))
+                      os.path.join(folder, name + "_" + file.split("_")[1]))
 
 
 # Eğitim seti için
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
     createImages("Train", personName, countTrainImage, folderNameFolderInTrain, False)
+    extractFace(personName, folderNameFolderInTrain)
 
 # Doğrulama seti için
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
     createImages("Validation", personName, countValidationImage, folderNameFolderInValidation, False)
+    extractFace(personName, folderNameFolderInValidation)
 
 # Test için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):

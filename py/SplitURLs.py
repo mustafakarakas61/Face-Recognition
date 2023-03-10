@@ -1,6 +1,6 @@
 # SETS
-countTrainImage = 10
-countValidationImage = 10
+countTrainImage = 15
+countValidationImage = 5
 countTestImage = 1
 
 
@@ -40,6 +40,7 @@ def splitURLsToTxt(countTrain, countValidation, countTest):
             # Clear URLs.txt file
             with open(urlsFile, "w") as fileUrl:
                 fileUrl.write("")
+            print("URL'ler paylaştırıldı.")
         else:
             print("Lütfen gerektiği kadar url linki yapıştırınız. \nToplam URL sayısı : " + str(len(
                 urls)) + ", Gereken toplam sayı : " + str((
