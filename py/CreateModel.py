@@ -1,5 +1,3 @@
-import string
-import random
 import pickle
 import os
 import time
@@ -7,16 +5,11 @@ import numpy as np
 from keras import layers, models, optimizers
 from keras.api.keras.preprocessing import image
 
+from utils.Utils import randomString
+
 # SETS
 datasetName = "myset"
-testImageName = "test_1.jpg"
-
-
-# generate randomName
-def randomString(length):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(length))
-
+# testImageName = "test_1.jpg"
 
 # PATHS
 modelName = datasetName + "_" + randomString(6)
@@ -25,7 +18,7 @@ pathTxts = pathModels + "txts/"
 pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
 trainSource = pathDatasets + datasetName + "/train"
 validationSource = pathDatasets + datasetName + "/validation"
-testImagePath = pathDatasets + datasetName + "/test/" + testImageName
+# testImagePath = pathDatasets + datasetName + "/test/" + testImageName
 
 trainDatagen = image.ImageDataGenerator(
     shear_range=0.1,
@@ -82,7 +75,7 @@ model.add(layers.Flatten())
 model.add(layers.Dense(64))
 model.add(layers.Activation('relu'))
 model.add(layers.Dropout(0.5))
-model.add(layers.Dense(4)) # sınıf sayısı
+model.add(layers.Dense(4))  # sınıf sayısı
 model.add(layers.Activation('sigmoid'))
 # MODEL ÖZETİ
 model.summary()
@@ -119,13 +112,13 @@ with open(pathTxts + modelName + '.txt', 'w') as file:
         val_loss, val_accuracy = model.test_on_batch(x_val, y_val)
         file.write('{}\t{}\t{}\t{}\t{}\n'.format(epoch + 1, loss, accuracy, val_loss, val_accuracy))
 
-# TAHMİNLERİ YAPMA
-testImage = image.load_img(testImagePath, target_size=(150, 150))
-testImage = image.img_to_array(testImage)
-testImage = np.expand_dims(testImage, axis=0)
-result = model.predict(testImage, verbose=0)
-
-print("Tahmin şu şekildedir : ", ResultMap[np.argmax(result)])
+# # TAHMİNLERİ YAPMA
+# testImage = image.load_img(testImagePath, target_size=(150, 150))
+# testImage = image.img_to_array(testImage)
+# testImage = np.expand_dims(testImage, axis=0)
+# result = model.predict(testImage, verbose=0)
+#
+# print("Tahmin şu şekildedir : ", ResultMap[np.argmax(result)])
 
 # MODEL KAYDET
 model.save(pathModels + modelName + '.h5')

@@ -3,6 +3,8 @@ import io
 import requests
 from PIL import Image
 
+from utils.Utils import randomString
+
 # SETS
 personName = input("Lütfen isminizi giriniz: ")
 isUseTrain = input("Train? (y,n): ")
@@ -78,4 +80,4 @@ if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
 
 # Test seti için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
-    downloadImages(URLsTest, personName, 1, folderNameFolderInTest)
+    downloadImages(URLsTest, personName + "_" + randomString(3), 1, folderNameFolderInTest)

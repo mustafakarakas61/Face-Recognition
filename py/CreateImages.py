@@ -2,6 +2,8 @@ import cv2
 import os
 import time
 
+from utils.Utils import randomString
+
 # SETS
 personName = input("Lütfen isminizi giriniz: ")
 isUseTrain = input("Train? (y,n): ")
@@ -60,4 +62,4 @@ if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
 
 # Test için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
-    createImages(personName, 1, folderNameFolderInTest)
+    createImages(personName + "_" + randomString(3), 1, folderNameFolderInTest)
