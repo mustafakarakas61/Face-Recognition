@@ -14,6 +14,16 @@ def switchFiles(srcFolder, destFolder):
                 shutil.move(itemPath, destFolder)
 
 
+def switchFile(srcFolder, destFolder, fileName):
+    for item in os.listdir(srcFolder):
+        # Dosya veya klasör mü kontrol et
+        if item.__eq__(fileName):
+            itemPath = os.path.join(srcFolder, item)
+            if os.path.isfile(itemPath):
+                if itemPath.endswith(".jpg"):
+                    shutil.move(itemPath, destFolder)
+
+
 def checkURLsDublicates(filename):
     with open(filename, 'r') as f:
         lines = f.readlines()

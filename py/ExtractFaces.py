@@ -28,7 +28,7 @@ folderNameFolderInTest = pathDatasets + datasetName + "/test/"
 pathNoFace = "C:/Project/Proje-2/face_recognition/utils/NoFace.txt"
 
 
-def extractFace(name, srcFolder):
+def extractFaces(name, srcFolder):
     destFolder = "C:/Project/Proje-2/face_recognition/utils/tempFolder"
 
     switchFiles(srcFolder, destFolder)
@@ -75,10 +75,10 @@ def extractFace(name, srcFolder):
 
 
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
-    extractFace(personName, folderNameFolderInTrain)
+    extractFaces(personName, folderNameFolderInTrain)
 
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
-    extractFace(personName, folderNameFolderInValidation)
+    extractFaces(personName, folderNameFolderInValidation)
 
 # image = folderTrain + "test_695151.jpg"
 

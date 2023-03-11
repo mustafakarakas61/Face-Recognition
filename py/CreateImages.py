@@ -2,7 +2,7 @@ import cv2
 import os
 import time
 
-from py.ExtractFaces import extractFace
+from py.ExtractFaces import extractFaces
 from utils.Utils import randomInt
 
 # SETS
@@ -10,7 +10,7 @@ isUseTrain = input("Train? (y,n): ")
 isUseValidation = input("Validation? (y,n): ")
 isUseTest = input("Test? (y,n): ")
 datasetName = "myset"
-countTrainImage = 10
+countTrainImage = 30
 countValidationImage = 10
 
 # PATHS
@@ -60,7 +60,7 @@ def createImages(type, name, count, folder, status):
 
             cv2.imwrite(filePath, fileName)
             i += 1
-            time.sleep(1)
+            time.sleep(2)
 
     camera.release()
     cv2.destroyAllWindows()
@@ -76,12 +76,12 @@ def createImages(type, name, count, folder, status):
 # Eğitim seti için
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
     createImages("Train", personName, countTrainImage, folderNameFolderInTrain, False)
-    extractFace(personName, folderNameFolderInTrain)
+    extractFaces(personName, folderNameFolderInTrain)
 
 # Doğrulama seti için
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
     createImages("Validation", personName, countValidationImage, folderNameFolderInValidation, False)
-    extractFace(personName, folderNameFolderInValidation)
+    extractFaces(personName, folderNameFolderInValidation)
 
 # Test için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):

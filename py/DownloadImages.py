@@ -4,12 +4,12 @@ import shutil
 import requests
 from PIL import Image
 
-from py.ExtractFaces import extractFace
+from py.ExtractFaces import extractFaces
 from utils.Utils import randomInt, getFolderList, checkURLsDublicates
 
 # SETS
-countTrainImage = 15
-countValidationImage = 5
+countTrainImage = 30
+countValidationImage = 10
 countTestImage = 1
 isUseTrain = input("Train? (y,n): ")
 isUseValidation = input("Validation? (y,n): ")
@@ -120,12 +120,12 @@ def downloadImages(type, URLs, name, count, folder, status):
 # Eğitim seti için
 if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
     downloadImages("Train", URLsTrain, personName, countTrainImage, folderNameFolderInTrain, False)
-    extractFace(personName, folderNameFolderInTrain)
+    extractFaces(personName, folderNameFolderInTrain)
 
 # Doğrulama seti için
 if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
     downloadImages("Validation", URLsValidation, personName, countValidationImage, folderNameFolderInValidation, False)
-    extractFace(personName, folderNameFolderInValidation)
+    extractFaces(personName, folderNameFolderInValidation)
 
 # Test seti için
 if isUseTest.__eq__("y") | isUseTest.__eq__("Y"):
