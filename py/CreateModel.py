@@ -1,48 +1,68 @@
 import pickle
 import os
 import time
+from keras.api.keras import Sequential
+from keras.api.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from keras.api.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from keras import layers, models, optimizers
-from keras.api.keras.preprocessing import image
 
 from utils.Utils import randomString
 
+# GRAFİK KARTI UYARISINDAN KURTULMAK İÇİN
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 # SETS
 datasetName = "myset"
-countEpochs = 1000
-size = 150
+countEpochs = 30
+size = 64
 # testImageName = "test_1.jpg"
 
 # PATHS
 pathModels = "C:/Project/Proje-2/face_recognition/models/"
 pathTxts = pathModels + "txts/"
 pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
-trainSource = pathDatasets + datasetName + "/train"
-validationSource = pathDatasets + datasetName + "/validation"
-# testImagePath = pathDatasets + datasetName + "/test/" + testImageName
+trainDir = pathDatasets + datasetName + "/train"
+validationDir = pathDatasets + datasetName + "/validation"
 
-trainDatagen = image.ImageDataGenerator(
-    shear_range=0.1,
-    zoom_range=0.1,
-    horizontal_flip=True
-)
-validationDatagen = image.ImageDataGenerator()
+model = Sequential()
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(size, size, 3)))
+model.add(MaxPooling2D((2, 2)))
 
-trainGenerator = trainDatagen.flow_from_directory(
-    trainSource,
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+
+model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+
+model.add(Flatten())
+model.add(Dense(256, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(16, activation='softmax'))
+
+# MODEL ÖZETİ
+model.summary()
+
+# MODEL DERLEME
+model.compile(loss='categorical_crossentropy',
+              optimizer='adam',
+              metrics=['accuracy'])
+
+train_datagen = ImageDataGenerator(rescale=1. / 255)
+
+trainGenerator = train_datagen.flow_from_directory(
+    trainDir,
     target_size=(size, size),
     batch_size=32,
-    class_mode='categorical'
-)
-validationGenerator = validationDatagen.flow_from_directory(
-    validationSource,
+    class_mode='categorical')
+
+validation_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(
+    validationDir,
     target_size=(size, size),
     batch_size=32,
-    class_mode='categorical'
-)
+    class_mode='categorical')
 
 trainClasses = trainGenerator.class_indices
-validationClasses = validationGenerator.class_indices
 
 ResultMap = {}
 for faceValue, faceName in zip(trainClasses.values(), trainClasses.keys()):
@@ -53,60 +73,25 @@ with open("../ResultsMap.pkl", 'wb') as fileWriteStream:
 
 print("Yüzün ve ID'nin Haritalanması : \n", ResultMap)
 
-# outputNeurons = len(ResultMap)
-# print("Çıkış nöronlarının sayısı : ", outputNeurons)
-
-# MODEL OLUŞTURMA - CNN BAŞLATILMASI
-inputShape = (size, size, 3)
-model = models.Sequential()
-
-model.add(layers.Conv2D(32, (3, 3), input_shape=inputShape))
-model.add(layers.Activation('relu'))
-model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-
-model.add(layers.Conv2D(32, (3, 3)))
-model.add(layers.Activation('relu'))
-model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-
-model.add(layers.Conv2D(64, (3, 3)))
-model.add(layers.Activation('relu'))
-model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-
-model.add(layers.Flatten())
-model.add(layers.Dense(64))
-model.add(layers.Activation('relu'))
-model.add(layers.Dropout(0.5))
-model.add(layers.Dense(len(trainClasses)))  # sınıf sayısı
-model.add(layers.Activation('softmax'))  # sigmoid softmax
-# MODEL ÖZETİ
-model.summary()
-# GRAFİK KARTI UYARISINDAN KURTULMAK İÇİN
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-# MODEL DERLEME
-model.compile(
-    loss='categorical_crossentropy',
-    optimizer=optimizers.RMSprop(learning_rate=1e-4),
-    metrics=['acc']
-)
-# MODELİN EĞİTİM İÇİN HARCADIĞI SÜREYİ ÖLÇME
 startTime = time.time()
 
-model.fit(
+history = model.fit(
     trainGenerator,
     steps_per_epoch=len(trainGenerator),
     epochs=countEpochs,
-    validation_data=validationGenerator,
-    validation_steps=len(validationGenerator)
-)
+    validation_data=validation_generator,
+    validation_steps=len(validation_generator),
+    verbose=1)
 
 endTime = time.time()
 
 print("Toplam geçen süre : ", round(endTime - startTime) / 60, "dakika")
 
 x_train, y_train = trainGenerator.next()
-x_val, y_val = validationGenerator.next()
+x_val, y_val = validation_generator.next()
 
-modelName = datasetName + "_" + str(len(trainClasses)) + "_" + str(countEpochs) + "_" + randomString(3)
+modelName = datasetName + "_" + str(len(trainClasses)) + "_" + str(countEpochs) + "_" + str(size) + "_" + randomString(
+    3)
 
 with open(pathTxts + modelName + '.txt', 'w') as file:
     file.write('Epoch\tLoss\tAccuracy\tVal_Loss\tVal_Accuracy\n')
@@ -114,14 +99,6 @@ with open(pathTxts + modelName + '.txt', 'w') as file:
         loss, accuracy = model.train_on_batch(x_train, y_train)
         val_loss, val_accuracy = model.test_on_batch(x_val, y_val)
         file.write('{}\t{}\t{}\t{}\t{}\n'.format(epoch + 1, loss, accuracy, val_loss, val_accuracy))
-
-# # TAHMİNLERİ YAPMA
-# testImage = image.load_img(testImagePath, target_size=(150, 150))
-# testImage = image.img_to_array(testImage)
-# testImage = np.expand_dims(testImage, axis=0)
-# result = model.predict(testImage, verbose=0)
-#
-# print("Tahmin şu şekildedir : ", ResultMap[np.argmax(result)])
 
 # MODEL KAYDET
 model.save(pathModels + modelName + '.h5')
