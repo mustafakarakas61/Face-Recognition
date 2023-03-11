@@ -10,11 +10,11 @@ pathModels = "C:/Project/Proje-2/face_recognition/models/"
 
 successRate = 60  # % cinsinden
 size = 64
-modelName = "myset_16_30_64_nkh.h5"
+modelName = "myset_17_30_64_yab.h5"
 
 model = load_model(pathModels + modelName)
 
-testImagePath = "C:/Project/Proje-2/face_recognition/datasets/myset/test/test_448650.jpg"
+testImagePath = "C:/Project/Proje-2/face_recognition/datasets/myset/test/xxxxxxx.jpg"
 faceCascade = cv2.CascadeClassifier("C:/Project/Proje-2/face_recognition/haarcascade_frontalface_default.xml")
 
 testImage = cv2.imread(testImagePath)

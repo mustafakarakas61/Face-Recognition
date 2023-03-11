@@ -25,6 +25,8 @@ pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
 trainDir = pathDatasets + datasetName + "/train"
 validationDir = pathDatasets + datasetName + "/validation"
 
+trainDirCount = len([f for f in os.listdir(trainDir) if os.path.isdir(os.path.join(trainDir, f))])
+
 model = Sequential()
 model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(size, size, 3)))
 model.add(MaxPooling2D((2, 2)))
@@ -38,7 +40,7 @@ model.add(MaxPooling2D((2, 2)))
 model.add(Flatten())
 model.add(Dense(256, activation='relu'))
 model.add(Dropout(0.5))
-model.add(Dense(16, activation='softmax'))
+model.add(Dense(trainDirCount, activation='softmax'))
 
 # MODEL ÖZETİ
 model.summary()
