@@ -14,6 +14,13 @@ queueTrain = "py_train"
 queueTest = "py_test"
 queueValidation = "py_validation"
 
+# PostgreSQL ENVS
+dbName = "student-list"
+dbUser = "postgres"
+dbPass = "180200"
+dbHost = "localhost"
+dbPort = "5432"
+
 # PATHS
 pathProject = "C:/Project/Proje-2/face_recognition/"
 pathModels = pathProject + "models/"

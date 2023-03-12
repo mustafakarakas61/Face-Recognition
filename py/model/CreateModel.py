@@ -7,6 +7,7 @@ from keras.api.keras.preprocessing.image import ImageDataGenerator
 
 from Environments import datasetName, countEpochs, inputSize, pathTrain, pathValidation, pathOutputs, pathModels, \
     pathResultsMap
+from py.PostgreSQL import createTable
 from utils.Utils import randomString, useEnviron
 
 useEnviron()
@@ -93,5 +94,6 @@ with open(pathOutputs + modelName + '.txt', 'w') as file:
 
 # MODEL KAYDET
 model.save(pathModels + modelName + '.h5')
+createTable(modelName + '.h5')
 
 print('Model {} ismiyle başarıyla kaydedildi.'.format(modelName + '.h5'))
