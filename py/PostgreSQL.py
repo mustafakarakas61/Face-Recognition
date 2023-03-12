@@ -3,11 +3,11 @@ import psycopg2
 
 from Environments import dbName, dbUser, dbPass, dbHost, dbPort, pathResultsMap
 
-conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
-                        port=dbPort)
-
 
 def createTable(modelName):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+
     cur = conn.cursor()
 
     cur.execute(
@@ -24,6 +24,3 @@ def createTable(modelName):
 
     conn.commit()
     conn.close()
-
-
-createTable("myset_18_30_64_eay.h5")

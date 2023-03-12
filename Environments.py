@@ -6,7 +6,7 @@ datasetName = "myset"
 successRate = 98.5
 
 # MODEL ENVS
-countEpochs = 50
+countEpochs = 30
 inputSize = 64
 
 # RabbitMQ ENVS
