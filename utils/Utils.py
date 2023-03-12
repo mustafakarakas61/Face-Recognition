@@ -5,6 +5,14 @@ import string
 import random
 
 
+def useEnviron():
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
+def changeNameToASCII(name):
+    return name.translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii"))
+
+
 def switchFiles(srcFolder, destFolder):
     for item in os.listdir(srcFolder):
         # Dosya veya klasör mü kontrol et
@@ -33,13 +41,18 @@ def checkURLsDublicates(filename):
             return False
 
 
+def checkFolder(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+
 def getFolderList(path):
     folders = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
     print(folders)
 
 
 def getFileList(path, extension):
-    fileList = glob.glob(os.path.join(path, '*.' + extension))
+    fileList = glob.glob(os.path.join(path, '*' + extension))
     print("Mevcut dosyalar:")
     for filePath in fileList:
         fileName = os.path.basename(filePath)

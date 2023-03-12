@@ -1,48 +1,35 @@
+import pickle
 import cv2
-import os
 import numpy as np
 from keras.models import load_model
-from keras.api.keras.preprocessing import image
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+from Environments import pathModels, pathFaceCascade, inputSize, successRate, pathTest, pathResultsMap
+from utils.Utils import useEnviron, getFileList, changeNameToASCII
 
-pathModels = "C:/Project/Proje-2/face_recognition/models/"
+useEnviron()
 
-successRate = 60  # % cinsinden
-size = 64
-modelName = "myset_17_30_64_yab.h5"
+faceCascade = cv2.CascadeClassifier(pathFaceCascade)
+
+# input
+size = inputSize
+
+getFileList(pathModels, ".h5")
+modelName = input("Kullanılacak model ismini giriniz:")
 
 model = load_model(pathModels + modelName)
 
-testImagePath = "C:/Project/Proje-2/face_recognition/datasets/myset/test/xxxxxxx.jpg"
-faceCascade = cv2.CascadeClassifier("C:/Project/Proje-2/face_recognition/haarcascade_frontalface_default.xml")
+# getFileList(pathTest, ".jpg")
+# testImagePath = input("Kullanılacak test resmini seçiniz:")
+testImagePath = pathTest + "test_814821.jpg"
 
 testImage = cv2.imread(testImagePath)
 gray = cv2.cvtColor(testImage, cv2.COLOR_BGR2GRAY)
 faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-datasetName = "myset"
-pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
-trainSource = pathDatasets + datasetName + "/train"
-
-trainDatagen = image.ImageDataGenerator(
-    shear_range=0.1,
-    zoom_range=0.1,
-    horizontal_flip=True
-)
-
-trainGenerator = trainDatagen.flow_from_directory(
-    trainSource,
-    target_size=(size, size),
-    batch_size=32,
-    class_mode='categorical'
-)
-
-ResultMap = {}
 results = []
-for faceValue, faceName in zip(trainGenerator.class_indices.values(), trainGenerator.class_indices.keys()):
-    ResultMap[faceValue] = faceName
-    # print(str(faceValue) + " : " + faceName)
+# Eğitimde kullanılan yüz isimleri ve kodları
+with open(pathResultsMap + modelName.replace(".h5", ".pkl"), 'rb') as fileReadStream:
+    ResultMap = pickle.load(fileReadStream)
 
 if len(faces) == 0:
     print("Yüz bulunamadı.")
@@ -59,7 +46,7 @@ else:
     if confidence > successRate:
         cv2.rectangle(testImage, (x, y), (x + w, y + h), (0, 255, 0), 2)
         cv2.putText(testImage,
-                    ResultMap[label].translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii")) + " " + str(
+                    changeNameToASCII(ResultMap[label]) + " " + str(
                         confidence) + "%",
                     (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                     (0, 255, 0), 2)
@@ -73,6 +60,6 @@ else:
             print(f"{i + 1}. {name} : {confidence * 100:.2f}%")
 
     else:
-        print("Başarı oranı (%" + str(successRate) + ") altında olan isim ve yüzdesi:\n" + ResultMap[label].translate(
-            str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii")) + " " + str(
+        print("Başarı oranı (%" + str(successRate) + ") altında olan isim ve yüzdesi:\n" + changeNameToASCII(
+            ResultMap[label]) + " " + str(
             confidence) + "%")

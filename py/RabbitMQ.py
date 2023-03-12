@@ -1,19 +1,18 @@
 import pika
 
-from py.ImageService import downloadImage
+from Environments import pathTrain, pathValidation, pathTest, queueTrain, queueValidation, queueTest
+from py.services.DownloadImageService import downloadImage
 
-# SETS
-name = "Serenay Sarıkaya"
-queueTrain = "py_train"
-queueTest = "py_test"
-queueValidation = "py_validation"
-datasetName = "myset"
+from utils.Utils import getFolderList, checkFolder
 
-# PATHS
-pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
-folderNameFolderInTrain = pathDatasets + datasetName + "/train/" + name
-folderNameFolderInValidation = pathDatasets + datasetName + "/validation/" + name
-folderNameFolderInTest = pathDatasets + datasetName + "/test/"
+getFolderList(pathTrain)
+name = input("Lütfen bir isim girin ya da bir isim seçin: ")
+
+folderNameFolderInTrain = pathTrain + name
+checkFolder(folderNameFolderInTrain)
+folderNameFolderInValidation = pathValidation + name
+checkFolder(folderNameFolderInValidation)
+folderNameFolderInTest = pathTest
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters('localhost'))

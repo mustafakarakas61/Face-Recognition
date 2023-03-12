@@ -137,4 +137,4 @@ models/*
 !datasets/myset/validation/.gitkeep
 !datasets/myset/test/.gitkeep
 !txt/success/.gitkeep
-!models/txts/
+!models/outputs/

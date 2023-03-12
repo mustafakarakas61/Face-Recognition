@@ -4,28 +4,17 @@ import time
 from keras.api.keras import Sequential
 from keras.api.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.api.keras.preprocessing.image import ImageDataGenerator
-import numpy as np
-from keras import layers, models, optimizers
 
-from utils.Utils import randomString
+from Environments import datasetName, countEpochs, inputSize, pathTrain, pathValidation, pathOutputs, pathModels, \
+    pathResultsMap
+from utils.Utils import randomString, useEnviron
 
-# GRAFİK KARTI UYARISINDAN KURTULMAK İÇİN
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+useEnviron()
 
-# SETS
-datasetName = "myset"
-countEpochs = 30
-size = 64
-# testImageName = "test_1.jpg"
+# input
+size = inputSize
 
-# PATHS
-pathModels = "C:/Project/Proje-2/face_recognition/models/"
-pathTxts = pathModels + "txts/"
-pathDatasets = "C:/Project/Proje-2/face_recognition/datasets/"
-trainDir = pathDatasets + datasetName + "/train"
-validationDir = pathDatasets + datasetName + "/validation"
-
-trainDirCount = len([f for f in os.listdir(trainDir) if os.path.isdir(os.path.join(trainDir, f))])
+trainDirCount = len([f for f in os.listdir(pathTrain) if os.path.isdir(os.path.join(pathTrain, f))])
 
 model = Sequential()
 model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(size, size, 3)))
@@ -53,13 +42,13 @@ model.compile(loss='categorical_crossentropy',
 train_datagen = ImageDataGenerator(rescale=1. / 255)
 
 trainGenerator = train_datagen.flow_from_directory(
-    trainDir,
+    pathTrain,
     target_size=(size, size),
     batch_size=32,
     class_mode='categorical')
 
 validation_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(
-    validationDir,
+    pathValidation,
     target_size=(size, size),
     batch_size=32,
     class_mode='categorical')
@@ -70,7 +59,10 @@ ResultMap = {}
 for faceValue, faceName in zip(trainClasses.values(), trainClasses.keys()):
     ResultMap[faceValue] = faceName
 
-with open("../ResultsMap.pkl", 'wb') as fileWriteStream:
+modelName = datasetName + "_" + str(len(trainClasses)) + "_" + str(countEpochs) + "_" + str(size) + "_" + randomString(
+    3)
+
+with open(pathResultsMap + modelName + ".pkl", 'wb') as fileWriteStream:
     pickle.dump(ResultMap, fileWriteStream)
 
 print("Yüzün ve ID'nin Haritalanması : \n", ResultMap)
@@ -92,10 +84,7 @@ print("Toplam geçen süre : ", round(endTime - startTime) / 60, "dakika")
 x_train, y_train = trainGenerator.next()
 x_val, y_val = validation_generator.next()
 
-modelName = datasetName + "_" + str(len(trainClasses)) + "_" + str(countEpochs) + "_" + str(size) + "_" + randomString(
-    3)
-
-with open(pathTxts + modelName + '.txt', 'w') as file:
+with open(pathOutputs + modelName + '.txt', 'w') as file:
     file.write('Epoch\tLoss\tAccuracy\tVal_Loss\tVal_Accuracy\n')
     for epoch in range(countEpochs):
         loss, accuracy = model.train_on_batch(x_train, y_train)
