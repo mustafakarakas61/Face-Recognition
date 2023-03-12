@@ -1,12 +1,12 @@
 # ENVS
 countTrainImage = 30
-countValidationImage = 10
+countValidationImage = 15
 countTestImage = 1
 datasetName = "myset"
-successRate = 95
+successRate = 98.5
 
 # MODEL ENVS
-countEpochs = 30
+countEpochs = 50
 inputSize = 64
 
 # RabbitMQ ENVS
