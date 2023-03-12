@@ -5,9 +5,11 @@ from keras.api.keras.preprocessing import image
 from keras.models import load_model
 
 from Environments import pathModels, pathResultsMap, successRate, pathFaceCascade
-from utils.Utils import useEnviron, getFileList
+from utils.Utils import useEnviron, getFileList, changeNameToASCII
 
 useEnviron()
+
+faceCascade = cv2.CascadeClassifier(pathFaceCascade)
 
 getFileList(pathModels, ".h5")
 modelName = input("Kullanılacak model ismini giriniz:")
@@ -18,9 +20,6 @@ with open(pathResultsMap + modelName.replace(".h5", ".pkl"), 'rb') as fileReadSt
 
 # Eğitilen modelin yüklenmesi
 model = load_model(pathModels + modelName)
-
-# Yüz tanıma için kullanılacak sınıflandırıcı
-faceCascade = cv2.CascadeClassifier(pathFaceCascade)
 
 # Webcam'den görüntü almak için kullanılacak obje
 videoCapture = cv2.VideoCapture(0)
@@ -60,7 +59,7 @@ while True:
 
         if accuracy > successRate:
             # Tahmin sonucunun ekrana yazdırılması
-            cv2.putText(frame, predictedName.translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii")) + " " + str(
+            cv2.putText(frame, changeNameToASCII(predictedName) + " " + str(
                 accuracy) + "%", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
