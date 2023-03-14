@@ -24,3 +24,15 @@ def createTable(modelName):
 
     conn.commit()
     conn.close()
+
+
+def updateAttendance(tableName, studentNo, studentName):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+
+    cur = conn.cursor()
+
+    cur.execute("UPDATE " + tableName + " SET attendance=true WHERE no=%s", (int(studentNo),))
+    conn.commit()
+    conn.close()
+    print(studentName + " adlı öğrencinin yoklaması güncellendi.")

@@ -5,6 +5,7 @@ from keras.api.keras.preprocessing import image
 from keras.models import load_model
 
 from Environments import pathModels, pathResultsMap, successRate, pathFaceCascade
+from py.PostgreSQL import updateAttendance
 from utils.Utils import useEnviron, getFileList, changeNameToASCII
 
 useEnviron()
@@ -25,6 +26,9 @@ model = load_model(pathModels + modelName)
 videoCapture = cv2.VideoCapture(0)
 
 print("Başarı oranı %" + str(successRate) + " olarak belirlenmiştir. Başarı oranı altındaki yüzler gösterilmeyecektir.")
+
+count = 0
+prevClass = None
 while True:
     # Webcam'den bir kare alınması
     _, frame = videoCapture.read()
@@ -62,6 +66,18 @@ while True:
             cv2.putText(frame, changeNameToASCII(predictedName) + " " + str(
                 accuracy) + "%", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            if predictedClass in ResultMap.keys():
+                # Önceki tahmin sonucu ile karşılaştırma
+                if predictedClass == prevClass:
+                    count += 1
+                else:
+                    prevClass = predictedClass
+                    count = 1
+
+                # Öğrencinin yoklama bilgisini güncelleme
+                if count == 10:
+                    updateAttendance(modelName.replace(".h5", ""), int(predictedClass), predictedName)
 
     # Görüntünün ekranda gösterilmesi
     cv2.imshow('Video', frame)
