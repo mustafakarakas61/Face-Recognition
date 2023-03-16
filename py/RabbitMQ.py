@@ -1,12 +1,17 @@
 import pika
+import json
 
-from Environments import pathTrain, pathValidation, pathTest, queueTrain, queueValidation, queueTest
+from Environments import pathTrain, pathValidation, pathTest, queueTrain, queueValidation, queueTest, queueYoutube
 from py.services.DownloadImageService import downloadImage
+from py.services.ExtractFaceService import extractFaces
+from py.services.ExtractImageService import extractImageFromVideo
+from py.services.YouTubeVideoDownloaderService import downloadYouTubeVideo
 
 from utils.Utils import getFolderList, checkFolder
 
 getFolderList(pathTrain)
-name = input("Lütfen bir isim girin ya da bir isim seçin: ")
+# name = input("Lütfen bir isim girin ya da bir isim seçin: ")
+name = "Recep Deneme 1"
 
 folderNameFolderInTrain = pathTrain + name
 checkFolder(folderNameFolderInTrain)
@@ -19,6 +24,20 @@ connection = pika.BlockingConnection(
 channel = connection.channel()
 
 print("RabbitMQ başlatıldı.")
+
+
+def consumeYoutube(ch, method, properties, body):
+    # {"name":"Name Surname","url":""}
+    msg = json.loads(body.decode())
+    print("Gelen mesaj : ", msg)
+    msgUrl = msg['url']
+    msgName = msg['name']
+
+    folderName = pathTrain + msgName
+
+    pathVideo = downloadYouTubeVideo(msgUrl, msgName)
+    if extractImageFromVideo(pathVideo, msgName, 200):
+        extractFaces(msgName, folderName)
 
 
 def consumeTrain(ch, method, properties, body):
@@ -38,6 +57,9 @@ def consumeTest(ch, method, properties, body):
     print("Gelen URL : " + msg)
     downloadImage(msg, name, folderNameFolderInTest, True)
 
+
+channel.basic_consume(
+    queue=queueYoutube, on_message_callback=consumeYoutube, auto_ack=True)
 
 channel.basic_consume(
     queue=queueTrain, on_message_callback=consumeTrain, auto_ack=True)

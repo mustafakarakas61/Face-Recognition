@@ -1,4 +1,6 @@
 # ENVS
+minFaceSize = 300
+skipFrames = 6
 countTrainImage = 30
 countValidationImage = 15
 countTestImage = 1
@@ -10,6 +12,7 @@ countEpochs = 30
 inputSize = 64
 
 # RabbitMQ ENVS
+queueYoutube = "py_youtube"
 queueTrain = "py_train"
 queueTest = "py_test"
 queueValidation = "py_validation"
