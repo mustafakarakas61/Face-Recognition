@@ -51,6 +51,15 @@ def getFolderList(path):
     print(folders)
 
 
+def getJpgFileList(folder):
+    jpgFiles = []
+    if os.path.exists(folder):
+        for file in os.listdir(folder):
+            if file.endswith(".jpg"):
+                jpgFiles.append(os.path.join(folder, file))
+    return jpgFiles
+
+
 def getFileList(path, extension):
     fileList = glob.glob(os.path.join(path, '*' + extension))
     print("Mevcut dosyalar:")

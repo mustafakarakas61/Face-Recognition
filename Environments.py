@@ -3,7 +3,7 @@ countTrainImage = 30
 countValidationImage = 15
 countTestImage = 1
 datasetName = "myset"
-successRate = 98.5
+successRate = 61
 
 # MODEL ENVS
 countEpochs = 30
