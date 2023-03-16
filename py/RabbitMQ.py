@@ -11,7 +11,7 @@ from utils.Utils import getFolderList, checkFolder
 
 getFolderList(pathTrain)
 # name = input("Lütfen bir isim girin ya da bir isim seçin: ")
-name = "Recep Deneme 1"
+name = "Deneme"
 
 folderNameFolderInTrain = pathTrain + name
 checkFolder(folderNameFolderInTrain)
@@ -27,13 +27,14 @@ print("RabbitMQ başlatıldı.")
 
 
 def consumeYoutube(ch, method, properties, body):
-    # {"name":"Name Surname","url":""}
+    # {"name":"Name Surname","url":"https://www.youtube.com/watch?v=JkQG2PBQ_48"}
     msg = json.loads(body.decode())
     print("Gelen mesaj : ", msg)
     msgUrl = msg['url']
     msgName = msg['name']
 
     folderName = pathTrain + msgName
+    checkFolder(folderName)
 
     pathVideo = downloadYouTubeVideo(msgUrl, msgName)
     if extractImageFromVideo(pathVideo, msgName, 200):
