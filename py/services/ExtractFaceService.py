@@ -14,11 +14,11 @@ def extractFaces(name, srcFolder):
 
     for imageName in os.listdir(destFolder):
         asciiName = changeNameToASCII(imageName)
-        os.rename(destFolder + "/" + imageName, destFolder + "/" + asciiName)
+        os.rename(destFolder + imageName, destFolder + asciiName)
 
     for imageName in os.listdir(destFolder):
         if imageName.endswith(".jpg"):
-            imagePath = destFolder + "/" + imageName
+            imagePath = destFolder + imageName
             img = cv2.imread(imagePath)
 
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -33,7 +33,7 @@ def extractFaces(name, srcFolder):
 
                     # Yüzü kaydet
                     outputName = imageName
-                    outputPath = destFolder + "/" + outputName
+                    outputPath = destFolder + outputName
                     cv2.imwrite(outputPath, faceCrop)
 
                     # Yüzleri göster
@@ -55,16 +55,16 @@ def extractFaces(name, srcFolder):
 
 
 def extractFace(name, srcFolder, fileName):
-    destFolder = "C:/Project/Proje-2/face_recognition/utils/tempFolder"
+    destFolder = pathTempFolder
     switchFile(srcFolder, destFolder, fileName)
 
     for imageName in os.listdir(destFolder):
-        asciiName = imageName.translate(str.maketrans("ğüşöçĞÜŞÖÇıİ", "gusocGUSOCii"))
-        os.rename(destFolder + "/" + imageName, destFolder + "/" + asciiName)
+        asciiName = changeNameToASCII(imageName)
+        os.rename(destFolder + imageName, destFolder + asciiName)
 
     for imageName in os.listdir(destFolder):
         if imageName.endswith(".jpg"):
-            imagePath = destFolder + "/" + imageName
+            imagePath = destFolder + imageName
             img = cv2.imread(imagePath)
 
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -79,7 +79,7 @@ def extractFace(name, srcFolder, fileName):
 
                     # Yüzü kaydet
                     outputName = imageName
-                    outputPath = destFolder + "/" + outputName
+                    outputPath = destFolder + outputName
                     cv2.imwrite(outputPath, faceCrop)
 
                     # Yüzleri göster

@@ -4,6 +4,8 @@ import shutil
 import string
 import random
 
+from Environments import pathControlFolder
+
 
 def useEnviron():
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -30,6 +32,24 @@ def switchFile(srcFolder, destFolder, fileName):
             if os.path.isfile(itemPath):
                 if itemPath.endswith(".jpg"):
                     shutil.move(itemPath, destFolder)
+
+
+def controlFilesNumbers(sourceFolder):
+    deleteJpgFilesOnFolder(pathControlFolder)
+    switchFiles(sourceFolder, pathControlFolder)
+    for file in os.listdir(pathControlFolder):
+        file_list = getJpgFileList(sourceFolder)
+        lenFileList = len(file_list)
+
+        oldPath = pathControlFolder + file
+        newPath = sourceFolder + "/" + file.split("_")[0] + "_" + str(lenFileList + 1) + ".jpg"
+        os.rename(oldPath, newPath)
+
+
+def deleteJpgFilesOnFolder(sourceFolder):
+    for file_name in os.listdir(sourceFolder):
+        if file_name.endswith(".jpg"):
+            os.remove(os.path.join(sourceFolder, file_name))
 
 
 def checkURLsDublicates(filename):

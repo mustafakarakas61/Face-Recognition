@@ -4,7 +4,7 @@ import pickle
 from keras.api.keras.preprocessing import image
 from keras.models import load_model
 
-from Environments import pathModels, pathResultsMap, successRate, pathFaceCascade
+from Environments import pathModels, pathResultsMap, successRate, pathFaceCascade, minFaceSize, inputSize
 from py.PostgreSQL import updateAttendance
 from utils.Utils import useEnviron, getFileList, changeNameToASCII
 
@@ -43,14 +43,14 @@ while True:
         gray,
         scaleFactor=1.1,
         minNeighbors=5,
-        minSize=(30, 30)
+        minSize=(minFaceSize, minFaceSize)
     )
 
     # Görüntü üzerinde tespit edilen yüzlerin tahmin edilmesi
     for (x, y, w, h) in faces:
         # Yüz bölgesinin kesilmesi ve boyutlandırılması
         faceImage = frame[y:y + h, x:x + w]
-        faceImage = cv2.resize(faceImage, (64, 64))
+        faceImage = cv2.resize(faceImage, (inputSize, inputSize))
         faceImage = image.img_to_array(faceImage)
         faceImage = np.expand_dims(faceImage, axis=0)
         faceImage /= 255

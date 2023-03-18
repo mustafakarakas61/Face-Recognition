@@ -18,7 +18,7 @@ size = inputSize
 trainDirCount = len([f for f in os.listdir(pathTrain) if os.path.isdir(os.path.join(pathTrain, f))])
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(size, size, 3)))
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(size, size, 1)))
 model.add(MaxPooling2D((2, 2)))
 
 model.add(Conv2D(64, (3, 3), activation='relu'))
@@ -46,12 +46,14 @@ trainGenerator = train_datagen.flow_from_directory(
     pathTrain,
     target_size=(size, size),
     batch_size=32,
+    color_mode='grayscale',
     class_mode='categorical')
 
 validation_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(
     pathValidation,
     target_size=(size, size),
     batch_size=32,
+    color_mode='grayscale',
     class_mode='categorical')
 
 trainClasses = trainGenerator.class_indices

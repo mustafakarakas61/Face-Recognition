@@ -2,9 +2,10 @@ import cv2
 import os
 import time
 
-from Environments import pathTrain, pathValidation, pathTest, countTrainImage, countValidationImage, countTestImage
+from Environments import pathTrain, pathValidation, pathTest, countTrainImage, countValidationImage, countTestImage, \
+    timeSleep
 from py.services.ExtractFaceService import extractFaces
-from utils.Utils import randomInt, checkFolder, getFolderList, changeNameToASCII
+from utils.Utils import randomInt, checkFolder, getFolderList, changeNameToASCII, switchFiles
 
 # inputs
 isUseTrain = input("Train? (y,n): ")
@@ -25,16 +26,20 @@ folderNameFolderInTest = pathTest
 checkFolder(folderNameFolderInTest)
 
 
+# TODO : VİDEOYA DÖNÜŞTÜRÜELECEK ve asciiler yeniden kontrol ettiirelecek
 def createImages(type, name, count, folder, status):
+    checkFolder(folder)
     asciiFolder = changeNameToASCII(folder)
     asciiName = changeNameToASCII(name)
-    os.rename(folder, asciiFolder)
+    if not os.path.exists(asciiFolder):
+        os.rename(folder, asciiFolder)
 
     # Kamera başlatma
     camera = cv2.VideoCapture(0)
 
     print(
-        type + " için " + count + " adet resim çekilecektir. Lütfen kameranın açık olduğundan emin olun ve 3 saniye içinde kameraya bakın.")
+        type + " için " + str(
+            count) + " adet resim çekilecektir. Lütfen kameranın açık olduğundan emin olun ve 3 saniye içinde kameraya bakın.")
     time.sleep(1)
     print("3")
     time.sleep(1)
@@ -48,7 +53,9 @@ def createImages(type, name, count, folder, status):
         ret, fileName = camera.read()
 
         if ret:
-            cv2.imshow("Kameraya bakın ve 2 saniye bekleyin. " + str(count - i) + ". resim.", fileName)
+            cv2.imshow("Kameraya bakın ve " + str(
+                timeSleep) + " saniye aralıkla fotoğraf çekilecektir. Hazırlıklı olun." + str(count - i) + ". resim.",
+                       fileName)
             if status:
                 filePath = asciiFolder + "/" + asciiName + ".jpg"
             else:
@@ -58,17 +65,18 @@ def createImages(type, name, count, folder, status):
             if not status:
                 print(name + "_" + str(i + 1) + ".jpg")
             i += 1
-            time.sleep(2)
+            if timeSleep > 0:
+                time.sleep(timeSleep)
 
     camera.release()
     cv2.destroyAllWindows()
 
     # Resim ve klasör adlarını değiştirme
     if not name.__eq__(asciiName):
-        os.rename(asciiFolder, folder)
-        for i, file in enumerate(os.listdir(folder)):
-            os.rename(os.path.join(folder, file),
-                      os.path.join(folder, name + "_" + file.split("_")[1]))
+        for i, file in enumerate(os.listdir(asciiFolder)):
+            os.rename(os.path.join(asciiFolder, file),
+                      os.path.join(asciiFolder, name + "_" + file.split("_")[1]))
+        switchFiles(asciiFolder, folder)
 
 
 # Eğitim seti için

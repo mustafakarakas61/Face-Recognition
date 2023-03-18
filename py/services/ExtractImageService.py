@@ -24,7 +24,7 @@ def extractImageFromVideo(mp4Video, name, count):
         # video dosyasını okuyun
         cap = cv2.VideoCapture(mp4Video)
         skip_frames = skipFrames
-        for i in range(skip_frames):  # İlk 10 kareyi atlayın
+        for i in range(skip_frames):  # İlk 6 kareyi atlayın
             cap.read()
 
         frameCount = 0
@@ -77,7 +77,7 @@ def extractImageFromVideo(mp4Video, name, count):
                           os.path.join(asciiFolder, name + "_" + file.split("_")[1]))
 
             switchFiles(asciiFolder, originalFolder)
-            # os.remove(asciiFolder)
+            os.rmdir(asciiFolder)
 
         return True
     except Exception as e:
