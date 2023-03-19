@@ -5,11 +5,12 @@ import pika
 import json
 
 from Environments import pathTrain, pathValidation, pathTest, queueTrain, queueValidation, queueTest, queueYoutube, \
-    queueYoutubeVideoTest
+    queueYoutubeVideoTest, queueClipVideo
 from py.model.TestModelFromVideo import findFacesFromVideo
 from py.services.DownloadImageService import downloadImage
 from py.services.ExtractFaceService import extractFaces
 from py.services.ExtractImageService import extractImageFromVideo
+from py.youtube.YoutubeDownloaderClip import createClippedVideo
 
 from utils.Utils import checkFolder, controlFilesNumbers
 
@@ -37,25 +38,31 @@ def consumeYoutubeVideoTest(ch, method, properties, body):
     findFacesFromVideo(str(msg).replace("\\", "/"), "myset_10_30_128_ryc.h5")
 
 
-def consumeYoutube(ch, method, properties, body): #TODO : json kontrolü yapılmalı
-    # {"name":"Name Surname","video":"https://www.youtube.com/watch?v=JkQG2PBQ_48"}
+def consumeClipYoutube(ch, method, properties, body):
     msg = json.loads(body.decode())
-    print("Gelen mesaj : ", msg)
-    msgVideoPath = msg['video']
-    msgName = msg['name']
 
-    folderName = pathTrain + msgName
-    checkFolder(folderName)
+    createClippedVideo(msg['url'], msg['ss'], msg['to'], msg['name'])
 
-    pathVideo = str(msgVideoPath).replace("\\", "/")
-    controlFilesNumbers(folderName)
-    if extractImageFromVideo(pathVideo, msgName, 200):
-        extractFaces(msgName, folderName)
-
-        os.remove(pathVideo)
-        time.sleep(20)
-        controlFilesNumbers(folderName)
-        print(str(msgName) + " için işlem tamamlandı.\n")
+# TODO : consumeClipYoutube'e ayarlanacak bu metod
+# def consumeYoutube(ch, method, properties, body):  # TODO : json kontrolü yapılmalı, yukarıya entegrele
+#     # {"name":"Name Surname","video":"https://www.youtube.com/watch?v=JkQG2PBQ_48"}
+#     msg = json.loads(body.decode())
+#     print("Gelen mesaj : ", msg)
+#     msgVideoPath = msg['video']
+#     msgName = msg['name']
+#
+#     folderName = pathTrain + msgName
+#     checkFolder(folderName)
+#
+#     pathVideo = str(msgVideoPath).replace("\\", "/")
+#     controlFilesNumbers(folderName)
+#     if extractImageFromVideo(pathVideo, msgName, 200):
+#         extractFaces(msgName, folderName)
+#
+#         os.remove(pathVideo)
+#         time.sleep(20)
+#         controlFilesNumbers(folderName)
+#         print(str(msgName) + " için işlem tamamlandı.\n")
 
 
 def consumeTrain(ch, method, properties, body):
@@ -80,7 +87,7 @@ channel.basic_consume(
     queue=queueYoutubeVideoTest, on_message_callback=consumeYoutubeVideoTest, auto_ack=True)
 
 channel.basic_consume(
-    queue=queueYoutube, on_message_callback=consumeYoutube, auto_ack=True)
+    queue=queueClipVideo, on_message_callback=consumeClipYoutube, auto_ack=True)
 
 channel.basic_consume(
     queue=queueTrain, on_message_callback=consumeTrain, auto_ack=True)

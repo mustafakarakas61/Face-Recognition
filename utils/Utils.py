@@ -71,6 +71,15 @@ def getFolderList(path):
     print(folders)
 
 
+def getMp4FileList(folder):
+    mp4Files = []
+    if os.path.exists(folder):
+        for file in os.listdir(folder):
+            if file.endswith(".mp4"):
+                mp4Files.append(os.path.join(folder, file))
+    return mp4Files
+
+
 def getJpgFileList(folder):
     jpgFiles = []
     if os.path.exists(folder):

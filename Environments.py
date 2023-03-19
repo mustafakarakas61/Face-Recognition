@@ -5,7 +5,7 @@ skipFrames = 6
 countTrainImage = 160  # Toplam Resmin %80
 countValidationImage = 40  # Toplam Resmin %20
 countTestImage = 1
-timeSleep = 0 # 1 veya 2
+timeSleep = 0  # 1 veya 2
 datasetName = "myset"
 successRate = 90
 
@@ -15,6 +15,7 @@ inputSize = 128  # 64
 
 # RabbitMQ ENVS
 queueYoutubeVideoTest = "py_youtube_video_test"
+queueClipVideo = "py_clip_video"
 queueYoutube = "py_youtube"
 queueTrain = "py_train"
 queueTest = "py_test"
@@ -39,6 +40,7 @@ pathValidation = pathDatasets + datasetName + "/validation/"
 pathTest = pathDatasets + datasetName + "/test/"
 pathResultsMap = pathMaps + "ResultsMap-"
 pathFaceCascade = pathProject + "haarcascade_frontalface_default.xml"
+pathClippedVideos = pathUtils + "clippedVideos/"
 pathTempFolder = pathUtils + "tempFolder/"
 pathControlFolder = pathUtils + "controlFolder/"
 pathNoFace = pathUtils + "NoFace.txt"

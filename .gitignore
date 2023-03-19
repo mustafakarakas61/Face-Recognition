@@ -131,6 +131,7 @@ dmypy.json
 # Ignore
 datasets/*
 models/*
+utils/clippedVideos/*
 
 # No Ignore
 !datasets/myset/train/.gitkeep
@@ -139,3 +140,4 @@ models/*
 !models/maps/.gitkeep
 !models/outputs/
 !txt/success/.gitkeep
+!utils/clippedVideos/.gitkeep
