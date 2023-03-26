@@ -129,13 +129,10 @@ dmypy.json
 .pyre/
 
 # Ignore
-datasets/*
-models/*
+src/main/datasets/*
+src/main/models/*
+utils/clippedVideos/*
+utils/dataset/*
+tests/main/datasets/RealOrFake/*
 
 # No Ignore
-!datasets/myset/train/.gitkeep
-!datasets/myset/validation/.gitkeep
-!datasets/myset/test/.gitkeep
-!models/maps/.gitkeep
-!models/outputs/
-!txt/success/.gitkeep

@@ -4,7 +4,7 @@ import shutil
 import string
 import random
 
-from Environments import pathControlFolder
+from src.resources.Environments import pathControlFolder
 
 
 def useEnviron():
@@ -16,6 +16,8 @@ def changeNameToASCII(name):
 
 
 def switchFiles(srcFolder, destFolder):
+    checkFolder(srcFolder)
+    checkFolder(destFolder)
     for item in os.listdir(srcFolder):
         # Dosya veya klasör mü kontrol et
         itemPath = os.path.join(srcFolder, item)
@@ -69,6 +71,15 @@ def checkFolder(folder):
 def getFolderList(path):
     folders = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
     print(folders)
+
+
+def getMp4FileList(folder):
+    mp4Files = []
+    if os.path.exists(folder):
+        for file in os.listdir(folder):
+            if file.endswith(".mp4"):
+                mp4Files.append(os.path.join(folder, file))
+    return mp4Files
 
 
 def getJpgFileList(folder):
