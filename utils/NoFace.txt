@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 C:/Project/Proje-2/face_recognition/datasets/myset_v2/train/Ece Mumay/Ece Mumay_517.jpg
 C:/Project/Proje-2/face_recognition/datasets/myset_v2/train/Oðuzhan Koç/Oðuzhan Koç_667.jpg
 C:/Project/Proje-2/face_recognition/datasets/myset_v2/train/Mustafa Karakaþ/Mustafa Karakaþ_1.jpg
@@ -412,3 +413,5 @@ C:/Project/Proje-2/face_recognition/datasets/myset_v2/train/Ekrem Ýmamoðlu/Ekrem
 C:/Project/Proje-2/face_recognition/datasets/myset_v2/train/Ekrem Ýmamoðlu/Ekrem Ýmamoðlu_97.jpg
 C:/Project/Proje-2/face_recognition/datasets/myset_v2/train/Ekrem Ýmamoðlu/Ekrem Ýmamoðlu_98.jpg
 C:/Project/Proje-2/face_recognition/datasets/myset_v2/train/Ekrem Ýmamoðlu/Ekrem Ýmamoðlu_99.jpg
+=======
+>>>>>>> f3fe68230a1523299ac71023b1a53a047235e579
