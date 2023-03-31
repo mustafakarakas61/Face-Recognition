@@ -2,9 +2,11 @@ import os
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtMultimedia import QCamera
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QSizePolicy, QHBoxLayout, QComboBox, \
     QMessageBox, QFrame
 
+from src.main.python.camera.TestCamera import testCamera
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pngPicture, pathModels
 
@@ -59,11 +61,33 @@ def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType):
     return msgBox
 
 
+def getTextBoxFeatures(textBox, text):
+    fontTextBox = QtGui.QFont("Times New Roman", 15)
+    textBox.setFont(fontTextBox)
+    textBox.setStyleSheet("background-color: black; color: white;")
+    textBox.setFixedSize(30, 30)
+    textBox.setText(text)
+    textBox.setMaxLength(2)
+    return textBox
+
+
 class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.selectedModel = "Model Seçiniz"
+        self.textBoxSuccessRate = getTextBoxFeatures(QLineEdit(self), "90")
+
         self.initUI()
+
+        # buton ekle
+        self.button = QPushButton('Oku', self)
+        self.button.move(20, 80)
+        self.button.clicked.connect(self.on_button_click)
+
+    def on_button_click(self):
+        # textbox içeriğini oku
+        textbox_verisi = self.textbox.text()
+        print(textbox_verisi)
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(self, 'Uyarı', 'Programdan çıkmak istiyor musunuz?',
@@ -140,10 +164,10 @@ class MainWidget(QWidget):
         comboModel.addItems(modelNames)
 
         # Seçili olan modelin adını alma
-        def on_combobox_selection(modelName):
+        def onComboboxSelection(modelName):
             self.selectedModel = modelName
 
-        comboModel.currentIndexChanged.connect(lambda index: on_combobox_selection(comboModel.itemText(index)))
+        comboModel.currentIndexChanged.connect(lambda index: onComboboxSelection(comboModel.itemText(index)))
 
         # Test için butonlar
         btnTestCamera = getButtonFeatures(QPushButton(self), pngCamera)
@@ -169,8 +193,10 @@ class MainWidget(QWidget):
         layoutV.addWidget(getLine())
         layoutV.addWidget(labelModel)
         layoutV.addLayout(layoutModel)
-        layoutH.addWidget(labelTest)
         layoutV.addWidget(getLine())
+
+        layoutH.addWidget(labelTest)
+        layoutH.addWidget(self.textBoxSuccessRate)
         layoutH.addWidget(comboModel)
         layoutV.addLayout(layoutH)
         layoutV.addLayout(layoutTest)
@@ -432,32 +458,24 @@ class MainWidget(QWidget):
 
     def testCameraScreen(self):
         modelName = self.selectedModel
+        sRate = self.textBoxSuccessRate.text()
         # Model seçilmemişse uyarı verme
-        if modelName == 'Model Seçiniz':
-            getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
-                              QMessageBox.Ok).exec_()
+        rateLimit = 35
+        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
+            if modelName.__eq__("Model Seçiniz"):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
+                                  QMessageBox.Ok).exec_()
+            if int(sRate) < int(rateLimit):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok).exec_()
         else:
             # Mesaj kutusunu gösterme
-            getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model", modelName,
+            getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
+                              modelName + "\nBaşarı oranı " + str(sRate) + " olarak belirlenmiştir.",
                               QMessageBox.Information, QMessageBox.Ok).exec_()
-            mainWith = 300
-            mainHeight = 300
-            screen = QtWidgets.QApplication.desktop().screenGeometry()
-            screenWidth, screenHeight = screen.width(), screen.height()
-
-            self.window = QWidget()
-            self.window.setWindowTitle('Test Kamera')
-            self.window.setStyleSheet("background-color: white;")
-            self.window.setWindowIcon(QIcon(pngCamera))
-
-            # Ana düzenleyici
-            layout = QVBoxLayout()
-
-            self.window.setLayout(layout)
-            self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
-                                    int(screenHeight / 2 - int(mainHeight / 2)),
-                                    mainWith, mainHeight)
-            self.window.show()
+            testCamera(str(modelName), int(sRate))
 
     def testImageScreen(self):
         mainWith = 300
