@@ -2,7 +2,6 @@ import subprocess
 import os
 from yt_dlp import YoutubeDL
 
-# url değişkenine indirmek istediğiniz video linkini girin.
 from src.resources.Environments import pathTempFolder, pathClippedVideos
 from utils.Utils import checkFolder, getMp4FileList
 

@@ -1,25 +1,29 @@
 #  E  N  V  S  #
-
 # Environments
-minFaceSize = 300
+minFaceSize = 128
 minTestFaceSize = 128
 skipFrames = 6
 durationVideo = 60  # 60sn
-countTrainImage = 12  # Toplam Resmin %80
-countValidationImage = 3  # Toplam Resmin %20
-countTestImage = 1
+
 imageLimit = 250
 timeSleep = 0  # 1 veya 2
-datasetName = "myset_v2"
+personName = "Mustafa Karakaş"
+datasetName = "myset_v3"
 successRate = 90
+
+totalImage = 20
+countTrainImage = int((totalImage * 70) / 100)  # Toplam Resmin %80 %70
+countValidationImage = int((totalImage * 30) / 100)  # Toplam Resmin %20 %30
+countTestImage = 1
 
 # Environments_Model
 countEpochs = 30
-inputSize = 64  # 64
+inputSize = 128  # 64
 
 # Environments_RabbitMQ
 queueYoutubeVideoTest = "py_youtube_video_test"
 queueFaceFromYoutube = "py_face_from_youtube"
+queueFaceFromImage = "py_face_from_image"
 queueFaceFromVideo = "py_face_from_video"
 
 # Environments_PostgreSQL
@@ -30,7 +34,7 @@ dbHost = "localhost"
 dbPort = "5432"
 
 #  P  A  T  H  S  #
-pathProject = "C:/Project/Proje-2/face_recognition/"
+pathProject = "D:/Project/Proje-2/Face-Recognition/"
 pathMain = "src/main/"
 pathResources = "src/resources/"
 
@@ -63,3 +67,15 @@ pathClippedVideos = pathUtils + "clippedVideos/"
 pathTempFolder = pathUtils + "tempFolder/"
 pathControlFolder = pathUtils + "controlFolder/"
 pathNoFace = pathUtils + "NoFace.txt"
+
+# ICONS
+pathIcons = pathProject + "src/resources/icons/"
+pngAdd = pathIcons + "add.png"
+pngCamera = pathIcons + "camera.png"
+pngDelete = pathIcons + "delete.png"
+pngInfo = pathIcons + "information.png"
+pngPicture = pathIcons + "picture.png"
+pngTrain = pathIcons + "train.png"
+pngUrl = pathIcons + "url.png"
+pngYoutube = pathIcons + "youtube.png"
+pngMustafa = pathIcons + "mustafa.png"

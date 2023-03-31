@@ -2,6 +2,11 @@
 
 # Environments
 datasetName = "RealOrFake"
+inputSize = int(128 * 2)
+epochSize = 30
+batchSize = 64
+# For Test
+modelName = "RorF_hyuu.h5"
 
 #  P  A  T  H  S  #
 pathProject = "C:/Project/Proje-2/face_recognition/"

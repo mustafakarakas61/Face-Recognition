@@ -15,14 +15,14 @@ faceCascade = cv2.CascadeClassifier(pathFaceCascade)
 size = inputSize
 
 getFileList(pathModels, ".h5")
-# modelName = input("Kullanılacak model ismini giriniz:")
-modelName = "myset_10_30_128_ryc.h5"
+modelName = input("Kullanılacak model ismini giriniz:")
+# modelName = "face_myset_v3_20_30_128_qjq.h5"
 
 model = load_model(pathModels + modelName)
 
-# getFileList(pathTest, ".jpg")
-# testImagePath = input("Kullanılacak test resmini seçiniz:")
-testImagePath = pathTest + "test_6161.jpg"
+getFileList(pathTest, ".jpg")
+testImagePath = input("Kullanılacak test resmini seçiniz:")
+# testImagePath = pathTest + "test_6161.jpg"
 
 testImage = cv2.imread(testImagePath)
 gray = cv2.cvtColor(testImage, cv2.COLOR_BGR2GRAY)

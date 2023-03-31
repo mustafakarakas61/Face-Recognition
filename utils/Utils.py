@@ -46,6 +46,7 @@ def controlFilesNumbers(sourceFolder):
         oldPath = pathControlFolder + file
         newPath = sourceFolder + "/" + file.split("_")[0] + "_" + str(lenFileList + 1) + ".jpg"
         os.rename(oldPath, newPath)
+    print("Resim numaları kontrol edildi.")
 
 
 def deleteJpgFilesOnFolder(sourceFolder):
@@ -97,6 +98,20 @@ def getFileList(path, extension):
     for filePath in fileList:
         fileName = os.path.basename(filePath)
         print(fileName)
+
+
+def checkJpgFileOfTheHaveNumber(directoryPath, filename):
+    tempFileName = str(filename)
+
+    while True:
+        if os.path.isfile(os.path.join(directoryPath, tempFileName)):
+            splitFilename = str(tempFileName).split("_")  # Mustafa_1.jpg
+            newNumber = int(int(splitFilename[1].replace(".jpg", "")) + 1)
+            tempFileName = splitFilename[0] + "_" + str(newNumber) + ".jpg"
+        else:
+            break
+
+    return str(tempFileName)
 
 
 def randomString(length):

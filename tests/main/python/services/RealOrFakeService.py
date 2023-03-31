@@ -3,12 +3,12 @@ from keras.models import Sequential
 from keras.layers import Conv2D, Flatten, Dense, MaxPooling2D, Dropout
 import numpy as np
 from keras.api.keras.preprocessing import image
-from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
 from keras.models import load_model
 
-from tests.resources.Environments import pathModels, pathTrain, pathValidation, pathTest
+from tests.resources.Environments import pathModels, pathTrain, pathValidation, pathTest, inputSize, epochSize, \
+    batchSize
 
 from utils.Utils import randomString, useEnviron
 
@@ -21,10 +21,10 @@ except ImportError:
 deprecation._PER_MODULE_WARNING_LIMIT = 0
 
 newModelName = "RorF_" + randomString(4) + ".h5"
+size = inputSize
 
 
 def trainModel():
-    batchSize = 128
     train_datagen = ImageDataGenerator(
         rescale=1.0 / 255,
         rotation_range=10,
@@ -38,12 +38,12 @@ def trainModel():
     validation_datagen = ImageDataGenerator(rescale=1.0 / 255)
 
     training_set = train_datagen.flow_from_directory(pathTrain,
-                                                     target_size=(128, 128),
+                                                     target_size=(size, size),
                                                      batch_size=batchSize,
                                                      class_mode='binary')
 
     validation_set = validation_datagen.flow_from_directory(pathValidation,
-                                                            target_size=(128, 128),
+                                                            target_size=(size, size),
                                                             batch_size=batchSize,
                                                             class_mode='binary')
 
@@ -67,26 +67,21 @@ def trainModel():
 
     model.add(Conv2D(32, kernel_size=(3, 3),
                      activation='relu',
-                     input_shape=(128, 128, 3)))
-
+                     input_shape=(size, size, 3)))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Conv2D(64, kernel_size=(3, 3),
                      activation='relu'))
-
     model.add(MaxPooling2D(pool_size=(2, 2)))
+
     model.add(Conv2D(128, kernel_size=(3, 3),
                      activation='relu'))
-
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Flatten())
-
     model.add(Dense(units=256,
                     activation="relu"))
-
     model.add(Dropout(rate=0.25))  # dropout layer eklendi
-
     model.add(Dense(units=1,
                     activation="sigmoid"))
 
@@ -96,18 +91,18 @@ def trainModel():
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
-    callbacks_list = [
-        EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
-        ModelCheckpoint(filepath=pathModels + newModelName, monitor='val_loss', save_best_only=True, mode='max'),
-    ]
+    # callbacks_list = [
+    #     EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
+    #     ModelCheckpoint(filepath=pathModels + newModelName, monitor='val_loss', save_best_only=True, mode='max'),
+    # ]
 
     history = model.fit(
         training_set,
         steps_per_epoch=len(training_set),
-        epochs=50,  # epoch sayısı arttırıldı
+        epochs=epochSize,
         validation_data=validation_set,
-        validation_steps=len(validation_set),
-        callbacks=callbacks_list
+        validation_steps=len(validation_set)
+        # callbacks=callbacks_list
     )
     printInfo(history)
 
@@ -137,7 +132,7 @@ def testImage(testImageName, modelName):
     model = load_model(pathModels + modelName)
     pathImage = pathTest + testImageName
 
-    test_image = image.load_img(pathImage, target_size=(128, 128))
+    test_image = image.load_img(pathImage, target_size=(size, size))
     plt.axis('off')
     plt.imshow(test_image)
     test_image = image.img_to_array(test_image)
