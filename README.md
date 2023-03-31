@@ -2,9 +2,13 @@
 
 ## GUI Ekran Görüntüleri
 
-| Ana Ekran                                | Yüz Ekle                              |
-|------------------------------------------|---------------------------------------|
-| ![](utils/projectImages/mainScreen.png)  | ![](utils/projectImages/addFace.png)  |
+| Ana Ekran                               | Yüz Ekle                             |
+|-----------------------------------------|--------------------------------------|
+| ![](utils/projectImages/mainScreen.png) | ![](utils/projectImages/addFace.png) |
+
+| Test Url                             |
+|--------------------------------------|
+| ![](utils/projectImages/testUrl.png) |
 
 ### Model isimlendirmesi:
 
