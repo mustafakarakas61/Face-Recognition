@@ -1,14 +1,16 @@
 import os
+import re
+import urllib
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtMultimedia import QCamera
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QSizePolicy, QHBoxLayout, QComboBox, \
-    QMessageBox, QFrame
+from PyQt5.QtGui import QIcon, QFont, QPixmap
+from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
+    QMessageBox, QFrame, QFileDialog
 
-from src.main.python.camera.TestCamera import testCamera
+from src.main.python.services.gui.test.Camera import testCamera
+from src.main.python.services.gui.test.Local import testImage, testVideo
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
-    pngFolder, pngImageUrl, pngYoutube, pngPicture, pathModels
+    pngFolder, pngImageUrl, pngYoutube, pngPicture, pathModels, pngVideo
 
 
 def getLine():
@@ -53,7 +55,7 @@ def getComboBoxFeatures(cmbBox):
     return cmbBox
 
 
-def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType):
+def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType, isQuestion):
     font = QFont()
     font.setFamily("Times New Roman")
     font.setPointSize(12)
@@ -62,6 +64,8 @@ def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType):
     msgBox.setFont(font)
     msgBox.setWindowTitle(title)
     msgBox.setStandardButtons(btnType)  # QMessageBox.Ok
+    if isQuestion:
+        msgBox.setDefaultButton(QtWidgets.QMessageBox.No)
     return msgBox
 
 
@@ -89,9 +93,9 @@ class MainWidget(QWidget):
         self.initUI()
 
     def closeEvent(self, event):
-        reply = QtWidgets.QMessageBox.question(self, 'Uyarı', 'Programdan çıkmak istiyor musunuz?',
-                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                                               QtWidgets.QMessageBox.No)
+        reply = getMsgBoxFeatures(QMessageBox(self), "Dikkat!", 'Programdan çıkmak istiyor musun?',
+                                  QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
+                                  isQuestion=True).exec_()
 
         if reply == QtWidgets.QMessageBox.Yes:
             for widget in QtWidgets.QApplication.topLevelWidgets():
@@ -171,8 +175,8 @@ class MainWidget(QWidget):
         # Test için butonlar
         btnTestCamera = getButtonFeatures(QPushButton(self), pngCamera)
         btnTestCamera.clicked.connect(self.testCameraScreen)
-        btnTestPicture = getButtonFeatures(QPushButton(self), pngPicture)
-        btnTestPicture.clicked.connect(self.testImageScreen)
+        btnTestLocal = getButtonFeatures(QPushButton(self), pngFolder)
+        btnTestLocal.clicked.connect(self.testLocalScreen)
         btnTestUrl = getButtonFeatures(QPushButton(self), pngUrl)
         btnTestUrl.clicked.connect(self.testUrlScreen)
         # Test için düzenleyici
@@ -180,7 +184,7 @@ class MainWidget(QWidget):
 
         # Düzenleyiciye ekleme
         layoutTest.addWidget(btnTestCamera)
-        layoutTest.addWidget(btnTestPicture)
+        layoutTest.addWidget(btnTestLocal)
         layoutTest.addWidget(btnTestUrl)
 
         # Ana düzenleyici
@@ -197,7 +201,6 @@ class MainWidget(QWidget):
         layoutV.addWidget(labelTest)
         layoutH.addWidget(self.textBoxSuccessRate)
 
-        # labelSuccessRate = getLabelFeatures(QLabel(""), isUseFont=False, isUseSecondFont=True)
         labelSuccessRate = getTextBoxFeatures(QLineEdit(self), "% Başarı Oranı", isText=True)
         labelSuccessRate.setAlignment(QtCore.Qt.AlignLeft)
         layoutH.addWidget(labelSuccessRate)
@@ -221,45 +224,34 @@ class MainWidget(QWidget):
         self.window.setWindowIcon(QIcon(pngAdd))
 
         #############
-        # R E S İ M #
+        # Y E R E L #
         #############
-        # Resim etiketi
-        labelImage = getLabelFeatures(QLabel('Resimden'), isUseFont=True, isUseSecondFont=False)
-        # Resim için butonlar
-        btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
-        btnImageFolder.clicked.connect(self.faceAddImageFolderScreen)
-        btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
-        btnImageUrl.clicked.connect(self.faceAddImageUrlScreen)
-        # Resim için düzenleyici
-        layoutImage = QHBoxLayout()
-        layoutImage.addWidget(btnImageFolder)
-        layoutImage.addWidget(btnImageUrl)
-
-        #############
-        # V İ D E O #
-        #############
-        # Video etiketi
-        labelVideo = getLabelFeatures(QLabel('Videodan'), isUseFont=True, isUseSecondFont=False)
-        # Video için butonlar
+        # Yerel etiketi
+        labelImage = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
+        # Yerel için butonlar
         btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
         btnVideoCamera.clicked.connect(self.faceAddVideoCameraScreen)
+        btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
+        btnImageFolder.clicked.connect(self.faceAddImageFolderScreen)
+        # Yerel için düzenleyici
+        layoutImage = QHBoxLayout()
+        layoutImage.addWidget(btnVideoCamera)
+        layoutImage.addWidget(btnImageFolder)
+
+        #########
+        # W E B #
+        #########
+        # Web etiketi
+        labelVideo = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
+        # Web için butonlar
+        btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
+        btnImageUrl.clicked.connect(self.faceAddImageUrlScreen)
         btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
         btnVideoYoutube.clicked.connect(self.faceAddVideoYoutubeScreen)
-        # Video için düzenleyici
+        # Web için düzenleyici
         layoutVideo = QHBoxLayout()
-        layoutVideo.addWidget(btnVideoCamera)
+        layoutVideo.addWidget(btnImageUrl)
         layoutVideo.addWidget(btnVideoYoutube)
-
-        # # Yeni bir etiket ve metin kutusu oluşturuluyor
-        # dataName = QLabel('Ad Soyad :', self.window)
-        # dataName.move(50, 50)
-        # self.textbox = QLineEdit(self.window)
-        # self.textbox.move(50, 80)
-        #
-        # # Yeni bir düğme oluşturuluyor ve tıklama işlemi belirleniyor
-        # btn = QPushButton('Ekle', self.window)
-        # btn.move(50, 110)
-        # btn.clicked.connect(self.runFaceAdd)
 
         # Ana düzenleyici
         layout = QVBoxLayout()
@@ -286,7 +278,7 @@ class MainWidget(QWidget):
         self.window.setWindowIcon(QIcon(pngFolder))
 
         # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose) # todo eğer anaekranınkine basıldıysa açılmasın burası ve bu gibiler
         self.window.destroyed.connect(self.faceAddScreen)
 
         # Ana düzenleyici
@@ -471,20 +463,19 @@ class MainWidget(QWidget):
         if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
             if modelName.__eq__("Model Seçiniz"):
                 getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
-                                  QMessageBox.Ok).exec_()
+                                  QMessageBox.Ok, isQuestion=False).exec_()
             if int(sRate) < int(rateLimit):
                 getMsgBoxFeatures(QMessageBox(self), "Uyarı",
                                   "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
                                   QMessageBox.Warning,
-                                  QMessageBox.Ok).exec_()
+                                  QMessageBox.Ok, isQuestion=False).exec_()
         else:
             # Mesaj kutusunu gösterme
-            getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
-                              modelName + "\nBaşarı oranı " + str(sRate) + " olarak belirlenmiştir.",
-                              QMessageBox.Information, QMessageBox.Ok).exec_()
+            # self.showWarn()
+
             testCamera(str(modelName), int(sRate))
 
-    def testImageScreen(self):
+    def testLocalScreen(self):
         modelName = self.selectedModel
         sRate = self.textBoxSuccessRate.text()
         if str(sRate).__len__() == 0:
@@ -493,18 +484,35 @@ class MainWidget(QWidget):
         rateLimit = 35
         if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
             if modelName.__eq__("Model Seçiniz"):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
-                                  QMessageBox.Ok).exec_()
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
             if int(sRate) < int(rateLimit):
                 getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
+                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
                                   QMessageBox.Warning,
-                                  QMessageBox.Ok).exec_()
+                                  QMessageBox.Ok, isQuestion=False).exec_()
         else:
             # Mesaj kutusunu gösterme
-            getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
-                              modelName + "\nBaşarı oranı " + str(sRate) + " olarak belirlenmiştir.",
-                              QMessageBox.Information, QMessageBox.Ok).exec_()
+            # self.showWarn()
+
+            file_dialog = QFileDialog()
+            file_dialog.setFileMode(QFileDialog.ExistingFile)
+            file_dialog.setNameFilter(
+                'Tümü (*.jpg *.jpeg *.png *.mp4);;Resimler (*.jpg *.jpeg *.png);;Videolar (*.mp4)')
+            if file_dialog.exec_():
+                filePath = file_dialog.selectedFiles()[0]
+                # url = QtCore.QUrl.fromLocalFile(filePath).toString()  # Dosya yolunu URL'e dönüştürün
+                if re.search("[ıİğĞüÜşŞöÖçÇ]", filePath):
+                    getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen 'Türkçe Karakter' içermeyen bir yol seçin.",
+                                      QMessageBox.Warning,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
+                elif filePath.endswith('.jpg') or filePath.endswith('.jpeg') or filePath.endswith('.png'):
+                    testImage(imagePath=filePath, modelName=modelName, successRate=sRate)
+                elif filePath.endswith('.mp4'):
+                    testVideo(videoPath=filePath, modelName=modelName, successRate=sRate)
+                else:
+                    getMsgBoxFeatures(QMessageBox(self), "Hata", "Desteklenmeyen dosya biçimi!", QMessageBox.Critical,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
 
     def testUrlScreen(self):
         modelName = self.selectedModel
@@ -515,18 +523,16 @@ class MainWidget(QWidget):
         rateLimit = 35
         if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
             if modelName.__eq__("Model Seçiniz"):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
-                                  QMessageBox.Ok).exec_()
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
             if int(sRate) < int(rateLimit):
                 getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
+                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
                                   QMessageBox.Warning,
-                                  QMessageBox.Ok).exec_()
+                                  QMessageBox.Ok, isQuestion=False).exec_()
         else:
             # Mesaj kutusunu gösterme
-            getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
-                              modelName + "\nBaşarı oranı " + str(sRate) + " olarak belirlenmiştir.",
-                              QMessageBox.Information, QMessageBox.Ok).exec_()
+            # self.showWarn()
 
             mainWith = 300
             mainHeight = 150
@@ -534,7 +540,7 @@ class MainWidget(QWidget):
             screenWidth, screenHeight = screen.width(), screen.height()
 
             self.window = QWidget()
-            self.window.setWindowTitle('Test Url')
+            self.window.setWindowTitle('Test Web')
             self.window.setStyleSheet("background-color: white;")
             self.window.setWindowIcon(QIcon(pngUrl))
 
@@ -560,7 +566,8 @@ class MainWidget(QWidget):
             layout.addLayout(layoutYoutube)
 
             self.window.setLayout(layout)
-            self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+            self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
+                                    int(screenHeight / 2 - int(mainHeight / 2)),
                                     mainWith, mainHeight)
             self.window.show()
 
@@ -655,6 +662,12 @@ class MainWidget(QWidget):
 
     def runTestUrlYoutube(self):
         print("Test Url Youtube Metodu Çalıştırıldı!")
+
+    def showWarn(self):
+        getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
+                          self.selectedModel + "\nBaşarı oranı " + str(
+                              self.textBoxSuccessRate.text()) + " olarak belirlenmiştir.",
+                          QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
 
 
 if __name__ == '__main__':

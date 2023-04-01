@@ -6,9 +6,9 @@
 |-----------------------------------------|---------------------------------------|
 | ![](utils/projectImages/mainScreen.png) | ![](utils/projectImages/addFace.png)  |
 
-| Test Url                             |
-|--------------------------------------|
-| ![](utils/projectImages/testUrl.png) |
+| Test Web                              | Yerel Klasör Dosya Seçimi                |
+|---------------------------------------|------------------------------------------|
+| ![](utils/projectImages/testWeb.png)  | ![](utils/projectImages/localFolder.png) |
 
 ### Model isimlendirmesi:
 

@@ -7,7 +7,6 @@ from src.main.python.services.ImageDownloaderService import downloadImageFaceJso
     downloadImageFaceString
 from src.resources.Environments import pathTrain, queueYoutubeVideoTest, imageLimit, queueFaceFromYoutube, \
     queueFaceFromVideo, queueFaceFromImage
-from src.main.python.model.TestModelFromVideo import findFacesFromVideo
 from src.main.python.services.ExtractImageService import extractImageFromVideo, extractFaces
 from src.main.python.services.YoutubeDownloaderService import createClippedVideo
 
@@ -24,7 +23,7 @@ def consumeYoutubeVideoTest(ch, method, properties, body):
     # {"video":"c:/","model":"myset_10_30_128_ryc.h5"}
     msg = json.loads(body.decode())
 
-    findFacesFromVideo(msg['video'], msg['model'])
+    # findFacesFromVideo(msg['video'], msg['model'], successRate)
 
 
 def consumeFaceFromYoutube(ch, method, properties, body):
