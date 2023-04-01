@@ -1,17 +1,15 @@
 import os
 import re
-import this
-import urllib
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtGui import QIcon, QFont, QPixmap
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox, QFrame, QFileDialog
 
 from src.main.python.services.gui.test.Camera import testCamera
 from src.main.python.services.gui.test.Local import testImage, testVideo
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
-    pngFolder, pngImageUrl, pngYoutube, pngPicture, pathModels, pngVideo
+    pngFolder, pngImageUrl, pngYoutube, pathModels
 
 
 def getLine():
