@@ -100,6 +100,8 @@ def testVideo(videoPath, modelName, successRate):
         # "q" tuşuna basarak çıkın
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        if cv2.getWindowProperty('Video', cv2.WND_PROP_VISIBLE) < 1:
+            break
 
     # İşlemi bitirin
     videoCapture.release()
