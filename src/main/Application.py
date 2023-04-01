@@ -20,10 +20,14 @@ def getLine():
 
 
 # Label
-def getLabelFeatures(lbl, isUseFont):
+def getLabelFeatures(lbl, isUseFont, isUseSecondFont):
     if isUseFont:
         fontLabel = QtGui.QFont("Times New Roman", 25)
         fontLabel.setBold(True)
+        lbl.setFont(fontLabel)
+    if isUseSecondFont:
+        fontLabel = QtGui.QFont("Times New Roman", 15)
+        # fontLabel.setBold(True)
         lbl.setFont(fontLabel)
     lbl.setAlignment(QtCore.Qt.AlignCenter)
     return lbl
@@ -45,7 +49,7 @@ def getButtonFeatures(btn, pngName):
 def getComboBoxFeatures(cmbBox):
     fontComboBox = QtGui.QFont("Times New Roman", 15)
     cmbBox.setFont(fontComboBox)
-    cmbBox.setStyleSheet("background-color: black; color: white;")
+    cmbBox.setStyleSheet("background-color: white; color: black;")
     return cmbBox
 
 
@@ -61,13 +65,18 @@ def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType):
     return msgBox
 
 
-def getTextBoxFeatures(textBox, text):
+def getTextBoxFeatures(textBox, text, isText):
     fontTextBox = QtGui.QFont("Times New Roman", 15)
     textBox.setFont(fontTextBox)
-    textBox.setStyleSheet("background-color: black; color: white;")
-    textBox.setFixedSize(30, 30)
+    if not isText:
+        textBox.setFixedSize(30, 30)
+        textBox.setMaxLength(2)
+        textBox.setStyleSheet("background-color: white; color: black;")
+        textBox.setEnabled(True)
+    else:
+        textBox.setStyleSheet("background-color: white; color: black;")
+        textBox.setEnabled(False)
     textBox.setText(text)
-    textBox.setMaxLength(2)
     return textBox
 
 
@@ -75,19 +84,9 @@ class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.selectedModel = "Model Seçiniz"
-        self.textBoxSuccessRate = getTextBoxFeatures(QLineEdit(self), "90")
+        self.textBoxSuccessRate = getTextBoxFeatures(QLineEdit(self), "90", False)
 
         self.initUI()
-
-        # buton ekle
-        self.button = QPushButton('Oku', self)
-        self.button.move(20, 80)
-        self.button.clicked.connect(self.on_button_click)
-
-    def on_button_click(self):
-        # textbox içeriğini oku
-        textbox_verisi = self.textbox.text()
-        print(textbox_verisi)
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(self, 'Uyarı', 'Programdan çıkmak istiyor musunuz?',
@@ -103,7 +102,7 @@ class MainWidget(QWidget):
 
     def initUI(self):
         mainWith = 500
-        mainHeight = 450
+        mainHeight = 500
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
         self.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
@@ -115,7 +114,7 @@ class MainWidget(QWidget):
         #########
         # Y Ü Z #
         #########
-        labelFace = getLabelFeatures(QLabel('Yüz'), isUseFont=True)
+        labelFace = getLabelFeatures(QLabel('Yüz'), isUseFont=True, isUseSecondFont=False)
         # Yüzler için butonlar
         btnFaceAdd = getButtonFeatures(QPushButton(self), pngAdd)
         btnFaceAdd.clicked.connect(self.faceAddScreen)
@@ -134,7 +133,7 @@ class MainWidget(QWidget):
         # M O D E L#
         ############
         # Modeller etiketi
-        labelModel = getLabelFeatures(QLabel('Model'), isUseFont=True)
+        labelModel = getLabelFeatures(QLabel('Model'), isUseFont=True, isUseSecondFont=False)
         # Modeller için butonlar
         btnModelTrain = getButtonFeatures(QPushButton(self), pngTrain)
         btnModelTrain.clicked.connect(self.modelTrainScreen)
@@ -152,7 +151,7 @@ class MainWidget(QWidget):
         # T E S T #
         ###########
         # Test etiketi
-        labelTest = getLabelFeatures(QLabel('Test'), isUseFont=True)
+        labelTest = getLabelFeatures(QLabel('Test'), isUseFont=True, isUseSecondFont=False)
 
         # ComboBox ayarı
         # Dizin içindeki .h5 uzantılı dosyaları bulma
@@ -195,9 +194,15 @@ class MainWidget(QWidget):
         layoutV.addLayout(layoutModel)
         layoutV.addWidget(getLine())
 
-        layoutH.addWidget(labelTest)
+        layoutV.addWidget(labelTest)
         layoutH.addWidget(self.textBoxSuccessRate)
-        layoutH.addWidget(comboModel)
+
+        # labelSuccessRate = getLabelFeatures(QLabel(""), isUseFont=False, isUseSecondFont=True)
+        labelSuccessRate = getTextBoxFeatures(QLineEdit(self), "% Başarı Oranı", isText=True)
+        labelSuccessRate.setAlignment(QtCore.Qt.AlignLeft)
+        layoutH.addWidget(labelSuccessRate)
+
+        layoutV.addWidget(comboModel)
         layoutV.addLayout(layoutH)
         layoutV.addLayout(layoutTest)
         self.setLayout(layoutV)
@@ -219,7 +224,7 @@ class MainWidget(QWidget):
         # R E S İ M #
         #############
         # Resim etiketi
-        labelImage = getLabelFeatures(QLabel('Resimden'), isUseFont=True)
+        labelImage = getLabelFeatures(QLabel('Resimden'), isUseFont=True, isUseSecondFont=False)
         # Resim için butonlar
         btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
         btnImageFolder.clicked.connect(self.faceAddImageFolderScreen)
@@ -234,7 +239,7 @@ class MainWidget(QWidget):
         # V İ D E O #
         #############
         # Video etiketi
-        labelVideo = getLabelFeatures(QLabel('Videodan'), isUseFont=True)
+        labelVideo = getLabelFeatures(QLabel('Videodan'), isUseFont=True, isUseSecondFont=False)
         # Video için butonlar
         btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
         btnVideoCamera.clicked.connect(self.faceAddVideoCameraScreen)
@@ -459,6 +464,8 @@ class MainWidget(QWidget):
     def testCameraScreen(self):
         modelName = self.selectedModel
         sRate = self.textBoxSuccessRate.text()
+        if str(sRate).__len__() == 0:
+            sRate = "0"
         # Model seçilmemişse uyarı verme
         rateLimit = 35
         if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
@@ -478,60 +485,84 @@ class MainWidget(QWidget):
             testCamera(str(modelName), int(sRate))
 
     def testImageScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Test Resim')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngPicture))
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
+        modelName = self.selectedModel
+        sRate = self.textBoxSuccessRate.text()
+        if str(sRate).__len__() == 0:
+            sRate = "0"
+        # Model seçilmemişse uyarı verme
+        rateLimit = 35
+        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
+            if modelName.__eq__("Model Seçiniz"):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
+                                  QMessageBox.Ok).exec_()
+            if int(sRate) < int(rateLimit):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok).exec_()
+        else:
+            # Mesaj kutusunu gösterme
+            getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
+                              modelName + "\nBaşarı oranı " + str(sRate) + " olarak belirlenmiştir.",
+                              QMessageBox.Information, QMessageBox.Ok).exec_()
 
     def testUrlScreen(self):
-        mainWith = 300
-        mainHeight = 150
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
+        modelName = self.selectedModel
+        sRate = self.textBoxSuccessRate.text()
+        if str(sRate).__len__() == 0:
+            sRate = "0"
+        # Model seçilmemişse uyarı verme
+        rateLimit = 35
+        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
+            if modelName.__eq__("Model Seçiniz"):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
+                                  QMessageBox.Ok).exec_()
+            if int(sRate) < int(rateLimit):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok).exec_()
+        else:
+            # Mesaj kutusunu gösterme
+            getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
+                              modelName + "\nBaşarı oranı " + str(sRate) + " olarak belirlenmiştir.",
+                              QMessageBox.Information, QMessageBox.Ok).exec_()
 
-        self.window = QWidget()
-        self.window.setWindowTitle('Test Url')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngUrl))
+            mainWith = 300
+            mainHeight = 150
+            screen = QtWidgets.QApplication.desktop().screenGeometry()
+            screenWidth, screenHeight = screen.width(), screen.height()
 
-        #############
-        # R E S İ M #
-        #############
-        btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
-        btnImageUrl.clicked.connect(self.testUrlImageScreen)
-        layoutImage = QHBoxLayout()
-        layoutImage.addWidget(btnImageUrl)
+            self.window = QWidget()
+            self.window.setWindowTitle('Test Url')
+            self.window.setStyleSheet("background-color: white;")
+            self.window.setWindowIcon(QIcon(pngUrl))
 
-        #################
-        # Y O U T U B E #
-        #################
-        btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
-        btnVideoYoutube.clicked.connect(self.testUrlYoutubeScreen)
-        layoutYoutube = QHBoxLayout()
-        layoutYoutube.addWidget(btnVideoYoutube)
+            #############
+            # R E S İ M #
+            #############
+            btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
+            btnImageUrl.clicked.connect(self.testUrlImageScreen)
+            layoutImage = QHBoxLayout()
+            layoutImage.addWidget(btnImageUrl)
 
-        # Ana düzenleyici
-        layout = QHBoxLayout()
-        layout.addLayout(layoutImage)
-        layout.addLayout(layoutYoutube)
+            #################
+            # Y O U T U B E #
+            #################
+            btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
+            btnVideoYoutube.clicked.connect(self.testUrlYoutubeScreen)
+            layoutYoutube = QHBoxLayout()
+            layoutYoutube.addWidget(btnVideoYoutube)
 
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
+            # Ana düzenleyici
+            layout = QHBoxLayout()
+            layout.addLayout(layoutImage)
+            layout.addLayout(layoutYoutube)
+
+            self.window.setLayout(layout)
+            self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                    mainWith, mainHeight)
+            self.window.show()
 
     def testUrlImageScreen(self):
         mainWith = 300
