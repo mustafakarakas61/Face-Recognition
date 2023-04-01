@@ -1,5 +1,6 @@
 import os
 import re
+import this
 import urllib
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -85,11 +86,12 @@ def getTextBoxFeatures(textBox, text, isText):
 
 
 class MainWidget(QWidget):
+
     def __init__(self):
         super().__init__()
         self.selectedModel = "Model Seçiniz"
         self.textBoxSuccessRate = getTextBoxFeatures(QLineEdit(self), "90", False)
-
+        self.isMainScreenClosing = False
         self.initUI()
 
     def closeEvent(self, event):
@@ -100,6 +102,7 @@ class MainWidget(QWidget):
         if reply == QtWidgets.QMessageBox.Yes:
             for widget in QtWidgets.QApplication.topLevelWidgets():
                 widget.close()
+            self.setIsMainScreenClosing(True)
             event.accept()
         else:
             event.ignore()
@@ -213,58 +216,60 @@ class MainWidget(QWidget):
 
     # SCREENS
     def faceAddScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
+        if not self.getIsMainScreenClosing():
+            mainWith = 300
+            mainHeight = 300
+            screen = QtWidgets.QApplication.desktop().screenGeometry()
+            screenWidth, screenHeight = screen.width(), screen.height()
 
-        self.window = QWidget()
-        self.window.setWindowTitle('Yüz Ekle')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngAdd))
+            self.window = QWidget()
+            self.window.setWindowTitle('Yüz Ekle')
+            self.window.setStyleSheet("background-color: white;")
+            self.window.setWindowIcon(QIcon(pngAdd))
 
-        #############
-        # Y E R E L #
-        #############
-        # Yerel etiketi
-        labelImage = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
-        # Yerel için butonlar
-        btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
-        btnVideoCamera.clicked.connect(self.faceAddVideoCameraScreen)
-        btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
-        btnImageFolder.clicked.connect(self.faceAddImageFolderScreen)
-        # Yerel için düzenleyici
-        layoutImage = QHBoxLayout()
-        layoutImage.addWidget(btnVideoCamera)
-        layoutImage.addWidget(btnImageFolder)
+            #############
+            # Y E R E L #
+            #############
+            # Yerel etiketi
+            labelImage = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
+            # Yerel için butonlar
+            btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
+            btnVideoCamera.clicked.connect(self.faceAddVideoCameraScreen)
+            btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
+            btnImageFolder.clicked.connect(self.faceAddImageFolderScreen)
+            # Yerel için düzenleyici
+            layoutImage = QHBoxLayout()
+            layoutImage.addWidget(btnVideoCamera)
+            layoutImage.addWidget(btnImageFolder)
 
-        #########
-        # W E B #
-        #########
-        # Web etiketi
-        labelVideo = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
-        # Web için butonlar
-        btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
-        btnImageUrl.clicked.connect(self.faceAddImageUrlScreen)
-        btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
-        btnVideoYoutube.clicked.connect(self.faceAddVideoYoutubeScreen)
-        # Web için düzenleyici
-        layoutVideo = QHBoxLayout()
-        layoutVideo.addWidget(btnImageUrl)
-        layoutVideo.addWidget(btnVideoYoutube)
+            #########
+            # W E B #
+            #########
+            # Web etiketi
+            labelVideo = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
+            # Web için butonlar
+            btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
+            btnImageUrl.clicked.connect(self.faceAddImageUrlScreen)
+            btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
+            btnVideoYoutube.clicked.connect(self.faceAddVideoYoutubeScreen)
+            # Web için düzenleyici
+            layoutVideo = QHBoxLayout()
+            layoutVideo.addWidget(btnImageUrl)
+            layoutVideo.addWidget(btnVideoYoutube)
 
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-        layout.addWidget(labelImage)
-        layout.addLayout(layoutImage)
-        layout.addWidget(getLine())
-        layout.addWidget(labelVideo)
-        layout.addLayout(layoutVideo)
+            # Ana düzenleyici
+            layout = QVBoxLayout()
+            layout.addWidget(labelImage)
+            layout.addLayout(layoutImage)
+            layout.addWidget(getLine())
+            layout.addWidget(labelVideo)
+            layout.addLayout(layoutVideo)
 
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
+            self.window.setLayout(layout)
+            self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
+                                    int(screenHeight / 2 - int(mainHeight / 2)),
+                                    mainWith, mainHeight)
+            self.window.show()
 
     def faceAddImageFolderScreen(self):
         mainWith = 300
@@ -278,7 +283,8 @@ class MainWidget(QWidget):
         self.window.setWindowIcon(QIcon(pngFolder))
 
         # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose) # todo eğer anaekranınkine basıldıysa açılmasın burası ve bu gibiler
+        self.window.setAttribute(
+            QtCore.Qt.WA_DeleteOnClose)  # todo eğer anaekranınkine basıldıysa açılmasın burası ve bu gibiler
         self.window.destroyed.connect(self.faceAddScreen)
 
         # Ana düzenleyici
@@ -515,61 +521,62 @@ class MainWidget(QWidget):
                                       QMessageBox.Ok, isQuestion=False).exec_()
 
     def testUrlScreen(self):
-        modelName = self.selectedModel
-        sRate = self.textBoxSuccessRate.text()
-        if str(sRate).__len__() == 0:
-            sRate = "0"
-        # Model seçilmemişse uyarı verme
-        rateLimit = 35
-        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
-            if modelName.__eq__("Model Seçiniz"):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-            if int(sRate) < int(rateLimit):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
-                                  QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-        else:
-            # Mesaj kutusunu gösterme
-            # self.showWarn()
+        if not self.getIsMainScreenClosing():
+            modelName = self.selectedModel
+            sRate = self.textBoxSuccessRate.text()
+            if str(sRate).__len__() == 0:
+                sRate = "0"
+            # Model seçilmemişse uyarı verme
+            rateLimit = 35
+            if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
+                if modelName.__eq__("Model Seçiniz"):
+                    getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
+                if int(sRate) < int(rateLimit):
+                    getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                      "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
+                                      QMessageBox.Warning,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
+            else:
+                # Mesaj kutusunu gösterme
+                # self.showWarn()
 
-            mainWith = 300
-            mainHeight = 150
-            screen = QtWidgets.QApplication.desktop().screenGeometry()
-            screenWidth, screenHeight = screen.width(), screen.height()
+                mainWith = 300
+                mainHeight = 150
+                screen = QtWidgets.QApplication.desktop().screenGeometry()
+                screenWidth, screenHeight = screen.width(), screen.height()
 
-            self.window = QWidget()
-            self.window.setWindowTitle('Test Web')
-            self.window.setStyleSheet("background-color: white;")
-            self.window.setWindowIcon(QIcon(pngUrl))
+                self.window = QWidget()
+                self.window.setWindowTitle('Test Web')
+                self.window.setStyleSheet("background-color: white;")
+                self.window.setWindowIcon(QIcon(pngUrl))
 
-            #############
-            # R E S İ M #
-            #############
-            btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
-            btnImageUrl.clicked.connect(self.testUrlImageScreen)
-            layoutImage = QHBoxLayout()
-            layoutImage.addWidget(btnImageUrl)
+                #############
+                # R E S İ M #
+                #############
+                btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
+                btnImageUrl.clicked.connect(self.testUrlImageScreen)
+                layoutImage = QHBoxLayout()
+                layoutImage.addWidget(btnImageUrl)
 
-            #################
-            # Y O U T U B E #
-            #################
-            btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
-            btnVideoYoutube.clicked.connect(self.testUrlYoutubeScreen)
-            layoutYoutube = QHBoxLayout()
-            layoutYoutube.addWidget(btnVideoYoutube)
+                #################
+                # Y O U T U B E #
+                #################
+                btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
+                btnVideoYoutube.clicked.connect(self.testUrlYoutubeScreen)
+                layoutYoutube = QHBoxLayout()
+                layoutYoutube.addWidget(btnVideoYoutube)
 
-            # Ana düzenleyici
-            layout = QHBoxLayout()
-            layout.addLayout(layoutImage)
-            layout.addLayout(layoutYoutube)
+                # Ana düzenleyici
+                layout = QHBoxLayout()
+                layout.addLayout(layoutImage)
+                layout.addLayout(layoutYoutube)
 
-            self.window.setLayout(layout)
-            self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
-                                    int(screenHeight / 2 - int(mainHeight / 2)),
-                                    mainWith, mainHeight)
-            self.window.show()
+                self.window.setLayout(layout)
+                self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
+                                        int(screenHeight / 2 - int(mainHeight / 2)),
+                                        mainWith, mainHeight)
+                self.window.show()
 
     def testUrlImageScreen(self):
         mainWith = 300
@@ -668,6 +675,12 @@ class MainWidget(QWidget):
                           self.selectedModel + "\nBaşarı oranı " + str(
                               self.textBoxSuccessRate.text()) + " olarak belirlenmiştir.",
                           QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
+
+    def getIsMainScreenClosing(self):
+        return self.isMainScreenClosing
+
+    def setIsMainScreenClosing(self, value):
+        self.isMainScreenClosing = value
 
 
 if __name__ == '__main__':
