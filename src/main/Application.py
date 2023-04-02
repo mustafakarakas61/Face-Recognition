@@ -39,6 +39,7 @@ class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.control = False
+        self.controlOpenGoogle = True
         self.selectedModel = "Model Seçiniz"
         self.textBoxSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "90", isEnabled=True, isVisible=False)
         self.isMainScreenClosing = False
@@ -543,15 +544,17 @@ class MainWidget(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngImageUrl))
 
-        # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
-        with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
-            resultMap = pickle.load(fileReadStream)
+        if self.controlOpenGoogle:
+            # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
+            with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
+                resultMap = pickle.load(fileReadStream)
 
-        randomId = random.choice(list(resultMap.keys()))
-        name = resultMap[randomId]
+            randomId = random.choice(list(resultMap.keys()))
+            name = resultMap[randomId]
 
-        webbrowser.open("https://www.google.com/search?q=" + str(name).replace(" ",
-                                                                               "+") + "&sxsrf=APwXEdesmw72efa4-dds-FUED9TjAXQVAQ:1680383725172&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjhu5mYzYn-AhVLQvEDHS4EBnMQ_AUoAnoECAEQBA&biw=951&bih=612&dpr=1")
+            webbrowser.open("https://www.google.com/search?q=" + str(name).replace(" ",
+                                                                                   "+") + "&sxsrf=APwXEdesmw72efa4-dds-FUED9TjAXQVAQ:1680383725172&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjhu5mYzYn-AhVLQvEDHS4EBnMQ_AUoAnoECAEQBA&biw=951&bih=612&dpr=1")
+            self.controlOpenGoogle = False
         # URL'nin görüntülendiği etiket
         labelInfo = getLabelFeatures(QLabel("Görüntü bağlantısını yapıştırın.", self.window), False, True)
         labelInfo.setAlignment(Qt.AlignCenter)
@@ -649,7 +652,7 @@ class MainWidget(QWidget):
 
                         name = pathTempFolder + randomString(10) + ".jpg"
                         cv2.imwrite(name, img)
-                        self.openAnalizedImageScreen(img, name)
+                        self.openAnalizedImageScreen(name, img)
                     else:
                         getMsgBoxFeatures(QMessageBox(self), "Uyarı",
                                           "Yüz bulunamadı.",
@@ -670,8 +673,8 @@ class MainWidget(QWidget):
             self.control = False
             self.window.close()
 
-    def openAnalizedImageScreen(self, imgg, name):
-        height, width, channels = imgg.shape
+    def openAnalizedImageScreen(self, name, img):
+        height, width, channels = img.shape
         imgWith = width
         imgHeight = height
         screen = QtWidgets.QApplication.desktop().screenGeometry()
