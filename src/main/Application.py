@@ -1,15 +1,27 @@
 import os
+import pickle
 import re
+import requests
+import webbrowser
+import random
 
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtGui import QIcon, QFont
+import cv2
+import numpy as np
+import requests
+from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox, QFrame, QFileDialog
 
+from src.main.python.services.FeaturesService import getTextBoxFeatures, getMsgBoxFeatures, getLabelFeatures, \
+    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, getFaceButtonFeatures
 from src.main.python.services.gui.test.Camera import testCamera
 from src.main.python.services.gui.test.Local import testImage, testVideo
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
-    pngFolder, pngImageUrl, pngYoutube, pathModels
+    pngFolder, pngImageUrl, pngYoutube, pathModels, pathFaceResultsMap, pathFaceCascade, pathTempFolder, \
+    pngFaceDetection0, pngFaceDetection1, pngFace404, pngFaceDetection2
+from utils.Utils import randomString, deleteJpgFilesOnFolder
 
 
 def getLine():
@@ -20,75 +32,12 @@ def getLine():
     return line
 
 
-# Label
-def getLabelFeatures(lbl, isUseFont, isUseSecondFont):
-    if isUseFont:
-        fontLabel = QtGui.QFont("Times New Roman", 25)
-        fontLabel.setBold(True)
-        lbl.setFont(fontLabel)
-    if isUseSecondFont:
-        fontLabel = QtGui.QFont("Times New Roman", 15)
-        # fontLabel.setBold(True)
-        lbl.setFont(fontLabel)
-    lbl.setAlignment(QtCore.Qt.AlignCenter)
-    return lbl
-
-
-# Button
-def getButtonFeatures(btn, pngName):
-    butonSizes = (70, 70)
-    fontButton = QtGui.QFont("Times New Roman", 15)
-    btn.setFont(fontButton)
-    btn.setFixedSize(*butonSizes)
-    btn.setIcon(QtGui.QIcon(pngName))
-    btn.setIconSize(QtCore.QSize(*butonSizes))
-    btn.setStyleSheet("background-color: transparent;")
-    return btn
-
-
-# ComboBox
-def getComboBoxFeatures(cmbBox):
-    fontComboBox = QtGui.QFont("Times New Roman", 15)
-    cmbBox.setFont(fontComboBox)
-    cmbBox.setStyleSheet("background-color: white; color: black;")
-    return cmbBox
-
-
-def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType, isQuestion):
-    font = QFont()
-    font.setFamily("Times New Roman")
-    font.setPointSize(12)
-    msgBox.setIcon(iconType)  # QMessageBox.Information
-    msgBox.setText(txt)
-    msgBox.setFont(font)
-    msgBox.setWindowTitle(title)
-    msgBox.setStandardButtons(btnType)  # QMessageBox.Ok
-    if isQuestion:
-        msgBox.setDefaultButton(QtWidgets.QMessageBox.No)
-    return msgBox
-
-
-def getTextBoxFeatures(textBox, text, isText):
-    fontTextBox = QtGui.QFont("Times New Roman", 15)
-    textBox.setFont(fontTextBox)
-    if not isText:
-        textBox.setFixedSize(30, 30)
-        textBox.setMaxLength(2)
-        textBox.setStyleSheet("background-color: white; color: black;")
-        textBox.setEnabled(True)
-    else:
-        textBox.setStyleSheet("background-color: white; color: black;")
-        textBox.setEnabled(False)
-    textBox.setText(text)
-    return textBox
-
-
 class MainWidget(QWidget):
 
     def __init__(self):
         super().__init__()
         self.selectedModel = "Model Seçiniz"
-        self.textBoxSuccessRate = getTextBoxFeatures(QLineEdit(self), "90", False)
+        self.textBoxSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "90", isEnabled=True, isVisible=False)
         self.isMainScreenClosing = False
         self.initUI()
 
@@ -101,6 +50,7 @@ class MainWidget(QWidget):
             for widget in QtWidgets.QApplication.topLevelWidgets():
                 widget.close()
             self.setIsMainScreenClosing(True)
+            deleteJpgFilesOnFolder(pathTempFolder)
             event.accept()
         else:
             event.ignore()
@@ -200,10 +150,12 @@ class MainWidget(QWidget):
         layoutV.addWidget(getLine())
 
         layoutV.addWidget(labelTest)
+        self.textBoxSuccessRate.setVisible(True)
         layoutH.addWidget(self.textBoxSuccessRate)
 
-        labelSuccessRate = getTextBoxFeatures(QLineEdit(self), "% Başarı Oranı", isText=True)
-        labelSuccessRate.setAlignment(QtCore.Qt.AlignLeft)
+        labelSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "% Başarı Oranı", isEnabled=False,
+                                                         isVisible=True)
+        labelSuccessRate.setAlignment(Qt.AlignLeft)
         layoutH.addWidget(labelSuccessRate)
 
         layoutV.addWidget(comboModel)
@@ -574,6 +526,7 @@ class MainWidget(QWidget):
                 self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
                                         int(screenHeight / 2 - int(mainHeight / 2)),
                                         mainWith, mainHeight)
+                self.window.setObjectName("testUrlScreen")
                 self.window.show()
 
     def testUrlImageScreen(self):
@@ -587,16 +540,125 @@ class MainWidget(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngImageUrl))
 
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.testUrlScreen)
+        # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
+        with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
+            resultMap = pickle.load(fileReadStream)
+
+        randomId = random.choice(list(resultMap.keys()))
+        name = resultMap[randomId]
+
+        webbrowser.open("https://www.google.com/search?q=" + str(name).replace(" ",
+                                                                               "+") + "&sxsrf=APwXEdesmw72efa4-dds-FUED9TjAXQVAQ:1680383725172&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjhu5mYzYn-AhVLQvEDHS4EBnMQ_AUoAnoECAEQBA&biw=951&bih=612&dpr=1")
+        # URL'nin görüntülendiği etiket
+        labelInfo = getLabelFeatures(QLabel("Görüntü bağlantısını yapıştırın.", self.window), False, True)
+        labelInfo.setAlignment(Qt.AlignCenter)
+        labelInfo.setGeometry(0, 0, mainWith, mainHeight)
 
         # Ana düzenleyici
         layout = QVBoxLayout()
+        layout.addWidget(labelInfo)
+
+        textBoxGetUrl = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        layout.addWidget(textBoxGetUrl)
+        buttonLayout = QHBoxLayout()
+
+        btnFaceScanner = getFaceButtonFeatures(QPushButton(self), pngFaceDetection0, isVisible=True)
+        buttonLayout.addWidget(btnFaceScanner)
+        layout.addLayout(buttonLayout)
 
         self.window.setLayout(layout)
         self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWith, mainHeight)
+        self.window.setObjectName("testUrlImageScreen")
+        self.window.show()
+        # Metin kutusunu dinle
+        textBoxGetUrl.textChanged.connect(lambda: self.updateButtonStatus(textBoxGetUrl, btnFaceScanner))
+
+    def updateButtonStatus(self, textBoxGetUrl, btnFaceScanner):
+        # Metin kutusunun içeriğini al
+        text = textBoxGetUrl.text()
+
+        # Metin kutusunun uzunluğunu kontrol et
+        if len(text) <= 1:
+            btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection0))
+        else:
+            # URL doğrulaması yap
+            pattern = re.compile(r'https?://.*\.(jpg|png|jpeg)', re.IGNORECASE)
+            if pattern.match(text):
+                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection1))
+                btnFaceScanner.clicked.connect(lambda: self.getImage(textBoxGetUrl, btnFaceScanner))
+            else:
+                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection0))
+
+    def getImage(self, textBoxGetUrl, btnFaceScanner):
+        response = requests.get(textBoxGetUrl.text())
+        arr = np.asarray(bytearray(response.content), dtype=np.uint8)
+        img = cv2.imdecode(arr, -1)
+
+        faceCascade = cv2.CascadeClassifier(pathFaceCascade)
+        if img is None:
+            getMsgBoxFeatures(QMessageBox(self), "Hata",
+                              "Resim yüklenemedi.",
+                              QMessageBox.Critical,
+                              QMessageBox.Ok, isQuestion=False).exec_()
+            textBoxGetUrl.setText("")
+            btnFaceScanner.setIcon(QtGui.QIcon(pngFace404))
+            # Çarpı işaretine basıldığında eski pencere açılsın
+            self.window.setAttribute(Qt.WA_DeleteOnClose)
+            self.window.destroyed.connect(self.testUrlScreen)
+
+        else:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+            # Yüzleri algıla
+            faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+
+            if len(faces) > 0:
+                name = pathTempFolder + randomString(10) + ".jpg"
+                cv2.imwrite(name, img)
+                imgg = cv2.imread(name)
+                self.openAnalizedImageScreen(imgg, name)
+            else:
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Yüz bulunamadı.",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
+                btnFaceScanner.setIcon(QtGui.QIcon(pngFace404))
+
+    def openAnalizedImageScreen(self, imgg, name):
+        height, width, channels = imgg.shape
+        imgWith = width
+        imgHeight = height
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+
+        self.window = QWidget()
+        self.window.setWindowTitle('Sonuç')
+        self.window.setStyleSheet("background-color: white;")
+        self.window.setWindowIcon(QIcon(pngFaceDetection2))
+
+        # Çarpı işaretine basıldığında eski pencere açılsın
+        self.window.setAttribute(Qt.WA_DeleteOnClose)
+        self.window.destroyed.connect(self.testUrlScreen)
+
+        btn = QPushButton(self)
+        btn.setIcon(QtGui.QIcon(name))
+
+        if int(imgWith) > int(screenWidth - screenWidth * 0.2):
+            imgWith = int(screenWidth - screenWidth * 0.2)
+        if int(imgHeight) > int(screenHeight - screenHeight * 0.2):
+            imgHeight = int(screenHeight - screenHeight * 0.2)
+
+        btn.setFixedSize(imgWith, imgHeight)
+        btn.setIconSize(QtCore.QSize(imgWith, imgHeight))
+
+        # Ana düzenleyici
+        layoutFace = QVBoxLayout()
+        layoutFace.addWidget(btn)
+
+        self.window.setLayout(layoutFace)
+        self.window.setGeometry(int(screenWidth / 2 - int(imgWith / 2)), int(screenHeight / 2 - int(imgHeight / 2)),
+                                imgWith, imgHeight)
         self.window.show()
 
     def testUrlYoutubeScreen(self):
@@ -611,7 +673,7 @@ class MainWidget(QWidget):
         self.window.setWindowIcon(QIcon(pngYoutube))
 
         # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.window.setAttribute(Qt.WA_DeleteOnClose)
         self.window.destroyed.connect(self.testUrlScreen)
 
         # Ana düzenleyici
@@ -621,52 +683,6 @@ class MainWidget(QWidget):
         self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWith, mainHeight)
         self.window.show()
-
-    # RUNS
-    def runFaceAdd(self):
-        print("Yüz Ekle Metodu Çalıştırıldı!")
-
-    def runFaceAddImageFolder(self):
-        print("Yerelden Yüz Ekle Metodu Çalıştırıldı!")
-
-    def runFaceAddImageUrl(self):
-        print("Url'den Yüz Ekle Metodu Çalıştırıldı!")
-
-    def runFaceAddVideoCamera(self):
-        print("Kameradan Yüz Ekle Metodu Çalıştırıldı!")
-
-    def runFaceAddVideoYoutube(self):
-        print("Youtube'dan Yüz Ekle Metodu Çalıştırıldı!")
-
-    def runFaceDelete(self):
-        print("Yüz Sil Metodu Çalıştırıldı!")
-
-    def runFaceInfo(self):
-        print("Yüz Bilgi Metodu Çalıştırıldı!")
-
-    def runModelTrain(self):
-        print("Model Eğitim Metodu Çalıştırıldı!")
-
-    def runModelDelete(self):
-        print("Model Sil Metodu Çalıştırıldı!")
-
-    def runModelInfo(self):
-        print("Model Bilgi Metodu Çalıştırıldı!")
-
-    def runTestCamera(self):
-        print("Test Kamera Metodu Çalıştırıldı!")
-
-    def runTestImage(self):
-        print("Test Resim Metodu Çalıştırıldı!")
-
-    def runTestUrl(self):
-        print("Test Url Metodu Çalıştırıldı!")
-
-    def runTestUrlImage(self):
-        print("Test Url Resim Metodu Çalıştırıldı!")
-
-    def runTestUrlYoutube(self):
-        print("Test Url Youtube Metodu Çalıştırıldı!")
 
     def showWarn(self):
         getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
