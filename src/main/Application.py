@@ -534,7 +534,7 @@ class MainWidget(QWidget):
 
     def testUrlImageScreen(self):
         mainWith = 300
-        mainHeight = 300
+        mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
 
