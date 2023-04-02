@@ -5,6 +5,7 @@ import requests
 import webbrowser
 import random
 
+from keras.models import load_model
 import cv2
 import numpy as np
 import requests
@@ -13,15 +14,16 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox, QFrame, QFileDialog
+from keras.api.keras.preprocessing import image
 
 from src.main.python.services.FeaturesService import getTextBoxFeatures, getMsgBoxFeatures, getLabelFeatures, \
-    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, getFaceButtonFeatures
+    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, getFaceButtonFeatures, getExceptionMsgBox
 from src.main.python.services.gui.test.Camera import testCamera
 from src.main.python.services.gui.test.Local import testImage, testVideo
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathModels, pathFaceResultsMap, pathFaceCascade, pathTempFolder, \
-    pngFaceDetection0, pngFaceDetection1, pngFace404, pngFaceDetection2
-from utils.Utils import randomString, deleteJpgFilesOnFolder
+    pngFaceDetection0, pngFaceDetection1, pngFace404, pngFaceDetection2, minFaceSize, inputSize
+from utils.Utils import randomString, deleteJpgFilesOnFolder, changeNameToASCII
 
 
 def getLine():
@@ -36,6 +38,7 @@ class MainWidget(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.control = False
         self.selectedModel = "Model Seçiniz"
         self.textBoxSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "90", isEnabled=True, isVisible=False)
         self.isMainScreenClosing = False
@@ -586,44 +589,86 @@ class MainWidget(QWidget):
             pattern = re.compile(r'https?://.*\.(jpg|png|jpeg)', re.IGNORECASE)
             if pattern.match(text):
                 btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection1))
-                btnFaceScanner.clicked.connect(lambda: self.getImage(textBoxGetUrl, btnFaceScanner))
+                self.control = True
+                btnFaceScanner.clicked.connect(lambda: self.getImage(textBoxGetUrl))
             else:
                 btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection0))
 
-    def getImage(self, textBoxGetUrl, btnFaceScanner):
-        response = requests.get(textBoxGetUrl.text())
-        arr = np.asarray(bytearray(response.content), dtype=np.uint8)
-        img = cv2.imdecode(arr, -1)
+    def getImage(self, textBoxGetUrl):
+        try:
+            response = requests.get(textBoxGetUrl.text(), timeout=10)
+            if response.status_code == 200:
+                arr = np.asarray(bytearray(response.content), dtype=np.uint8)
+                img = cv2.imdecode(arr, -1)
 
-        faceCascade = cv2.CascadeClassifier(pathFaceCascade)
-        if img is None:
-            getMsgBoxFeatures(QMessageBox(self), "Hata",
-                              "Resim yüklenemedi.",
-                              QMessageBox.Critical,
-                              QMessageBox.Ok, isQuestion=False).exec_()
-            textBoxGetUrl.setText("")
-            btnFaceScanner.setIcon(QtGui.QIcon(pngFace404))
-            # Çarpı işaretine basıldığında eski pencere açılsın
-            self.window.setAttribute(Qt.WA_DeleteOnClose)
-            self.window.destroyed.connect(self.testUrlScreen)
+                faceCascade = cv2.CascadeClassifier(pathFaceCascade)
+                if img is None:
+                    getMsgBoxFeatures(QMessageBox(self), "Hata",
+                                      "Resim yüklenemedi.",
+                                      QMessageBox.Critical,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
+                    # textBoxGetUrl.setText("")
+                    # btnFaceScanner.setIcon(QtGui.QIcon(pngFace404))
+                    self.window.setAttribute(Qt.WA_DeleteOnClose)
+                    self.window.destroyed.connect(self.testUrlImageScreen)
+                    self.window.close()
 
-        else:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                else:
+                    # Eğitimde kullanılan yüz isimleri ve kodları
+                    with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
+                        ResultMap = pickle.load(fileReadStream)
 
-            # Yüzleri algıla
-            faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+                    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                    # Yüzleri algıla
+                    faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5,
+                                                         minSize=(minFaceSize, minFaceSize))
 
-            if len(faces) > 0:
-                name = pathTempFolder + randomString(10) + ".jpg"
-                cv2.imwrite(name, img)
-                imgg = cv2.imread(name)
-                self.openAnalizedImageScreen(imgg, name)
-            else:
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Yüz bulunamadı.",
-                                  QMessageBox.Warning,
+                    if len(faces) > 0:
+                        for (x, y, w, h) in faces:
+                            # Yüz bölgesinin kesilmesi ve boyutlandırılması
+                            faceImage = img[y:y + h, x:x + w]
+                            faceImage = cv2.resize(faceImage, (inputSize, inputSize))
+                            faceImage = image.img_to_array(faceImage)
+                            faceImage = np.expand_dims(faceImage, axis=0)
+                            faceImage /= 255
+
+                            # Yüz tahmini
+                            model = load_model(pathModels + self.selectedModel)
+                            prediction = model.predict(faceImage, verbose=0)
+                            predictedClass = np.argmax(prediction)
+                            predictedName = ResultMap[predictedClass]
+                            accuracy = round(np.max(prediction) * 100, 2)
+                            if int(accuracy) > int(self.textBoxSuccessRate.text()):
+                                cv2.putText(img, changeNameToASCII(predictedName) + " " + str(
+                                    accuracy) + "%", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)  # green
+                            else:
+                                cv2.putText(img, "%" + str(
+                                    accuracy), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)  # red
+                                cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)  # blue
+
+                        name = pathTempFolder + randomString(10) + ".jpg"
+                        cv2.imwrite(name, img)
+                        self.openAnalizedImageScreen(img, name)
+                    else:
+                        getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                          "Yüz bulunamadı.",
+                                          QMessageBox.Warning,
+                                          QMessageBox.Ok, isQuestion=False).exec_()
+                        self.window.setAttribute(Qt.WA_DeleteOnClose)
+                        self.window.destroyed.connect(self.testUrlImageScreen)
+                        self.window.close()
+            elif self.control:
+                getMsgBoxFeatures(QMessageBox(self), "Hata",
+                                  "Resim indirilemedi.",
+                                  QMessageBox.Critical,
                                   QMessageBox.Ok, isQuestion=False).exec_()
-                btnFaceScanner.setIcon(QtGui.QIcon(pngFace404))
+                self.control = False
+                self.window.close()
+        except Exception as e:
+            getExceptionMsgBox(QMessageBox(self), str(e)).exec_()
+            self.control = False
+            self.window.close()
 
     def openAnalizedImageScreen(self, imgg, name):
         height, width, channels = imgg.shape
@@ -637,10 +682,6 @@ class MainWidget(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngFaceDetection2))
 
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.testUrlScreen)
-
         btn = QPushButton(self)
         btn.setIcon(QtGui.QIcon(name))
 
@@ -651,6 +692,10 @@ class MainWidget(QWidget):
 
         btn.setFixedSize(imgWith, imgHeight)
         btn.setIconSize(QtCore.QSize(imgWith, imgHeight))
+
+        # Çarpı işaretine basıldığında eski pencere açılsın
+        self.window.setAttribute(Qt.WA_DeleteOnClose)
+        self.window.destroyed.connect(self.testUrlScreen)
 
         # Ana düzenleyici
         layoutFace = QVBoxLayout()

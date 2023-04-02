@@ -1,5 +1,6 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QMessageBox
 
 
 def getLabelFeatures(lbl, isUseFont, isUseSecondFont):
@@ -45,6 +46,18 @@ def getComboBoxFeatures(cmbBox):
     cmbBox.setFont(fontComboBox)
     cmbBox.setStyleSheet("background-color: white; color: black;")
     return cmbBox
+
+
+def getExceptionMsgBox(msgBox, e):
+    font = QFont()
+    font.setFamily("Times New Roman")
+    font.setPointSize(12)
+    msgBox.setIcon(QMessageBox.Critical)
+    msgBox.setText(e)
+    msgBox.setFont(font)
+    msgBox.setWindowTitle("Exception")
+    msgBox.setStandardButtons(QMessageBox.Ok)
+    return msgBox
 
 
 def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType, isQuestion):
