@@ -1,7 +1,6 @@
 import os
 import pickle
 import re
-import requests
 import webbrowser
 import random
 
@@ -11,7 +10,7 @@ import numpy as np
 import requests
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox, QFrame, QFileDialog
 from keras.api.keras.preprocessing import image
@@ -22,7 +21,7 @@ from src.main.python.services.gui.test.Camera import testCamera
 from src.main.python.services.gui.test.Local import testImage, testVideo
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathModels, pathFaceResultsMap, pathFaceCascade, pathTempFolder, \
-    pngFaceDetection0, pngFaceDetection1, pngFace404, pngFaceDetection2, minFaceSize, inputSize
+    pngFaceDetection0, pngFaceDetection1, pngFaceDetection2, minFaceSize, inputSize
 from utils.Utils import randomString, deleteJpgFilesOnFolder, changeNameToASCII
 
 
