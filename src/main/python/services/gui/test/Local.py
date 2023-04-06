@@ -65,7 +65,7 @@ def testVideo(videoPath, modelName, successRate):
     videoWidth = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
     videoHeight = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    if int(videoWidth) >= int(screenWidth * 0.8) or int(videoHeight) >= int(screenHeight * 0.8):
+    if int(videoWidth) > int(screenWidth * 0.8) or int(videoHeight) > int(screenHeight * 0.8):
         videoWidth = int(screenWidth * 0.7)
         videoHeight = int(screenHeight * 0.7)
 

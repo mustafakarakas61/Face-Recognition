@@ -539,7 +539,7 @@ class MainWidget(QWidget):
                 self.window.show()
 
     def testUrlImageScreen(self):
-        mainWith = 300
+        mainWidth = 300
         mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -563,7 +563,7 @@ class MainWidget(QWidget):
         # URL'nin görüntülendiği etiket
         labelInfo = getLabelFeatures(QLabel("Görüntü bağlantısını yapıştırın.", self.window), False, True)
         labelInfo.setAlignment(Qt.AlignCenter)
-        labelInfo.setGeometry(0, 0, mainWith, mainHeight)
+        labelInfo.setGeometry(0, 0, mainWidth, mainHeight)
 
         # Ana düzenleyici
         layout = QVBoxLayout()
@@ -578,8 +578,9 @@ class MainWidget(QWidget):
         layout.addLayout(buttonLayout)
 
         self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth - mainWidth - mainWidth * 0.2),
+                                int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
         self.window.setObjectName("testUrlImageScreen")
         self.window.show()
         # Metin kutusunu dinle
@@ -721,7 +722,7 @@ class MainWidget(QWidget):
         self.endTimeText = text
 
     def testUrlYoutubeScreen(self):
-        mainWith = 300
+        mainWidth = 300
         mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -744,7 +745,7 @@ class MainWidget(QWidget):
 
         labelInfo = getLabelFeatures(QLabel("Youtube bağlantısını yapıştırın.", self.window), False, True)
         labelInfo.setAlignment(Qt.AlignCenter)
-        labelInfo.setGeometry(0, 0, mainWith, mainHeight)
+        labelInfo.setGeometry(0, 0, mainWidth, mainHeight)
 
         # Ana düzenleyici V _   H |
         layoutV = QVBoxLayout()
@@ -774,8 +775,9 @@ class MainWidget(QWidget):
         # self.window.destroyed.connect(self.testUrlScreen)
 
         self.window.setLayout(layoutV)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth - mainWidth - mainWidth * 0.2),
+                                int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
         self.window.setObjectName("testUrlYoutubeScreen")
         self.window.show()
 
