@@ -135,4 +135,5 @@ utils/clippedVideos/*
 utils/dataset/*
 tests/main/datasets/RealOrFake/*
 tests/main/models/*
+utils/tempFolder/*
 
