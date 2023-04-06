@@ -10,6 +10,10 @@
 |---------------------------------------|------------------------------------------|
 | ![](utils/projectImages/testWeb.png)  | ![](utils/projectImages/localFolder.png) |
 
+| Test Url Image                                                                            | Test Url Youtube                                                                         |
+|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| ![](utils/projectImages/testUrlImage0.png)<br/>![](utils/projectImages/testUrlImage1.png) | ![](utils/projectImages/testYoutube0.png) <br/>![](utils/projectImages/testYoutube1.png) |
+
 ### Model isimlendirmesi:
 
 | Kullanılan veri seti | Veri çeşit sayısı | Epoch | input_shape girdi boyutu | Model ismi     |

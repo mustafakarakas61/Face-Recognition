@@ -757,17 +757,27 @@ class MainWidget(QWidget):
 
         btnFaceScanner = getFaceButtonFeatures(QPushButton(self), pngFaceDetectionYoutube0, isVisible=True)
 
+        layoutStartV = QVBoxLayout()
+        labelStartInfo = getLabelFeatures(QLabel("Başlangıç", self.window), False, True)
         textBoxStartTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
         textBoxStartTime.setInputMask("99:99:99")
         textBoxStartTime.setText("00:00:00")
+        layoutStartV.addWidget(labelStartInfo)
+        layoutStartV.addWidget(textBoxStartTime)
 
+        layoutH.addLayout(layoutStartV)
+        layoutH.addWidget(btnFaceScanner)
+
+        layoutEndV = QVBoxLayout()
+        labelEndInfo = getLabelFeatures(QLabel("Bitiş", self.window), False, True)
         textBoxEndTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
         textBoxEndTime.setInputMask("99:99:99")
         textBoxEndTime.setText("00:00:00")
+        layoutEndV.addWidget(labelEndInfo)
+        layoutEndV.addWidget(textBoxEndTime, alignment=Qt.AlignCenter)
 
-        layoutH.addWidget(textBoxStartTime)
-        layoutH.addWidget(btnFaceScanner)
-        layoutH.addWidget(textBoxEndTime)
+        layoutH.addLayout(layoutEndV)
+
         layoutV.addLayout(layoutH)
 
         # # Çarpı işaretine basıldığında eski pencere açılsın
@@ -809,7 +819,7 @@ class MainWidget(QWidget):
             else:
                 btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube0))
 
-    # youtube için ayarla
+    # todo : inen videolar, kliplenen videolar silinsin
     def getVideo(self, url, startTime, endTime, modelName, sRate):
         try:
             splitStartTime = str(startTime).split(":")
@@ -824,7 +834,12 @@ class MainWidget(QWidget):
             etSS = int(splitEndTime[2])
             durationEndTime = int(eTHH + eTMM + etSS)
 
-            if durationStartTime >= durationEndTime:
+            if len(self.startTimeText) != 8 and len(self.endTimeText) != 8:
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Lütfen geçerli formatta (HH:mm:ss) zaman giriniz!",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
+            elif durationStartTime >= durationEndTime:
                 getMsgBoxFeatures(QMessageBox(self), "Uyarı",
                                   "Videonun başlangıç süresi, bitiş süresinden büyük veya eşit olamaz!",
                                   QMessageBox.Warning,
@@ -839,7 +854,7 @@ class MainWidget(QWidget):
                 self.window.destroyed.connect(self.testUrlYoutubeScreen())
                 self.window.close()
         except Exception as e:
-            getExceptionMsgBox(QMessageBox(self), str(e)).exec_()
+            # getExceptionMsgBox(QMessageBox(self), str(e)).exec_()
             self.window.close()
 
     def showWarn(self):
