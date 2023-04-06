@@ -1,3 +1,4 @@
+import datetime
 import os
 import pickle
 import re
@@ -17,11 +18,13 @@ from keras.api.keras.preprocessing import image
 
 from src.main.python.services.FeaturesService import getTextBoxFeatures, getMsgBoxFeatures, getLabelFeatures, \
     getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, getFaceButtonFeatures, getExceptionMsgBox
+from src.main.python.services.YoutubeDownloaderService import downloadYoutubeVideo
 from src.main.python.services.gui.test.Camera import testCamera
 from src.main.python.services.gui.test.Local import testImage, testVideo
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathModels, pathFaceResultsMap, pathFaceCascade, pathTempFolder, \
-    pngFaceDetection0, pngFaceDetection1, pngFaceDetection2, minFaceSize, inputSize
+    pngFaceDetection0, pngFaceDetection1, pngFaceDetection2, minFaceSize, inputSize, pngFaceDetectionYoutube0, \
+    pngFaceDetectionYoutube1
 from utils.Utils import randomString, deleteJpgFilesOnFolder, changeNameToASCII
 
 
@@ -39,7 +42,10 @@ class MainWidget(QWidget):
         super().__init__()
         self.control = False
         self.controlOpenGoogle = True
+        self.controlOpenYoutube = True
         self.selectedModel = "Model Seçiniz"
+        self.startTimeText = "00:00:00"
+        self.endTimeText = "00:00:00"
         self.textBoxSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "90", isEnabled=True, isVisible=False)
         self.isMainScreenClosing = False
         self.initUI()
@@ -577,9 +583,9 @@ class MainWidget(QWidget):
         self.window.setObjectName("testUrlImageScreen")
         self.window.show()
         # Metin kutusunu dinle
-        textBoxGetUrl.textChanged.connect(lambda: self.updateButtonStatus(textBoxGetUrl, btnFaceScanner))
+        textBoxGetUrl.textChanged.connect(lambda: self.updateUrlImageButtonStatus(textBoxGetUrl, btnFaceScanner))
 
-    def updateButtonStatus(self, textBoxGetUrl, btnFaceScanner):
+    def updateUrlImageButtonStatus(self, textBoxGetUrl, btnFaceScanner):
         # Metin kutusunun içeriğini al
         text = textBoxGetUrl.text()
 
@@ -708,9 +714,15 @@ class MainWidget(QWidget):
                                 imgWith, imgHeight)
         self.window.show()
 
+    def onTextBoxStartTimeChanged(self, text):
+        self.startTimeText = text
+
+    def onTextBoxEndTimeChanged(self, text):
+        self.endTimeText = text
+
     def testUrlYoutubeScreen(self):
         mainWith = 300
-        mainHeight = 300
+        mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
 
@@ -719,17 +731,114 @@ class MainWidget(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngYoutube))
 
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.testUrlScreen)
+        if self.controlOpenYoutube:
+            # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
+            with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
+                resultMap = pickle.load(fileReadStream)
 
-        # Ana düzenleyici
-        layout = QVBoxLayout()
+            randomId = random.choice(list(resultMap.keys()))
+            name = resultMap[randomId]
 
-        self.window.setLayout(layout)
+            webbrowser.open("https://www.youtube.com/results?search_query=" + str(name).replace(" ", "+"))
+            self.controlOpenYoutube = False
+
+        labelInfo = getLabelFeatures(QLabel("Youtube bağlantısını yapıştırın.", self.window), False, True)
+        labelInfo.setAlignment(Qt.AlignCenter)
+        labelInfo.setGeometry(0, 0, mainWith, mainHeight)
+
+        # Ana düzenleyici V _   H |
+        layoutV = QVBoxLayout()
+        layoutV.addWidget(labelInfo)
+
+        textBoxGetUrl = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        layoutV.addWidget(textBoxGetUrl)
+        layoutH = QHBoxLayout()
+
+        btnFaceScanner = getFaceButtonFeatures(QPushButton(self), pngFaceDetectionYoutube0, isVisible=True)
+
+        textBoxStartTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        textBoxStartTime.setInputMask("99:99:99")
+        textBoxStartTime.setText("00:00:00")
+
+        textBoxEndTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        textBoxEndTime.setInputMask("99:99:99")
+        textBoxEndTime.setText("00:00:00")
+
+        layoutH.addWidget(textBoxStartTime)
+        layoutH.addWidget(btnFaceScanner)
+        layoutH.addWidget(textBoxEndTime)
+        layoutV.addLayout(layoutH)
+
+        # # Çarpı işaretine basıldığında eski pencere açılsın
+        # self.window.setAttribute(Qt.WA_DeleteOnClose)
+        # self.window.destroyed.connect(self.testUrlScreen)
+
+        self.window.setLayout(layoutV)
         self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWith, mainHeight)
+        self.window.setObjectName("testUrlYoutubeScreen")
         self.window.show()
+
+        textBoxStartTime.textChanged.connect(lambda index: self.onTextBoxStartTimeChanged(textBoxStartTime.text()))
+        textBoxEndTime.textChanged.connect(lambda index: self.onTextBoxEndTimeChanged(textBoxEndTime.text()))
+
+        textBoxGetUrl.textChanged.connect(
+            lambda: self.updateUrlYoutubeButtonStatus(textBoxGetUrl, btnFaceScanner))
+
+    def updateUrlYoutubeButtonStatus(self, textBoxGetUrl, btnFaceScanner):
+        # Metin kutusunun içeriğini al
+        url = str(textBoxGetUrl.text())
+
+        # Metin kutusunun uzunluğunu kontrol et
+        if len(url) <= 1:
+            btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube0))
+        else:
+            # URL doğrulaması yap
+            pattern = re.compile(
+                r'(?:https?://)?(?:www\.)?(?:youtu\.be|youtube\.com)/(?:watch\?v=)?(?:shorts/)?([\w-]{11})',
+                re.IGNORECASE)
+            if pattern.match(url):
+                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube1))
+                self.control = True
+
+                btnFaceScanner.clicked.connect(
+                    lambda: self.getVideo(url, self.startTimeText, self.endTimeText,
+                                          self.selectedModel, self.textBoxSuccessRate.text()))
+            else:
+                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube0))
+
+    # youtube için ayarla
+    def getVideo(self, url, startTime, endTime, modelName, sRate):
+        try:
+            splitStartTime = str(startTime).split(":")
+            sTHH = int(splitStartTime[0]) * int(60 * 60)
+            sTMM = int(splitStartTime[1]) * int(60)
+            stSS = int(splitStartTime[2])
+            durationStartTime = int(sTHH + sTMM + stSS)
+
+            splitEndTime = str(endTime).split(":")
+            eTHH = int(splitEndTime[0]) * int(60 * 60)
+            eTMM = int(splitEndTime[1]) * int(60)
+            etSS = int(splitEndTime[2])
+            durationEndTime = int(eTHH + eTMM + etSS)
+
+            if durationStartTime >= durationEndTime:
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Videonun başlangıç süresi, bitiş süresinden büyük veya eşit olamaz!",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
+            else:
+                filePath = downloadYoutubeVideo(url=url, startTime=str(startTime),
+                                                durationStartTime=int(durationStartTime),
+                                                durationEndTime=int(durationEndTime))
+                testVideo(videoPath=str(filePath), modelName=str(modelName), successRate=int(sRate))
+
+                self.window.setAttribute(Qt.WA_DeleteOnClose)
+                self.window.destroyed.connect(self.testUrlYoutubeScreen())
+                self.window.close()
+        except Exception as e:
+            getExceptionMsgBox(QMessageBox(self), str(e)).exec_()
+            self.window.close()
 
     def showWarn(self):
         getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",

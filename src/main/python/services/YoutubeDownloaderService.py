@@ -1,30 +1,24 @@
 import subprocess
 import os
+
+from moviepy.video.io.VideoFileClip import VideoFileClip
 from yt_dlp import YoutubeDL
 
 from src.resources.Environments import pathTempFolder, pathClippedVideos
-from utils.Utils import checkFolder, getMp4FileList
+from utils.Utils import randomString
 
 
-# {"name":"Recep Tayyip Erdoğan","url":"https://www.youtube.com/watch?v=fxUox86xQGc&t=7s","ss":"00:00:30","t":"45"}
-def createClippedVideo(url, ss, t, name):
-    pathName = pathClippedVideos + name
-    checkFolder(pathName)
+# {"name":"Recep Tayyip Erdoğan","url":"https://www.youtube.com/watch?v=fxUox86xQGc&t=7s","startTime":"00:00:30","endTime":"00:00:44"}
+def downloadYoutubeVideo(url, startTime, durationStartTime, durationEndTime):
+    name = randomString(12)
 
-    fileList = getMp4FileList(pathName)
-    i = len(fileList)
-    fileName = name + "_" + str(int(i + 1)) + ".mp4"
+    fileName = name + ".mp4"
 
-    while True:
-        if fileName in fileList:
-            i += 1
-            fileName = name + "_" + str(int(i + 1)) + ".mp4"
-        else:
-            break
+    videoPath = pathTempFolder + "temp_" + fileName
 
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
-        'outtmpl': pathTempFolder + "temp_" + fileName,
+        'outtmpl': videoPath,
         'merge_output_format': 'mp4',
         'nooverwrites': True,
         'quiet': False,
@@ -34,13 +28,20 @@ def createClippedVideo(url, ss, t, name):
 
     ydl.download([url])
 
-    cmd = f"ffmpeg -y -loglevel fatal -ss {ss} -i \"{pathTempFolder}temp_{fileName}\" -t {t} -c copy \"{pathName}/{fileName}\""
+    clip = VideoFileClip(videoPath)
+
+    maxDuration = clip.duration  # Video uzunluğu saniye cinsinden alınır
+
+    if int(durationEndTime) > int(maxDuration):
+        durationEndTime = maxDuration
+
+    duration = int(durationEndTime - durationStartTime)
+
+    cmd = f"ffmpeg -y -loglevel fatal -ss {startTime} -i \"{videoPath}\" -t {duration} -c copy \"{pathClippedVideos}/{fileName}\""
 
     print("Klip Başlıyor : " + cmd)
     subprocess.call(
         cmd,
         shell=True)
 
-    os.remove(pathTempFolder + "temp_" + fileName)
-
-    return pathName + "/" + fileName
+    return pathClippedVideos + "/" + fileName

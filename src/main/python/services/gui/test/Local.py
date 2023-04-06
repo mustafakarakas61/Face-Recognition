@@ -1,6 +1,7 @@
 import pickle
 import cv2
 import numpy as np
+from PyQt5 import QtWidgets
 from keras.models import load_model
 from keras.api.keras.preprocessing import image
 from src.resources.Environments import pathModels, pathFaceCascade, inputSize, pathFaceResultsMap, minFaceSize
@@ -57,6 +58,20 @@ def testVideo(videoPath, modelName, successRate):
     # Eğitimde kullanılan yüz isimleri ve kodları
     with open(pathFaceResultsMap + modelName.replace(".h5", ".pkl"), 'rb') as fileReadStream:
         ResultMap = pickle.load(fileReadStream)
+
+    screen = QtWidgets.QApplication.desktop().screenGeometry()
+    screenWidth, screenHeight = screen.width(), screen.height()
+
+    videoWidth = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    videoHeight = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    if int(videoWidth) >= int(screenWidth * 0.8) or int(videoHeight) >= int(screenHeight * 0.8):
+        videoWidth = int(screenWidth * 0.7)
+        videoHeight = int(screenHeight * 0.7)
+
+    # Açılan videonun boyutunu değiştirme
+    videoCapture.set(cv2.CAP_PROP_FRAME_WIDTH, videoWidth)
+    videoCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, videoHeight)
 
     while True:
         # Videodan bir frame okuyun
