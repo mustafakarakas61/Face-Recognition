@@ -1,29 +1,30 @@
 import os
 import re
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
-    QMessageBox, QFrame, QFileDialog
+    QMessageBox, QFileDialog
 
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures
-from src.main.python.services.gui.testScreens.TestCameraScreen import testCamera
-from src.main.python.services.gui.testScreens.TestLocalFileScreen import testImage, testVideo
+from src.main.python.services.gui.faceScreens.DeleteFaceScreen import DeleteFace
+from src.main.python.services.gui.faceScreens.InfoFaceScreen import InfoFace
+from src.main.python.services.gui.faceScreens.addFaceScreens.CameraScreen import Camera
+from src.main.python.services.gui.faceScreens.addFaceScreens.ImageScreen import Image
+from src.main.python.services.gui.faceScreens.addFaceScreens.LocalFileScreen import LocalFile
+from src.main.python.services.gui.faceScreens.addFaceScreens.YoutubeScreen import Youtube
+from src.main.python.services.gui.modelScreens.DeleteModel import DeleteModel
+from src.main.python.services.gui.modelScreens.InfoModel import InfoModel
+from src.main.python.services.gui.modelScreens.TrainModel import TrainModel
+from src.main.python.services.gui.testScreens.TestCameraScreen import testCamera, TestCamera
+from src.main.python.services.gui.testScreens.TestLocalFileScreen import testImage, testVideo, TestLocalFile
 from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder
-from utils.Utils import deleteJpgFilesOnFolder
-
-
-def getLine():
-    line = QFrame()
-    line.setFrameShape(QFrame.HLine)
-    line.setFrameShadow(QFrame.Sunken)
-    line.setStyleSheet("background-color: black;")
-    return line
+from utils.Utils import deleteJpgFilesOnFolder, getLine
 
 
 class MainWidget(QWidget):
@@ -38,25 +39,27 @@ class MainWidget(QWidget):
         self.isMainScreenClosing = False
 
         # another classes
-        self.testYoutubeWidget = TestYoutube(self)
+        # face
+        self.faceAddLocalFileWidget = LocalFile(self)
+        self.faceAddCameraWidget = Camera(self)
+        self.faceAddImageWidget = Image(self)
+        self.faceAddYoutubeWidget = Youtube(self)
+        self.faceDeleteWidget = DeleteFace(self)
+        self.faceInfoWidget = InfoFace(self)
+
+        # model
+        self.modelTrainWidget = TrainModel(self)
+        self.modelDeleteWidget = DeleteModel(self)
+        self.modelInfoWidget = InfoModel(self)
+
+        # test
+        self.testLocalFileWidget = TestLocalFile(self)
+        self.testCameraWidget = TestCamera(self)
         self.testImageWidget = TestImage(self)
+        self.testYoutubeWidget = TestYoutube(self)
 
         # init
         self.initUI()
-
-    def closeEvent(self, event):
-        reply = getMsgBoxFeatures(QMessageBox(self), "Dikkat!", 'Programdan çıkmak istiyor musun?',
-                                  QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
-                                  isQuestion=True).exec_()
-
-        if reply == QtWidgets.QMessageBox.Yes:
-            for widget in QtWidgets.QApplication.topLevelWidgets():
-                widget.close()
-            self.setIsMainScreenClosing(True)
-            deleteJpgFilesOnFolder(pathTempFolder)
-            event.accept()
-        else:
-            event.ignore()
 
     def initUI(self):
         mainWith = 500
@@ -77,10 +80,9 @@ class MainWidget(QWidget):
         btnFaceAdd = getButtonFeatures(QPushButton(self), pngAdd)
         btnFaceAdd.clicked.connect(self.faceAddScreen)
         btnFaceDelete = getButtonFeatures(QPushButton(self), pngDelete)
-        btnFaceDelete.clicked.connect(self.faceDeleteScreen)
+        btnFaceDelete.clicked.connect(self.faceDeleteWidget.faceDeleteScreen)
         btnFaceInfo = getButtonFeatures(QPushButton(self), pngInfo)
-        btnFaceInfo.clicked.connect(self.faceInfoScreen)
-
+        btnFaceInfo.clicked.connect(self.faceInfoWidget.faceInfoScreen)
         # Yüzler için düzenleyici
         layoutFace = QHBoxLayout()
         layoutFace.addWidget(btnFaceAdd)
@@ -94,11 +96,11 @@ class MainWidget(QWidget):
         labelModel = getLabelFeatures(QLabel('Model'), isUseFont=True, isUseSecondFont=False)
         # Modeller için butonlar
         btnModelTrain = getButtonFeatures(QPushButton(self), pngTrain)
-        btnModelTrain.clicked.connect(self.modelTrainScreen)
+        btnModelTrain.clicked.connect(self.modelTrainWidget.modelTrainScreen)
         btnModelDelete = getButtonFeatures(QPushButton(self), pngDelete)
-        btnModelDelete.clicked.connect(self.modelDeleteScreen)
+        btnModelDelete.clicked.connect(self.modelDeleteWidget.modelDeleteScreen)
         btnModelInfo = getButtonFeatures(QPushButton(self), pngInfo)
-        btnModelInfo.clicked.connect(self.modelInfoScreen)
+        btnModelInfo.clicked.connect(self.modelInfoWidget.modelInfoScreen)
         # Modeller için düzenleyici
         layoutModel = QHBoxLayout()
         layoutModel.addWidget(btnModelTrain)
@@ -110,7 +112,6 @@ class MainWidget(QWidget):
         ###########
         # Test etiketi
         labelTest = getLabelFeatures(QLabel('Test'), isUseFont=True, isUseSecondFont=False)
-
         # ComboBox ayarı
         # Dizin içindeki .h5 uzantılı dosyaları bulma
         modelFiles = [f for f in os.listdir(pathModels) if f.endswith('.h5')]
@@ -120,17 +121,13 @@ class MainWidget(QWidget):
         comboModel = getComboBoxFeatures(QComboBox(self))
         comboModel.addItems(modelNames)
 
-        # Seçili olan modelin adını alma
-        def onComboboxSelection(modelName):
-            self.selectedModel = modelName
-
-        comboModel.currentIndexChanged.connect(lambda index: onComboboxSelection(comboModel.itemText(index)))
+        comboModel.currentIndexChanged.connect(lambda index: self.onComboboxSelection(comboModel.itemText(index)))
 
         # Test için butonlar
         btnTestCamera = getButtonFeatures(QPushButton(self), pngCamera)
-        btnTestCamera.clicked.connect(self.testCameraScreen)
+        btnTestCamera.clicked.connect(self.testCameraWidget.testCameraScreen)
         btnTestLocal = getButtonFeatures(QPushButton(self), pngFolder)
-        btnTestLocal.clicked.connect(self.testLocalScreen)
+        btnTestLocal.clicked.connect(self.testLocalFileWidget.testLocalFileScreen)
         btnTestUrl = getButtonFeatures(QPushButton(self), pngUrl)
         btnTestUrl.clicked.connect(self.testUrlScreen)
         # Test için düzenleyici
@@ -187,9 +184,9 @@ class MainWidget(QWidget):
             labelImage = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
             # Yerel için butonlar
             btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
-            btnVideoCamera.clicked.connect(self.faceAddVideoCameraScreen)
+            btnVideoCamera.clicked.connect(self.faceAddCameraWidget.faceAddVideoCameraScreen)
             btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
-            btnImageFolder.clicked.connect(self.faceAddLocalFileScreen)
+            btnImageFolder.clicked.connect(self.faceAddLocalFileWidget.faceAddLocalFileScreen)
             # Yerel için düzenleyici
             layoutImage = QHBoxLayout()
             layoutImage.addWidget(btnVideoCamera)
@@ -202,9 +199,9 @@ class MainWidget(QWidget):
             labelVideo = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
             # Web için butonlar
             btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
-            btnImageUrl.clicked.connect(self.faceAddImageUrlScreen)
+            btnImageUrl.clicked.connect(self.faceAddImageWidget.faceAddImageUrlScreen)
             btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
-            btnVideoYoutube.clicked.connect(self.faceAddVideoYoutubeScreen)
+            btnVideoYoutube.clicked.connect(self.faceAddYoutubeWidget.faceAddVideoYoutubeScreen)
             # Web için düzenleyici
             layoutVideo = QHBoxLayout()
             layoutVideo.addWidget(btnImageUrl)
@@ -224,254 +221,15 @@ class MainWidget(QWidget):
                                     mainWith, mainHeight)
             self.window.show()
 
-    def faceAddLocalFileScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
 
-        self.window = QWidget()
-        self.window.setWindowTitle('Yerelden Ekle')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngFolder))
 
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(
-            QtCore.Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.faceAddScreen)
 
-        # Ana düzenleyici
-        layout = QVBoxLayout()
 
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
 
-    def faceAddImageUrlScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
 
-        self.window = QWidget()
-        self.window.setWindowTitle('URL\'den Ekle')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngImageUrl))
 
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.faceAddScreen)
 
-        # Ana düzenleyici
-        layout = QVBoxLayout()
 
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def faceAddVideoCameraScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Kameradan Ekle')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngCamera))
-
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.faceAddScreen)
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def faceAddVideoYoutubeScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Youtube\'dan Ekle')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngYoutube))
-
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.faceAddScreen)
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def faceDeleteScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Yüz Sil')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngDelete))
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def faceInfoScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Yüz Bilgileri')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngInfo))
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def modelTrainScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Model Eğitimi')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngTrain))
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def modelDeleteScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Model Sil')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngDelete))
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def modelInfoScreen(self):
-        mainWith = 300
-        mainHeight = 300
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Model Bilgileri')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngInfo))
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
-        self.window.show()
-
-    def testCameraScreen(self):
-        modelName = self.selectedModel
-        sRate = self.textBoxSuccessRate.text()
-        if str(sRate).__len__() == 0:
-            sRate = "0"
-        # Model seçilmemişse uyarı verme
-        rateLimit = 35
-        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
-            if modelName.__eq__("Model Seçiniz"):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-            if int(sRate) < int(rateLimit):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
-                                  QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-        else:
-            # Mesaj kutusunu gösterme
-            # self.showWarn()
-
-            testCamera(str(modelName), int(sRate))
-
-    def testLocalScreen(self):
-        modelName = self.selectedModel
-        sRate = self.textBoxSuccessRate.text()
-        if str(sRate).__len__() == 0:
-            sRate = "0"
-        # Model seçilmemişse uyarı verme
-        rateLimit = 35
-        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
-            if modelName.__eq__("Model Seçiniz"):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-            if int(sRate) < int(rateLimit):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
-                                  QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-        else:
-            # Mesaj kutusunu gösterme
-            # self.showWarn()
-
-            file_dialog = QFileDialog()
-            file_dialog.setFileMode(QFileDialog.ExistingFile)
-            file_dialog.setNameFilter(
-                'Tümü (*.jpg *.jpeg *.png *.mp4);;Resimler (*.jpg *.jpeg *.png);;Videolar (*.mp4)')
-            if file_dialog.exec_():
-                filePath = file_dialog.selectedFiles()[0]
-                # url = QtCore.QUrl.fromLocalFile(filePath).toString()  # Dosya yolunu URL'e dönüştürün
-                if re.search("[ıİğĞüÜşŞöÖçÇ]", filePath):
-                    getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen 'Türkçe Karakter' içermeyen bir yol seçin.",
-                                      QMessageBox.Warning,
-                                      QMessageBox.Ok, isQuestion=False).exec_()
-                elif filePath.endswith('.jpg') or filePath.endswith('.jpeg') or filePath.endswith('.png'):
-                    testImage(imagePath=filePath, modelName=modelName, successRate=sRate)
-                elif filePath.endswith('.mp4'):
-                    testVideo(videoPath=filePath, modelName=modelName, successRate=sRate)
-                else:
-                    getMsgBoxFeatures(QMessageBox(self), "Hata", "Desteklenmeyen dosya biçimi!", QMessageBox.Critical,
-                                      QMessageBox.Ok, isQuestion=False).exec_()
 
     def testUrlScreen(self):
         if not self.getIsMainScreenClosing():
@@ -532,6 +290,22 @@ class MainWidget(QWidget):
                 self.window.setObjectName("testUrlScreen")
                 self.window.show()
 
+
+
+    def closeEvent(self, event):
+        reply = getMsgBoxFeatures(QMessageBox(self), "Dikkat!", 'Programdan çıkmak istiyor musun?',
+                                  QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
+                                  isQuestion=True).exec_()
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            for widget in QtWidgets.QApplication.topLevelWidgets():
+                widget.close()
+            self.setIsMainScreenClosing(True)
+            deleteJpgFilesOnFolder(pathTempFolder)
+            event.accept()
+        else:
+            event.ignore()
+
     def showWarn(self):
         getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
                           self.selectedModel + "\nBaşarı oranı " + str(
@@ -543,6 +317,10 @@ class MainWidget(QWidget):
 
     def setIsMainScreenClosing(self, value):
         self.isMainScreenClosing = value
+
+    # Seçili olan modelin adını alma
+    def onComboboxSelection(self, modelName):
+        self.selectedModel = modelName
 
 
 if __name__ == '__main__':

@@ -1,22 +1,49 @@
 import pickle
 import os
 import time
+
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from keras.api.keras import Sequential
 from keras.api.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.api.keras.preprocessing.image import ImageDataGenerator
 
-from src.resources.Environments import datasetName, countEpochs, inputSize, pathTrain, pathValidation, pathFaceOutputs, pathModels, \
-    pathFaceResultsMap, countTrainImage, countValidationImage
+from src.resources.Environments import datasetName, countEpochs, inputSize, pathTrain, pathValidation, pathFaceOutputs, \
+    pathModels, \
+    pathFaceResultsMap, countTrainImage, countValidationImage, pngTrain
 from src.main.python.PostgreSQL import createTable
 from utils.Utils import randomString, useEnviron
 
 useEnviron()
-
-# input
 size = inputSize
 
 
-# todo : veri seti arttırılmalı, Eskisi gibi çeşit çeşit resimler olmalı.
+# todo : Eskisi gibi çeşit çeşit resimler olmalı.
+class TrainModel(QWidget):
+    def __init__(self, mainWidget):
+        super(TrainModel, self).__init__()
+        self.mainWidget = mainWidget
+
+    def modelTrainScreen(self):
+        mainWith = 300
+        mainHeight = 300
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+
+        self.window = QWidget()
+        self.window.setWindowTitle('Model Eğitimi')
+        self.window.setStyleSheet("background-color: white;")
+        self.window.setWindowIcon(QIcon(pngTrain))
+
+        # Ana düzenleyici
+        layout = QVBoxLayout()
+
+        self.window.setLayout(layout)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWith, mainHeight)
+        self.window.show()
+
 
 def createFaceModel():
     trainDirCount = len([f for f in os.listdir(pathTrain) if os.path.isdir(os.path.join(pathTrain, f))])
@@ -109,4 +136,4 @@ def createFaceModel():
     print('Model {} ismiyle başarıyla kaydedildi.'.format(modelName + '.h5'))
 
 
-createFaceModel()
+# createFaceModel()

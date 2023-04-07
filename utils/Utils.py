@@ -4,6 +4,8 @@ import shutil
 import string
 import random
 
+from PyQt5.QtWidgets import QFrame
+
 from src.resources.Environments import pathControlFolder
 
 
@@ -121,3 +123,10 @@ def randomString(length):
 
 def randomInt(length):
     return int(''.join(str(random.randint(0, 9)) for _ in range(length)))
+
+def getLine():
+    line = QFrame()
+    line.setFrameShape(QFrame.HLine)
+    line.setFrameShadow(QFrame.Sunken)
+    line.setStyleSheet("background-color: black;")
+    return line

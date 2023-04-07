@@ -1,17 +1,50 @@
 import cv2
 import numpy as np
 import pickle
+
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QMessageBox
 from keras.api.keras.preprocessing import image
 from keras.models import load_model
 
+from src.main.python.services.FeaturesService import getMsgBoxFeatures
 from src.resources.Environments import pathModels, pathFaceResultsMap, pathFaceCascade, minFaceSize, \
-    inputSize
+    inputSize, pngMustafa
 from src.main.python.PostgreSQL import updateAttendance
 from utils.Utils import useEnviron, changeNameToASCII
 
 useEnviron()
 faceCascade = cv2.CascadeClassifier(pathFaceCascade)
 size = inputSize
+
+
+class TestCamera(QWidget):
+    def __init__(self, mainWidget):
+        super(TestCamera, self).__init__()
+        self.mainWidget = mainWidget
+        self.setWindowIcon(QIcon(pngMustafa))
+
+    def testCameraScreen(self):
+        modelName = self.mainWidget.selectedModel
+        sRate = self.mainWidget.textBoxSuccessRate.text()
+        if str(sRate).__len__() == 0:
+            sRate = "0"
+        # Model seçilmemişse uyarı verme
+        rateLimit = 35
+        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
+            if modelName.__eq__("Model Seçiniz"):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
+            if int(sRate) < int(rateLimit):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
+        else:
+            # Mesaj kutusunu gösterme
+            # self.showWarn()
+
+            testCamera(str(modelName), int(sRate))
 
 
 def testCamera(modelName, successRate):

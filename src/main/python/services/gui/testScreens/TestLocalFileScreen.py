@@ -1,15 +1,68 @@
 import pickle
+import re
+
 import cv2
 import numpy as np
 from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
 from keras.models import load_model
 from keras.api.keras.preprocessing import image
-from src.resources.Environments import pathModels, pathFaceCascade, inputSize, pathFaceResultsMap, minFaceSize
+
+from src.main.python.services.FeaturesService import getMsgBoxFeatures
+from src.resources.Environments import pathModels, pathFaceCascade, inputSize, pathFaceResultsMap, minFaceSize, \
+    pngMustafa
 from utils.Utils import useEnviron, changeNameToASCII
 
 useEnviron()
 faceCascade = cv2.CascadeClassifier(pathFaceCascade)
 size = inputSize
+
+
+class TestLocalFile(QWidget):
+    def __init__(self, mainWidget):
+        super(TestLocalFile, self).__init__()
+        self.mainWidget = mainWidget
+        self.setWindowIcon(QIcon(pngMustafa))
+
+    def testLocalFileScreen(self):
+        modelName = self.mainWidget.selectedModel
+        sRate = self.mainWidget.textBoxSuccessRate.text()
+        if str(sRate).__len__() == 0:
+            sRate = "0"
+        # Model seçilmemişse uyarı verme
+        rateLimit = 35
+        if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
+            if modelName.__eq__("Model Seçiniz"):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
+            if int(sRate) < int(rateLimit):
+                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                                  "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
+                                  QMessageBox.Warning,
+                                  QMessageBox.Ok, isQuestion=False).exec_()
+        else:
+            # Mesaj kutusunu gösterme
+            # self.showWarn()
+
+            file_dialog = QFileDialog()
+            file_dialog.setFileMode(QFileDialog.ExistingFile)
+            file_dialog.setNameFilter(
+                'Tümü (*.jpg *.jpeg *.png *.mp4);;Resimler (*.jpg *.jpeg *.png);;Videolar (*.mp4)')
+            if file_dialog.exec_():
+                filePath = file_dialog.selectedFiles()[0]
+                # url = QtCore.QUrl.fromLocalFile(filePath).toString()  # Dosya yolunu URL'e dönüştürün
+                if re.search("[ıİğĞüÜşŞöÖçÇ]", filePath):
+                    getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen 'Türkçe Karakter' içermeyen bir yol seçin.",
+                                      QMessageBox.Warning,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
+                elif filePath.endswith('.jpg') or filePath.endswith('.jpeg') or filePath.endswith('.png'):
+                    testImage(imagePath=filePath, modelName=modelName, successRate=sRate)
+                elif filePath.endswith('.mp4'):
+                    testVideo(videoPath=filePath, modelName=modelName, successRate=sRate)
+                else:
+                    getMsgBoxFeatures(QMessageBox(self), "Hata", "Desteklenmeyen dosya biçimi!", QMessageBox.Critical,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
 
 
 def testImage(imagePath, modelName, successRate):

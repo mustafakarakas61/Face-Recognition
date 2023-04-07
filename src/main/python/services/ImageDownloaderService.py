@@ -3,7 +3,6 @@ import re
 
 import cv2
 import numpy as np
-import urllib.request
 
 # Resim URL'si
 import requests

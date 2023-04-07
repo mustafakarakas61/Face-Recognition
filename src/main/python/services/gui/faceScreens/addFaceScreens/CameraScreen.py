@@ -4,28 +4,61 @@ import cv2
 import os
 import time
 
-from src.resources.Environments import pathTrain, pathValidation, pathTest, durationVideo
-from src.main.python.services.ExtractImageService import extractFaces
-from utils.Utils import checkFolder, getFolderList, changeNameToASCII
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
+
+from src.resources.Environments import pngCamera
+from utils.Utils import checkFolder, changeNameToASCII
+
+
+class Camera(QWidget):
+    def __init__(self, mainWidget):
+        super(Camera, self).__init__()
+        self.mainWidget = mainWidget
+
+    def faceAddVideoCameraScreen(self):
+        mainWith = 300
+        mainHeight = 300
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+
+        self.window = QWidget()
+        self.window.setWindowTitle('Kameradan Ekle')
+        self.window.setStyleSheet("background-color: white;")
+        self.window.setWindowIcon(QIcon(pngCamera))
+
+        # Çarpı işaretine basıldığında eski pencere açılsın
+        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.window.destroyed.connect(self.mainWidget.faceAddScreen)
+
+        # Ana düzenleyici
+        layout = QVBoxLayout()
+
+        self.window.setLayout(layout)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWith, mainHeight)
+        self.window.show()
+
 
 # inputs
-isUseTrain = input("Train? (y,n): ")
-isUseValidation = input("Validation? (y,n): ")
-isUseTest = input("Test? (y,n): ")
-
-if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
-    getFolderList(pathTrain)
-    personName = input("Lütfen bir isim girin ya da bir isim seçin: ")
-    videoPath = input("Lütfen video path'i giriniz: ")
-
-    folderNameFolderInTrain = pathTrain + personName
-    checkFolder(folderNameFolderInTrain)
-
-    folderNameFolderInValidation = pathValidation + personName
-    checkFolder(folderNameFolderInValidation)
-
-folderNameFolderInTest = pathTest
-checkFolder(folderNameFolderInTest)
+# isUseTrain = input("Train? (y,n): ")
+# isUseValidation = input("Validation? (y,n): ")
+# isUseTest = input("Test? (y,n): ")
+#
+# if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y") | isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
+#     getFolderList(pathTrain)
+#     personName = input("Lütfen bir isim girin ya da bir isim seçin: ")
+#     videoPath = input("Lütfen video path'i giriniz: ")
+#
+#     folderNameFolderInTrain = pathTrain + personName
+#     checkFolder(folderNameFolderInTrain)
+#
+#     folderNameFolderInValidation = pathValidation + personName
+#     checkFolder(folderNameFolderInValidation)
+#
+# folderNameFolderInTest = pathTest
+# checkFolder(folderNameFolderInTest)
 
 
 # TODO : VİDEOYA DÖNÜŞTÜRÜELECEK ve asciiler yeniden kontrol ettiirelecek
@@ -68,9 +101,9 @@ def createVideo(type, name, duration, folder):
 
 
 # Eğitim seti için
-if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
-    createVideo("Train", personName, durationVideo, folderNameFolderInTrain)
-    extractFaces(personName, folderNameFolderInTrain)
+# if isUseTrain.__eq__("y") | isUseTrain.__eq__("Y"):
+#     createVideo("Train", personName, durationVideo, folderNameFolderInTrain)
+#     extractFaces(personName, folderNameFolderInTrain)
 
 # Doğrulama seti için
 # if isUseValidation.__eq__("y") | isUseValidation.__eq__("Y"):
