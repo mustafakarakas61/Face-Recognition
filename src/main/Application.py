@@ -1,11 +1,10 @@
 import os
-import re
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
-    QMessageBox, QFileDialog
+    QMessageBox
 
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures
@@ -72,9 +71,9 @@ class MainWidget(QWidget):
         self.setStyleSheet("background-color: white;")
         self.setWindowIcon(QIcon(pngMustafa))
 
-        #########
-        # Y Ü Z #
-        #########
+        ###########
+        # F A C E #
+        ###########
         labelFace = getLabelFeatures(QLabel('Yüz'), isUseFont=True, isUseSecondFont=False)
         # Yüzler için butonlar
         btnFaceAdd = getButtonFeatures(QPushButton(self), pngAdd)
@@ -120,9 +119,7 @@ class MainWidget(QWidget):
         # ComboBox oluşturma ve model isimlerini ekleme
         comboModel = getComboBoxFeatures(QComboBox(self))
         comboModel.addItems(modelNames)
-
         comboModel.currentIndexChanged.connect(lambda index: self.onComboboxSelection(comboModel.itemText(index)))
-
         # Test için butonlar
         btnTestCamera = getButtonFeatures(QPushButton(self), pngCamera)
         btnTestCamera.clicked.connect(self.testCameraWidget.testCameraScreen)
@@ -132,8 +129,6 @@ class MainWidget(QWidget):
         btnTestUrl.clicked.connect(self.testUrlScreen)
         # Test için düzenleyici
         layoutTest = QHBoxLayout()
-
-        # Düzenleyiciye ekleme
         layoutTest.addWidget(btnTestCamera)
         layoutTest.addWidget(btnTestLocal)
         layoutTest.addWidget(btnTestUrl)
@@ -141,30 +136,26 @@ class MainWidget(QWidget):
         # Ana düzenleyici
         layoutV = QVBoxLayout()
         layoutH = QHBoxLayout()
-
         layoutV.addWidget(labelFace)
         layoutV.addLayout(layoutFace)
         layoutV.addWidget(getLine())
         layoutV.addWidget(labelModel)
         layoutV.addLayout(layoutModel)
         layoutV.addWidget(getLine())
-
         layoutV.addWidget(labelTest)
         self.textBoxSuccessRate.setVisible(True)
         layoutH.addWidget(self.textBoxSuccessRate)
-
         labelSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "% Başarı Oranı", isEnabled=False,
                                                          isVisible=True)
         labelSuccessRate.setAlignment(Qt.AlignLeft)
         layoutH.addWidget(labelSuccessRate)
-
         layoutV.addWidget(comboModel)
         layoutV.addLayout(layoutH)
         layoutV.addLayout(layoutTest)
         self.setLayout(layoutV)
         self.show()
 
-    # SCREENS
+    # Main Screens
     def faceAddScreen(self):
         if not self.getIsMainScreenClosing():
             mainWith = 300
@@ -221,16 +212,6 @@ class MainWidget(QWidget):
                                     mainWith, mainHeight)
             self.window.show()
 
-
-
-
-
-
-
-
-
-
-
     def testUrlScreen(self):
         if not self.getIsMainScreenClosing():
             modelName = self.selectedModel
@@ -249,9 +230,6 @@ class MainWidget(QWidget):
                                       QMessageBox.Warning,
                                       QMessageBox.Ok, isQuestion=False).exec_()
             else:
-                # Mesaj kutusunu gösterme
-                # self.showWarn()
-
                 mainWith = 300
                 mainHeight = 150
                 screen = QtWidgets.QApplication.desktop().screenGeometry()
@@ -289,8 +267,6 @@ class MainWidget(QWidget):
                                         mainWith, mainHeight)
                 self.window.setObjectName("testUrlScreen")
                 self.window.show()
-
-
 
     def closeEvent(self, event):
         reply = getMsgBoxFeatures(QMessageBox(self), "Dikkat!", 'Programdan çıkmak istiyor musun?',
