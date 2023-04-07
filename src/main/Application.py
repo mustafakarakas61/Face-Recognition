@@ -23,7 +23,7 @@ from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import 
 from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder
-from utils.Utils import deleteJpgFilesOnFolder, getLine
+from utils.Utils import deleteJpgFilesOnFolder, getLine, deleteMp4FilesOnFolder
 
 
 class MainWidget(QWidget):
@@ -278,6 +278,7 @@ class MainWidget(QWidget):
                 widget.close()
             self.setIsMainScreenClosing(True)
             deleteJpgFilesOnFolder(pathTempFolder)
+            deleteMp4FilesOnFolder(pathTempFolder)
             event.accept()
         else:
             event.ignore()

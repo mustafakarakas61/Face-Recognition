@@ -56,6 +56,11 @@ def deleteJpgFilesOnFolder(sourceFolder):
         if file_name.endswith(".jpg"):
             os.remove(os.path.join(sourceFolder, file_name))
 
+def deleteMp4FilesOnFolder(sourceFolder):
+    for file_name in os.listdir(sourceFolder):
+        if file_name.endswith(".mp4"):
+            os.remove(os.path.join(sourceFolder, file_name))
+
 
 def checkURLsDublicates(filename):
     with open(filename, 'r') as f:
