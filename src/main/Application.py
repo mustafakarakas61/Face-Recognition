@@ -17,8 +17,8 @@ from src.main.python.services.gui.faceScreens.addFaceScreens.YoutubeScreen impor
 from src.main.python.services.gui.modelScreens.DeleteModel import DeleteModel
 from src.main.python.services.gui.modelScreens.InfoModel import InfoModel
 from src.main.python.services.gui.modelScreens.TrainModel import TrainModel
-from src.main.python.services.gui.testScreens.TestCameraScreen import testCamera, TestCamera
-from src.main.python.services.gui.testScreens.TestLocalFileScreen import testImage, testVideo, TestLocalFile
+from src.main.python.services.gui.testScreens.TestCameraScreen import TestCamera
+from src.main.python.services.gui.testScreens.TestLocalFileScreen import TestLocalFile
 from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
