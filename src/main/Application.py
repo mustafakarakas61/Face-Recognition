@@ -1,31 +1,21 @@
-import datetime
 import os
-import pickle
 import re
-import webbrowser
-import random
 
-from keras.models import load_model
-import cv2
-import numpy as np
-import requests
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox, QFrame, QFileDialog
-from keras.api.keras.preprocessing import image
 
-from src.main.python.services.FeaturesService import getTextBoxFeatures, getMsgBoxFeatures, getLabelFeatures, \
-    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, getFaceButtonFeatures, getExceptionMsgBox
-from src.main.python.services.YoutubeDownloaderService import downloadYoutubeVideo
-from src.main.python.services.gui.test.Camera import testCamera
-from src.main.python.services.gui.test.Local import testImage, testVideo
+from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
+    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures
+from src.main.python.services.gui.testScreens.TestCameraScreen import testCamera
+from src.main.python.services.gui.testScreens.TestLocalFileScreen import testImage, testVideo
+from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage
+from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
-    pngFolder, pngImageUrl, pngYoutube, pathModels, pathFaceResultsMap, pathFaceCascade, pathTempFolder, \
-    pngFaceDetection0, pngFaceDetection1, pngFaceDetection2, minFaceSize, inputSize, pngFaceDetectionYoutube0, \
-    pngFaceDetectionYoutube1
-from utils.Utils import randomString, deleteJpgFilesOnFolder, changeNameToASCII
+    pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder
+from utils.Utils import deleteJpgFilesOnFolder
 
 
 def getLine():
@@ -37,17 +27,21 @@ def getLine():
 
 
 class MainWidget(QWidget):
-
     def __init__(self):
         super().__init__()
+
+        # started
         self.control = False
         self.controlOpenGoogle = True
-        self.controlOpenYoutube = True
         self.selectedModel = "Model Seçiniz"
-        self.startTimeText = "00:00:00"
-        self.endTimeText = "00:00:00"
         self.textBoxSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "90", isEnabled=True, isVisible=False)
         self.isMainScreenClosing = False
+
+        # another classes
+        self.testYoutubeWidget = TestYoutube(self)
+        self.testImageWidget = TestImage(self)
+
+        # init
         self.initUI()
 
     def closeEvent(self, event):
@@ -195,7 +189,7 @@ class MainWidget(QWidget):
             btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
             btnVideoCamera.clicked.connect(self.faceAddVideoCameraScreen)
             btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
-            btnImageFolder.clicked.connect(self.faceAddImageFolderScreen)
+            btnImageFolder.clicked.connect(self.faceAddLocalFileScreen)
             # Yerel için düzenleyici
             layoutImage = QHBoxLayout()
             layoutImage.addWidget(btnVideoCamera)
@@ -230,7 +224,7 @@ class MainWidget(QWidget):
                                     mainWith, mainHeight)
             self.window.show()
 
-    def faceAddImageFolderScreen(self):
+    def faceAddLocalFileScreen(self):
         mainWith = 300
         mainHeight = 300
         screen = QtWidgets.QApplication.desktop().screenGeometry()
@@ -243,7 +237,7 @@ class MainWidget(QWidget):
 
         # Çarpı işaretine basıldığında eski pencere açılsın
         self.window.setAttribute(
-            QtCore.Qt.WA_DeleteOnClose)  # todo eğer anaekranınkine basıldıysa açılmasın burası ve bu gibiler
+            QtCore.Qt.WA_DeleteOnClose)
         self.window.destroyed.connect(self.faceAddScreen)
 
         # Ana düzenleyici
@@ -514,7 +508,7 @@ class MainWidget(QWidget):
                 # R E S İ M #
                 #############
                 btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
-                btnImageUrl.clicked.connect(self.testUrlImageScreen)
+                btnImageUrl.clicked.connect(self.testImageWidget.testUrlImageScreen)
                 layoutImage = QHBoxLayout()
                 layoutImage.addWidget(btnImageUrl)
 
@@ -522,7 +516,7 @@ class MainWidget(QWidget):
                 # Y O U T U B E #
                 #################
                 btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
-                btnVideoYoutube.clicked.connect(self.testUrlYoutubeScreen)
+                btnVideoYoutube.clicked.connect(self.testYoutubeWidget.testUrlYoutubeScreen)
                 layoutYoutube = QHBoxLayout()
                 layoutYoutube.addWidget(btnVideoYoutube)
 
@@ -537,325 +531,6 @@ class MainWidget(QWidget):
                                         mainWith, mainHeight)
                 self.window.setObjectName("testUrlScreen")
                 self.window.show()
-
-    def testUrlImageScreen(self):
-        mainWidth = 300
-        mainHeight = 150
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Test Url')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngImageUrl))
-
-        if self.controlOpenGoogle:
-            # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
-            with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
-                resultMap = pickle.load(fileReadStream)
-
-            randomId = random.choice(list(resultMap.keys()))
-            name = resultMap[randomId]
-
-            webbrowser.open("https://www.google.com/search?q=" + str(name).replace(" ",
-                                                                                   "+") + "&sxsrf=APwXEdesmw72efa4-dds-FUED9TjAXQVAQ:1680383725172&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjhu5mYzYn-AhVLQvEDHS4EBnMQ_AUoAnoECAEQBA&biw=951&bih=612&dpr=1")
-            self.controlOpenGoogle = False
-        # URL'nin görüntülendiği etiket
-        labelInfo = getLabelFeatures(QLabel("Görüntü bağlantısını yapıştırın.", self.window), False, True)
-        labelInfo.setAlignment(Qt.AlignCenter)
-        labelInfo.setGeometry(0, 0, mainWidth, mainHeight)
-
-        # Ana düzenleyici
-        layout = QVBoxLayout()
-        layout.addWidget(labelInfo)
-
-        textBoxGetUrl = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
-        layout.addWidget(textBoxGetUrl)
-        buttonLayout = QHBoxLayout()
-
-        btnFaceScanner = getFaceButtonFeatures(QPushButton(self), pngFaceDetection0, isVisible=True)
-        buttonLayout.addWidget(btnFaceScanner)
-        layout.addLayout(buttonLayout)
-
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth - mainWidth - mainWidth * 0.2),
-                                int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWidth, mainHeight)
-        self.window.setObjectName("testUrlImageScreen")
-        self.window.show()
-        # Metin kutusunu dinle
-        textBoxGetUrl.textChanged.connect(lambda: self.updateUrlImageButtonStatus(textBoxGetUrl, btnFaceScanner))
-
-    def updateUrlImageButtonStatus(self, textBoxGetUrl, btnFaceScanner):
-        # Metin kutusunun içeriğini al
-        text = textBoxGetUrl.text()
-
-        # Metin kutusunun uzunluğunu kontrol et
-        if len(text) <= 1:
-            btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection0))
-        else:
-            # URL doğrulaması yap
-            pattern = re.compile(r'https?://.*\.(jpg|png|jpeg)', re.IGNORECASE)
-            if pattern.match(text):
-                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection1))
-                self.control = True
-                btnFaceScanner.clicked.connect(lambda: self.getImage(textBoxGetUrl))
-            else:
-                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection0))
-
-    def getImage(self, textBoxGetUrl):
-        try:
-            response = requests.get(textBoxGetUrl.text(), timeout=10)
-            if response.status_code == 200:
-                arr = np.asarray(bytearray(response.content), dtype=np.uint8)
-                img = cv2.imdecode(arr, -1)
-
-                faceCascade = cv2.CascadeClassifier(pathFaceCascade)
-                if img is None:
-                    getMsgBoxFeatures(QMessageBox(self), "Hata",
-                                      "Resim yüklenemedi.",
-                                      QMessageBox.Critical,
-                                      QMessageBox.Ok, isQuestion=False).exec_()
-                    # textBoxGetUrl.setText("")
-                    # btnFaceScanner.setIcon(QtGui.QIcon(pngFace404))
-                    self.window.setAttribute(Qt.WA_DeleteOnClose)
-                    self.window.destroyed.connect(self.testUrlImageScreen)
-                    self.window.close()
-
-                else:
-                    # Eğitimde kullanılan yüz isimleri ve kodları
-                    with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
-                        ResultMap = pickle.load(fileReadStream)
-
-                    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                    # Yüzleri algıla
-                    faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5,
-                                                         minSize=(minFaceSize, minFaceSize))
-
-                    if len(faces) > 0:
-                        for (x, y, w, h) in faces:
-                            # Yüz bölgesinin kesilmesi ve boyutlandırılması
-                            faceImage = img[y:y + h, x:x + w]
-                            faceImage = cv2.resize(faceImage, (inputSize, inputSize))
-                            faceImage = image.img_to_array(faceImage)
-                            faceImage = np.expand_dims(faceImage, axis=0)
-                            faceImage /= 255
-
-                            # Yüz tahmini
-                            model = load_model(pathModels + self.selectedModel)
-                            prediction = model.predict(faceImage, verbose=0)
-                            predictedClass = np.argmax(prediction)
-                            predictedName = ResultMap[predictedClass]
-                            accuracy = round(np.max(prediction) * 100, 2)
-                            if int(accuracy) > int(self.textBoxSuccessRate.text()):
-                                cv2.putText(img, changeNameToASCII(predictedName) + " " + str(
-                                    accuracy) + "%", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-                                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)  # green
-                            else:
-                                cv2.putText(img, "%" + str(
-                                    accuracy), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)  # red
-                                cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)  # blue
-
-                        name = pathTempFolder + randomString(10) + ".jpg"
-                        cv2.imwrite(name, img)
-                        self.openAnalizedImageScreen(name, img)
-                    else:
-                        getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                          "Yüz bulunamadı.",
-                                          QMessageBox.Warning,
-                                          QMessageBox.Ok, isQuestion=False).exec_()
-                        self.window.setAttribute(Qt.WA_DeleteOnClose)
-                        self.window.destroyed.connect(self.testUrlImageScreen)
-                        self.window.close()
-            elif self.control:
-                getMsgBoxFeatures(QMessageBox(self), "Hata",
-                                  "Resim indirilemedi.",
-                                  QMessageBox.Critical,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-                self.control = False
-                self.window.close()
-        except Exception as e:
-            getExceptionMsgBox(QMessageBox(self), str(e)).exec_()
-            self.control = False
-            self.window.close()
-
-    def openAnalizedImageScreen(self, name, img):
-        height, width, channels = img.shape
-        imgWith = width
-        imgHeight = height
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Sonuç')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngFaceDetection2))
-
-        btn = QPushButton(self)
-        btn.setIcon(QtGui.QIcon(name))
-
-        if int(imgWith) > int(screenWidth - screenWidth * 0.2):
-            imgWith = int(screenWidth - screenWidth * 0.2)
-        if int(imgHeight) > int(screenHeight - screenHeight * 0.2):
-            imgHeight = int(screenHeight - screenHeight * 0.2)
-
-        btn.setFixedSize(imgWith, imgHeight)
-        btn.setIconSize(QtCore.QSize(imgWith, imgHeight))
-
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.testUrlScreen)
-
-        # Ana düzenleyici
-        layoutFace = QVBoxLayout()
-        layoutFace.addWidget(btn)
-
-        self.window.setLayout(layoutFace)
-        self.window.setGeometry(int(screenWidth / 2 - int(imgWith / 2)), int(screenHeight / 2 - int(imgHeight / 2)),
-                                imgWith, imgHeight)
-        self.window.show()
-
-    def onTextBoxStartTimeChanged(self, text):
-        self.startTimeText = text
-
-    def onTextBoxEndTimeChanged(self, text):
-        self.endTimeText = text
-
-    def testUrlYoutubeScreen(self):
-        mainWidth = 300
-        mainHeight = 150
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
-
-        self.window = QWidget()
-        self.window.setWindowTitle('Test Youtube')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngYoutube))
-
-        if self.controlOpenYoutube:
-            # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
-            with open(pathFaceResultsMap + self.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
-                resultMap = pickle.load(fileReadStream)
-
-            randomId = random.choice(list(resultMap.keys()))
-            name = resultMap[randomId]
-
-            webbrowser.open("https://www.youtube.com/results?search_query=" + str(name).replace(" ", "+"))
-            self.controlOpenYoutube = False
-
-        labelInfo = getLabelFeatures(QLabel("Youtube bağlantısını yapıştırın.", self.window), False, True)
-        labelInfo.setAlignment(Qt.AlignCenter)
-        labelInfo.setGeometry(0, 0, mainWidth, mainHeight)
-
-        # Ana düzenleyici V _   H |
-        layoutV = QVBoxLayout()
-        layoutV.addWidget(labelInfo)
-
-        textBoxGetUrl = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
-        layoutV.addWidget(textBoxGetUrl)
-        layoutH = QHBoxLayout()
-
-        btnFaceScanner = getFaceButtonFeatures(QPushButton(self), pngFaceDetectionYoutube0, isVisible=True)
-
-        layoutStartV = QVBoxLayout()
-        labelStartInfo = getLabelFeatures(QLabel("Başlangıç", self.window), False, True)
-        textBoxStartTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
-        textBoxStartTime.setInputMask("99:99:99")
-        textBoxStartTime.setText("00:00:00")
-        layoutStartV.addWidget(labelStartInfo)
-        layoutStartV.addWidget(textBoxStartTime)
-
-        layoutH.addLayout(layoutStartV)
-        layoutH.addWidget(btnFaceScanner)
-
-        layoutEndV = QVBoxLayout()
-        labelEndInfo = getLabelFeatures(QLabel("Bitiş", self.window), False, True)
-        textBoxEndTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
-        textBoxEndTime.setInputMask("99:99:99")
-        textBoxEndTime.setText("00:00:00")
-        layoutEndV.addWidget(labelEndInfo)
-        layoutEndV.addWidget(textBoxEndTime, alignment=Qt.AlignCenter)
-
-        layoutH.addLayout(layoutEndV)
-
-        layoutV.addLayout(layoutH)
-
-        # # Çarpı işaretine basıldığında eski pencere açılsın
-        # self.window.setAttribute(Qt.WA_DeleteOnClose)
-        # self.window.destroyed.connect(self.testUrlScreen)
-
-        self.window.setLayout(layoutV)
-        self.window.setGeometry(int(screenWidth - mainWidth - mainWidth * 0.2),
-                                int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWidth, mainHeight)
-        self.window.setObjectName("testUrlYoutubeScreen")
-        self.window.show()
-
-        textBoxStartTime.textChanged.connect(lambda index: self.onTextBoxStartTimeChanged(textBoxStartTime.text()))
-        textBoxEndTime.textChanged.connect(lambda index: self.onTextBoxEndTimeChanged(textBoxEndTime.text()))
-
-        textBoxGetUrl.textChanged.connect(
-            lambda: self.updateUrlYoutubeButtonStatus(textBoxGetUrl, btnFaceScanner))
-
-    def updateUrlYoutubeButtonStatus(self, textBoxGetUrl, btnFaceScanner):
-        # Metin kutusunun içeriğini al
-        url = str(textBoxGetUrl.text())
-
-        # Metin kutusunun uzunluğunu kontrol et
-        if len(url) <= 1:
-            btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube0))
-        else:
-            # URL doğrulaması yap
-            pattern = re.compile(
-                r'(?:https?://)?(?:www\.)?(?:youtu\.be|youtube\.com)/(?:watch\?v=)?(?:shorts/)?([\w-]{11})',
-                re.IGNORECASE)
-            if pattern.match(url):
-                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube1))
-                self.control = True
-
-                btnFaceScanner.clicked.connect(
-                    lambda: self.getVideo(url, self.startTimeText, self.endTimeText,
-                                          self.selectedModel, self.textBoxSuccessRate.text()))
-            else:
-                btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube0))
-
-    # todo : inen videolar, kliplenen videolar silinsin
-    def getVideo(self, url, startTime, endTime, modelName, sRate):
-        try:
-            splitStartTime = str(startTime).split(":")
-            sTHH = int(splitStartTime[0]) * int(60 * 60)
-            sTMM = int(splitStartTime[1]) * int(60)
-            stSS = int(splitStartTime[2])
-            durationStartTime = int(sTHH + sTMM + stSS)
-
-            splitEndTime = str(endTime).split(":")
-            eTHH = int(splitEndTime[0]) * int(60 * 60)
-            eTMM = int(splitEndTime[1]) * int(60)
-            etSS = int(splitEndTime[2])
-            durationEndTime = int(eTHH + eTMM + etSS)
-
-            if len(self.startTimeText) != 8 and len(self.endTimeText) != 8:
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Lütfen geçerli formatta (HH:mm:ss) zaman giriniz!",
-                                  QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-            elif durationStartTime >= durationEndTime:
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
-                                  "Videonun başlangıç süresi, bitiş süresinden büyük veya eşit olamaz!",
-                                  QMessageBox.Warning,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
-            else:
-                filePath = downloadYoutubeVideo(url=url, startTime=str(startTime),
-                                                durationStartTime=int(durationStartTime),
-                                                durationEndTime=int(durationEndTime))
-                testVideo(videoPath=str(filePath), modelName=str(modelName), successRate=int(sRate))
-
-                self.window.setAttribute(Qt.WA_DeleteOnClose)
-                self.window.destroyed.connect(self.testUrlYoutubeScreen())
-                self.window.close()
-        except Exception as e:
-            # getExceptionMsgBox(QMessageBox(self), str(e)).exec_()
-            self.window.close()
 
     def showWarn(self):
         getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",

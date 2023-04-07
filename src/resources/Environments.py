@@ -55,7 +55,7 @@ pathFaceResultsMap = pathFaceMaps + "ResultsMap-"
 pathDatasets = pathProject + pathMain + "datasets/"
 pathTrain = pathDatasets + datasetName + "/train/"
 pathValidation = pathDatasets + datasetName + "/validation/"
-pathTest = pathDatasets + datasetName + "/test/"
+pathTest = pathDatasets + datasetName + "/testScreens/"
 
 # Cascades
 pathFaceCascade = pathProject + pathResources + "haarcascade_frontalface_default.xml"

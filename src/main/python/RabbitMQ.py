@@ -8,7 +8,6 @@ from src.main.python.services.ImageDownloaderService import downloadImageFaceJso
 from src.resources.Environments import pathTrain, queueYoutubeVideoTest, imageLimit, queueFaceFromYoutube, \
     queueFaceFromVideo, queueFaceFromImage
 from src.main.python.services.ExtractImageService import extractImageFromVideo, extractFaces
-from src.main.python.services.YoutubeDownloaderService import createClippedVideo
 
 from utils.Utils import checkFolder, controlFilesNumbers
 
@@ -24,25 +23,6 @@ def consumeYoutubeVideoTest(ch, method, properties, body):
     msg = json.loads(body.decode())
 
     # findFacesFromVideo(msg['video'], msg['model'], successRate)
-
-
-def consumeFaceFromYoutube(ch, method, properties, body):
-    # {"name":"Name Surname","url":"https://www.youtube.com/watch?v=fxUox86xQGc&t=7s","ss":"00:00:30","t":"45"}
-    msg = json.loads(body.decode())
-
-    videoPath = createClippedVideo(msg['url'], msg['ss'], msg['t'], msg['name'])
-
-    folderName = pathTrain + msg['name']
-    checkFolder(folderName)
-
-    controlFilesNumbers(folderName)
-    if extractImageFromVideo(videoPath, msg['name'], imageLimit):
-        extractFaces(msg['name'], folderName)
-
-        # os.remove(pathVideo)
-        time.sleep(20)
-        controlFilesNumbers(folderName)
-        print(str(msg['name']) + " için işlem tamamlandı.\n")
 
 
 def consumeFaceFromImage(ch, method, properties, body):
@@ -75,9 +55,6 @@ def consumeFaceFromVideo(ch, method, properties, body):
 
 channel.basic_consume(
     queue=queueYoutubeVideoTest, on_message_callback=consumeYoutubeVideoTest, auto_ack=True)
-
-channel.basic_consume(
-    queue=queueFaceFromYoutube, on_message_callback=consumeFaceFromYoutube, auto_ack=True)
 
 channel.basic_consume(
     queue=queueFaceFromImage, on_message_callback=consumeFaceFromImage, auto_ack=True)
