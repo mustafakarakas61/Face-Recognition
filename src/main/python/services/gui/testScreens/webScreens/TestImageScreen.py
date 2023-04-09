@@ -14,8 +14,8 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit
 from keras.models import load_model
 from keras.api.keras.preprocessing import image
 
-from src.main.python.services.FeaturesService import getTextBoxFeatures, getMsgBoxFeatures, getLabelFeatures, \
-    getFaceButtonFeatures, getExceptionMsgBox
+from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
+    getFaceButtonFeatures, getExceptionMsgBox, fontTextBox
 from src.resources.Environments import pathFaceResultsMap, pngImageUrl, pngFaceDetection0, pngFaceDetection1, \
     pathFaceCascade, minFaceSize, inputSize, pathModels, pathTempFolder, pngFaceDetection2
 from utils.Utils import changeNameToASCII, randomString
@@ -58,7 +58,9 @@ class TestImage(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(labelInfo)
 
-        textBoxGetUrl = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        textBoxGetUrl = QLineEdit()
+        textBoxGetUrl.setFont(fontTextBox)
+
         layout.addWidget(textBoxGetUrl)
         buttonLayout = QHBoxLayout()
 

@@ -1,6 +1,8 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIntValidator
 from PyQt5.QtWidgets import QMessageBox
+
+fontTextBox = QtGui.QFont("Times New Roman", 15)
 
 
 def getLabelFeatures(lbl, isUseFont, isUseSecondFont):
@@ -41,6 +43,27 @@ def getButtonFeatures(btn, pngName):
     return btn
 
 
+def getButtonFeaturesDelete(btn, text):
+    butonSizes = (70, 50)
+    fontButton = QtGui.QFont("Times New Roman", 15)
+    btn.setFont(fontButton)
+    btn.setFixedSize(*butonSizes)
+    btn.setText(text)
+    btn.setIconSize(QtCore.QSize(*butonSizes))
+    btn.setStyleSheet("background-color: #DC143C; color: white; border-radius: 5px; font-weight: bold;")
+    return btn
+
+def getButtonFeaturesTrain(btn, text):
+    butonSizes = (70, 50)
+    fontButton = QtGui.QFont("Times New Roman", 15)
+    btn.setFont(fontButton)
+    btn.setFixedSize(*butonSizes)
+    btn.setText(text)
+    btn.setIconSize(QtCore.QSize(*butonSizes))
+    btn.setStyleSheet("background-color: #4CAF50; color: white; border-radius: 5px; font-weight: bold;")
+    return btn
+
+
 def getComboBoxFeatures(cmbBox):
     fontComboBox = QtGui.QFont("Times New Roman", 15)
     cmbBox.setFont(fontComboBox)
@@ -74,18 +97,7 @@ def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType, isQuestion):
     return msgBox
 
 
-def getTextBoxFeatures(textBox, text, isVisible):
-    fontTextBox = QtGui.QFont("Times New Roman", 15)
-    textBox.setFont(fontTextBox)
-    textBox.setText(text)
-    textBox.setVisible(False)
-    if isVisible:
-        textBox.setVisible(True)
-    return textBox
-
-
 def getTextBoxSuccessRateFeatures(textBox, text, isEnabled, isVisible):
-    fontTextBox = QtGui.QFont("Times New Roman", 15)
     textBox.setFont(fontTextBox)
     textBox.setVisible(False)
     if isVisible:
@@ -93,6 +105,8 @@ def getTextBoxSuccessRateFeatures(textBox, text, isEnabled, isVisible):
 
     if isEnabled:
         textBox.setFixedSize(30, 30)
+        validator = QIntValidator(0, 99)
+        textBox.setValidator(validator)
         textBox.setMaxLength(2)
         textBox.setStyleSheet("background-color: white; color: black;")
         textBox.setEnabled(True)

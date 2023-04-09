@@ -52,6 +52,7 @@ pathFaceMaps = pathFace + "maps/"
 pathFaceResultsMap = pathFaceMaps + "ResultsMap-"
 
 # Datasets
+pathDatasetsSplit = pathProject + pathMain + "datasets-split/"
 pathDatasets = pathProject + pathMain + "datasets/"
 pathTrain = pathDatasets + datasetName + "/train/"
 pathValidation = pathDatasets + datasetName + "/validation/"

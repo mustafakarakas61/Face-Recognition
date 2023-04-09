@@ -8,8 +8,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QMessageBox
 
-from src.main.python.services.FeaturesService import getTextBoxFeatures, getMsgBoxFeatures, getLabelFeatures, \
-    getFaceButtonFeatures
+from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
+    getFaceButtonFeatures, fontTextBox
 from src.main.python.services.YoutubeDownloaderService import downloadYoutubeVideo
 from src.main.python.services.gui.testScreens.TestLocalFileScreen import testVideo
 from src.resources.Environments import pngYoutube, pathFaceResultsMap, pngFaceDetectionYoutube0, \
@@ -61,7 +61,8 @@ class TestYoutube(QWidget):
         layoutV = QVBoxLayout()
         layoutV.addWidget(labelInfo)
 
-        textBoxGetUrl = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        textBoxGetUrl = QLineEdit()
+        textBoxGetUrl.setFont(fontTextBox)
         layoutV.addWidget(textBoxGetUrl)
         layoutH = QHBoxLayout()
 
@@ -69,7 +70,9 @@ class TestYoutube(QWidget):
 
         layoutStartV = QVBoxLayout()
         labelStartInfo = getLabelFeatures(QLabel("Başlangıç", self.window), False, True)
-        textBoxStartTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        textBoxStartTime = QLineEdit()
+        textBoxStartTime.setFont(fontTextBox)
+
         textBoxStartTime.setInputMask("99:99:99")
         textBoxStartTime.setText("00:00:00")
         layoutStartV.addWidget(labelStartInfo)
@@ -80,7 +83,8 @@ class TestYoutube(QWidget):
 
         layoutEndV = QVBoxLayout()
         labelEndInfo = getLabelFeatures(QLabel("Bitiş", self.window), False, True)
-        textBoxEndTime = getTextBoxFeatures(QLineEdit(self), "", isVisible=True)
+        textBoxEndTime = QLineEdit()
+        textBoxEndTime.setFont(fontTextBox)
         textBoxEndTime.setInputMask("99:99:99")
         textBoxEndTime.setText("00:00:00")
         layoutEndV.addWidget(labelEndInfo)

@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit
     QMessageBox
 
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
-    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures
+    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, fontTextBox
 from src.main.python.services.gui.faceScreens.DeleteFaceScreen import DeleteFace
 from src.main.python.services.gui.faceScreens.InfoFaceScreen import InfoFace
 from src.main.python.services.gui.faceScreens.addFaceScreens.CameraScreen import Camera
@@ -145,8 +145,13 @@ class MainWidget(QWidget):
         layoutV.addWidget(labelTest)
         self.textBoxSuccessRate.setVisible(True)
         layoutH.addWidget(self.textBoxSuccessRate)
-        labelSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "% Başarı Oranı", isEnabled=False,
-                                                         isVisible=True)
+        labelSuccessRate = QLineEdit()
+        labelSuccessRate.setText("% Başarı Oranı")
+        labelSuccessRate.setEnabled(False)
+        labelSuccessRate.setFont(fontTextBox)
+        labelSuccessRate.setStyleSheet("background-color: white; color: black;")
+
+
         labelSuccessRate.setAlignment(Qt.AlignLeft)
         layoutH.addWidget(labelSuccessRate)
         layoutV.addWidget(comboModel)
