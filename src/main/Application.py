@@ -301,8 +301,8 @@ class MainWidget(QWidget):
         self.isMainScreenClosing = value
 
     # Seçili olan modelin adını alma
-    def onComboboxSelection(self, modelName):
-        self.selectedModel = modelName
+    def onComboboxSelection(self, newName):
+        self.selectedModel = newName
 
 
 if __name__ == '__main__':

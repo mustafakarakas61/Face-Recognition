@@ -7,13 +7,13 @@ import time
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QIntValidator
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QLineEdit, QPushButton, QMessageBox
 from keras.api.keras import Sequential
 from keras.api.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.api.keras.preprocessing.image import ImageDataGenerator
 
 from src.main.python.services.FeaturesService import getComboBoxFeatures, getLabelFeatures, \
-    fontTextBox, getButtonFeaturesTrain
+    fontTextBox, getButtonFeaturesTrain, getMsgBoxFeatures
 from src.resources.Environments import pathFaceOutputs, \
     pathModels, \
     pathFaceResultsMap, countTrainImage, countValidationImage, pngTrain, pathDatasets, pathDatasetsSplit
@@ -28,6 +28,14 @@ class TrainModel(QWidget):
     def __init__(self, mainWidget):
         super(TrainModel, self).__init__()
         self.mainWidget = mainWidget
+
+        # started
+        self.selectedDatasetName = ""
+        self.selectedTrainPercentage = ""
+        self.selectedDropoutRate = ""
+        self.selectedBatchSize = ""
+        self.epochsCount = "30"
+        self.inputSize = "128x128"
 
     def modelTrainScreen(self):
         mainWith = 300
@@ -46,6 +54,8 @@ class TrainModel(QWidget):
         datasetNames = [''] + datasetFolders
         comboDatasets = getComboBoxFeatures(QComboBox(self))
         comboDatasets.addItems(datasetNames)
+        comboDatasets.currentIndexChanged.connect(
+            lambda index: self.onComboDatasetsSelection(comboDatasets.itemText(index)))
         layoutHDataset = QHBoxLayout()
         layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
         layoutHDataset.addWidget(comboDatasets, alignment=Qt.AlignRight)
@@ -54,6 +64,7 @@ class TrainModel(QWidget):
         trainPercentage = [''] + ['70%'] + ['80%']
         comboTrain = getComboBoxFeatures(QComboBox(self))
         comboTrain.addItems(trainPercentage)
+        comboTrain.currentIndexChanged.connect(lambda index: self.onComboTrainSelection(comboTrain.itemText(index)))
         layoutHTrain = QHBoxLayout()
         layoutHTrain.addWidget(labelTrain, alignment=Qt.AlignLeft)
         layoutHTrain.addWidget(comboTrain, alignment=Qt.AlignRight)
@@ -62,6 +73,8 @@ class TrainModel(QWidget):
         dropoutRate = [''] + ['0.3'] + ['0.4'] + ['0.5']
         comboDropout = getComboBoxFeatures(QComboBox(self))
         comboDropout.addItems(dropoutRate)
+        comboDropout.currentIndexChanged.connect(
+            lambda index: self.onComboDropoutSelection(comboDropout.itemText(index)))
         layoutHDropout = QHBoxLayout()
         layoutHDropout.addWidget(labelDropout, alignment=Qt.AlignLeft)
         layoutHDropout.addWidget(comboDropout, alignment=Qt.AlignRight)
@@ -70,6 +83,7 @@ class TrainModel(QWidget):
         batchSizes = [''] + ['4'] + ['8'] + ['16'] + ['32'] + ['64'] + ['128']
         comboBatch = getComboBoxFeatures(QComboBox(self))
         comboBatch.addItems(batchSizes)
+        comboBatch.currentIndexChanged.connect(lambda index: self.onComboBatchSelection(comboBatch.itemText(index)))
         layoutHBatchSize = QHBoxLayout()
         layoutHBatchSize.addWidget(labelBatchSize, alignment=Qt.AlignLeft)
         layoutHBatchSize.addWidget(comboBatch, alignment=Qt.AlignRight)
@@ -80,6 +94,7 @@ class TrainModel(QWidget):
         textBoxInputSize.setFont(fontTextBox)
         textBoxInputSize.setText("128x128")
         textBoxInputSize.setInputMask("999\\x999")
+        textBoxInputSize.textChanged.connect(lambda index: self.onTextBoxInputSizeChange(textBoxInputSize.text()))
         layoutHInputSize = QHBoxLayout()
         layoutHInputSize.addWidget(labelInputSize, alignment=Qt.AlignLeft)
         layoutHInputSize.addWidget(textBoxInputSize, alignment=Qt.AlignRight)
@@ -91,14 +106,15 @@ class TrainModel(QWidget):
         textBoxEpochsCount.setValidator(validator)
         textBoxEpochsCount.setText("30")
         textBoxEpochsCount.setFixedSize(40, 30)
-
         textBoxEpochsCount.setMaxLength(3)
+        textBoxEpochsCount.textChanged.connect(lambda index: self.onTextBoxEpochsCountChange(textBoxEpochsCount.text()))
         layoutHEpochsCount = QHBoxLayout()
         layoutHEpochsCount.addWidget(labelEpochsCount, alignment=Qt.AlignLeft)
         layoutHEpochsCount.addWidget(textBoxEpochsCount, alignment=Qt.AlignRight)
 
         # button
         btnTrainModel = getButtonFeaturesTrain(QPushButton(self), text="Eğit")
+        btnTrainModel.clicked.connect(self.startTrain)
 
         # Ana düzenleyici
         layoutV = QVBoxLayout()
@@ -134,11 +150,46 @@ class TrainModel(QWidget):
                                 mainWith, mainHeight)
         self.window.show()
 
+    def startTrain(self):
+        datasetName = self.selectedDatasetName
+        trainPercentage = self.selectedTrainPercentage
+        dropoutRate = self.selectedDropoutRate
+        batchSize = self.selectedBatchSize
+        epochsCount = self.epochsCount
+        inputSizeW, inputSizeH = self.inputSize.split("x")
 
+        # todo : return true olduğunda güncellensin Model Seçiniz vs
+        createFaceModel(str(datasetName), int(batchSize), float(trainPercentage.replace("%", "")), int(inputSizeW),
+                        int(inputSizeH), float(dropoutRate), int(epochsCount))
+
+
+
+    def showInfo(self):
+        getMsgBoxFeatures(QMessageBox(self), "Model Eğitimi",
+                          "Model Eğitimi başlamıştır.",
+                          QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
+
+    def onTextBoxEpochsCountChange(self, newValue):
+        self.epochsCount = newValue
+
+    def onTextBoxInputSizeChange(self, newValue):
+        self.inputSize = newValue
+
+    def onComboDatasetsSelection(self, newName):
+        self.selectedDatasetName = newName
+
+    def onComboTrainSelection(self, newName):
+        self.selectedTrainPercentage = newName
+
+    def onComboDropoutSelection(self, newName):
+        self.selectedDropoutRate = newName
+
+    def onComboBatchSelection(self, newName):
+        self.selectedBatchSize = newName
 
 
 def createFaceModel(datasetName, batchSize, trainPercentage, inputSizeW, inputSizeH, dropoutRate, epochsCount):
-    trainPercentage = int(trainPercentage / 100)
+    trainPercentage = float(trainPercentage / 100)
     pathSet = pathDatasets + datasetName
 
     # will be created if not exist
@@ -265,4 +316,4 @@ def createFaceModel(datasetName, batchSize, trainPercentage, inputSizeW, inputSi
     model.save(pathModels + modelName + '.h5')
     createTable(modelName + '.h5')
 
-    return str(modelName + '.h5')
+    return True
