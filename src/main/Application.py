@@ -22,7 +22,7 @@ from src.main.python.services.gui.testScreens.TestLocalFileScreen import TestLoc
 from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
-    pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder
+    pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder, pngInfoBox, pngWarningBox
 from utils.Utils import deleteJpgFilesOnFolder, getLine, deleteMp4FilesOnFolder
 
 
@@ -227,10 +227,10 @@ class MainWidget(QWidget):
             rateLimit = 35
             if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
                 if modelName.__eq__("Model Seçiniz"):
-                    getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
+                    getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
                                       QMessageBox.Ok, isQuestion=False).exec_()
                 if int(sRate) < int(rateLimit):
-                    getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                    getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı",
                                       "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
                                       QMessageBox.Warning,
                                       QMessageBox.Ok, isQuestion=False).exec_()
@@ -274,7 +274,7 @@ class MainWidget(QWidget):
                 self.window.show()
 
     def closeEvent(self, event):
-        reply = getMsgBoxFeatures(QMessageBox(self), "Dikkat!", 'Programdan çıkmak istiyor musun?',
+        reply = getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Dikkat!", 'Programdan çıkmak istiyor musun?',
                                   QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
                                   isQuestion=True).exec_()
 
@@ -289,7 +289,7 @@ class MainWidget(QWidget):
             event.ignore()
 
     def showWarn(self):
-        getMsgBoxFeatures(QMessageBox(self), "Kullanılacak Model ve Başarı Oranı",
+        getMsgBoxFeatures(QMessageBox(self), pngInfoBox,"Kullanılacak Model ve Başarı Oranı",
                           self.selectedModel + "\nBaşarı oranı " + str(
                               self.textBoxSuccessRate.text()) + " olarak belirlenmiştir.",
                           QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()

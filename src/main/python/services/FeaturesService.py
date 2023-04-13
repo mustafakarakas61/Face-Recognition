@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtGui import QFont, QIntValidator
+from PyQt5.QtGui import QFont, QIntValidator, QIcon
 from PyQt5.QtWidgets import QMessageBox
 
 fontTextBox = QtGui.QFont("Times New Roman", 15)
@@ -83,10 +83,11 @@ def getExceptionMsgBox(msgBox, e):
     return msgBox
 
 
-def getMsgBoxFeatures(msgBox, title, txt, iconType, btnType, isQuestion):
+def getMsgBoxFeatures(msgBox, windowIconType, title, txt, iconType, btnType, isQuestion):
     font = QFont()
     font.setFamily("Times New Roman")
     font.setPointSize(12)
+    msgBox.setWindowIcon(QIcon(windowIconType))
     msgBox.setIcon(iconType)  # QMessageBox.Information
     msgBox.setText(txt)
     msgBox.setFont(font)

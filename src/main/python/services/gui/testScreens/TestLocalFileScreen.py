@@ -11,7 +11,7 @@ from keras.api.keras.preprocessing import image
 
 from src.main.python.services.FeaturesService import getMsgBoxFeatures
 from src.resources.Environments import pathModels, pathFaceCascade, inputSize, pathFaceResultsMap, minFaceSize, \
-    pngMustafa
+    pngMustafa, pngWarningBox, pngErrorBox
 from utils.Utils import useEnviron, changeNameToASCII
 
 useEnviron()
@@ -34,10 +34,10 @@ class TestLocalFile(QWidget):
         rateLimit = 35
         if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
             if modelName.__eq__("Model Seçiniz"):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
+                getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
                                   QMessageBox.Ok, isQuestion=False).exec_()
             if int(sRate) < int(rateLimit):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                getMsgBoxFeatures(QMessageBox(self), pngWarningBox,"Uyarı",
                                   "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer girin.",
                                   QMessageBox.Warning,
                                   QMessageBox.Ok, isQuestion=False).exec_()
@@ -53,7 +53,7 @@ class TestLocalFile(QWidget):
                 filePath = file_dialog.selectedFiles()[0]
                 # url = QtCore.QUrl.fromLocalFile(filePath).toString()  # Dosya yolunu URL'e dönüştürün
                 if re.search("[ıİğĞüÜşŞöÖçÇ]", filePath):
-                    getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen 'Türkçe Karakter' içermeyen bir yol seçin.",
+                    getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı", "Lütfen 'Türkçe Karakter' içermeyen bir yol seçin.",
                                       QMessageBox.Warning,
                                       QMessageBox.Ok, isQuestion=False).exec_()
                 elif filePath.endswith('.jpg') or filePath.endswith('.jpeg') or filePath.endswith('.png'):
@@ -61,7 +61,7 @@ class TestLocalFile(QWidget):
                 elif filePath.endswith('.mp4'):
                     testVideo(videoPath=filePath, modelName=modelName, successRate=sRate)
                 else:
-                    getMsgBoxFeatures(QMessageBox(self), "Hata", "Desteklenmeyen dosya biçimi!", QMessageBox.Critical,
+                    getMsgBoxFeatures(QMessageBox(self), pngErrorBox, "Hata", "Desteklenmeyen dosya biçimi!", QMessageBox.Critical,
                                       QMessageBox.Ok, isQuestion=False).exec_()
 
 

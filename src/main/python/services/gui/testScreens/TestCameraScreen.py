@@ -9,7 +9,7 @@ from keras.models import load_model
 
 from src.main.python.services.FeaturesService import getMsgBoxFeatures
 from src.resources.Environments import pathModels, pathFaceResultsMap, pathFaceCascade, minFaceSize, \
-    inputSize, pngMustafa
+    inputSize, pngMustafa, pngWarningBox
 from src.main.python.PostgreSQL import updateAttendance
 from utils.Utils import useEnviron, changeNameToASCII
 
@@ -33,10 +33,10 @@ class TestCamera(QWidget):
         rateLimit = 35
         if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
             if modelName.__eq__("Model Seçiniz"):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
+                getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı", "Lütfen bir model seçin", QMessageBox.Warning,
                                   QMessageBox.Ok, isQuestion=False).exec_()
             if int(sRate) < int(rateLimit):
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                getMsgBoxFeatures(QMessageBox(self), pngWarningBox,"Uyarı",
                                   "Lütfen " + str(rateLimit) + "'in üstünde tanımlı bir değer giriniz.",
                                   QMessageBox.Warning,
                                   QMessageBox.Ok, isQuestion=False).exec_()

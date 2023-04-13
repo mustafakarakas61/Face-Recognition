@@ -4,7 +4,7 @@ import random
 import shutil
 import time
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QIntValidator
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QLineEdit, QPushButton, QMessageBox
@@ -16,7 +16,7 @@ from src.main.python.services.FeaturesService import getComboBoxFeatures, getLab
     fontTextBox, getButtonFeaturesTrain, getMsgBoxFeatures
 from src.resources.Environments import pathFaceOutputs, \
     pathModels, \
-    pathFaceResultsMap, countTrainImage, countValidationImage, pngTrain, pathDatasets, pathDatasetsSplit
+    pathFaceResultsMap, pngTrain, pathDatasets, pathDatasetsSplit, pngWarningBox, pngInfoBox
 from src.main.python.PostgreSQL import createTable
 from utils.Utils import randomString, useEnviron
 
@@ -38,8 +38,8 @@ class TrainModel(QWidget):
         self.inputSize = "128x128"
 
     def modelTrainScreen(self):
-        mainWith = 300
-        mainHeight = 300
+        mainWith = 500
+        mainHeight = 250
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
 
@@ -79,7 +79,7 @@ class TrainModel(QWidget):
         layoutHDropout.addWidget(labelDropout, alignment=Qt.AlignLeft)
         layoutHDropout.addWidget(comboDropout, alignment=Qt.AlignRight)
 
-        labelBatchSize = getLabelFeatures(QLabel("Batch Boyutu:"), False, True)
+        labelBatchSize = getLabelFeatures(QLabel("Batch boyutu:"), False, True)
         batchSizes = [''] + ['4'] + ['8'] + ['16'] + ['32'] + ['64'] + ['128']
         comboBatch = getComboBoxFeatures(QComboBox(self))
         comboBatch.addItems(batchSizes)
@@ -144,7 +144,6 @@ class TrainModel(QWidget):
 
         # Add the button to the layout
         layoutV.addWidget(btnTrainModel, alignment=Qt.AlignCenter)
-
         self.window.setLayout(layoutV)
         self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWith, mainHeight)
@@ -158,16 +157,76 @@ class TrainModel(QWidget):
         epochsCount = self.epochsCount
         inputSizeW, inputSizeH = self.inputSize.split("x")
 
-        # todo : return true olduğunda güncellensin Model Seçiniz vs
-        createFaceModel(str(datasetName), int(batchSize), float(trainPercentage.replace("%", "")), int(inputSizeW),
-                        int(inputSizeH), float(dropoutRate), int(epochsCount))
+        if len(str(datasetName)) > 0 and len(str(trainPercentage)) > 0 and len(str(dropoutRate)) > 0 and len(
+                str(batchSize)) > 0 and len(str(epochsCount)) > 0 and len(str(inputSizeW)) > 0 and len(
+            str(inputSizeH)) > 0:
+            # todo : return true olduğunda güncellensin Model Seçiniz vs
+            reply = getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Bilgi", '<b>Model eğitimi başlatılsın mı</b>?'
+                                                                              f"<table border=1>"
+                                                                              f"<tr><td><b>Veriseti</b></td><td>{datasetName}</td></tr>"
+                                                                              f"<tr><td><b>Eğitim%</b></td><td>{trainPercentage}</td></tr>"
+                                                                              f"<tr><td><b>Dropout</b></td><td>{dropoutRate}</td></tr>"
+                                                                              f"<tr><td><b>Batch boyutu</b></td><td>{batchSize}</td></tr>"
+                                                                              f"<tr><td><b>Epoch sayısı</b></td><td>{epochsCount}</td></tr>"
+                                                                              f"<tr><td><b>Girdi boyutu</b></td><td>G:{inputSizeW}, Y:{inputSizeH}</td></tr>"
+                                                                              f"</table>",
+                                      QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
+                                      isQuestion=True).exec_()
+
+            if reply == QtWidgets.QMessageBox.Yes:
+                print("Model eğitimi")
+
+                trainedModelName = createFaceModel(str(datasetName), int(batchSize),
+                                                   float(trainPercentage.replace("%", "")),
+                                                   int(inputSizeW),
+                                                   int(inputSizeH), float(dropoutRate), int(epochsCount))
+                self.window.close()
+
+                infoModelOutputs = pathFaceOutputs + trainedModelName.replace(".h5", ".txt")
+
+                with open(infoModelOutputs, 'r') as file:
+                    lines = file.readlines()
+                    infoTime = lines[-1].strip().replace("\t", "").replace("minutes", "dakika")
+                    epoch, trainLoss, trainAccuracy, valLoss, valAccuracy = lines[-3].strip().split("\t")
+
+                getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Model Başarıyla Kaydedildi",
+                                  f"<b>Model ismi:</b> {trainedModelName}"
+                                  f"<br><b>Geçen süre:</b> {infoTime}"
+                                  f"<hr>"
+                                  f"<table border=1>"
+                                  f"<tr><td><b>Başarı Oranı</b></td><td><b>Kayıp</b></td><td><b>Doğruluk</b></td></tr>"
+                                  f"<tr><td><b>Eğitim Seti</b></td><td>{round(float(trainLoss), 4)}</td><td>{round(float(trainAccuracy), 4)}</td></tr>"
+                                  f"<tr><td><b>Doğrulama Seti</b></td><td>{round(float(valLoss), 4)}</td><td>{round(float(valAccuracy), 4)}</td></tr>"
+                                  f"</table>",
+                                  QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
+                self.selectedDatasetName = ""
+                self.selectedTrainPercentage = ""
+                self.selectedDropoutRate = ""
+                self.selectedBatchSize = ""
+                self.epochsCount = "30"
+                self.inputSize = "128x128"
 
 
 
-    def showInfo(self):
-        getMsgBoxFeatures(QMessageBox(self), "Model Eğitimi",
-                          "Model Eğitimi başlamıştır.",
-                          QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
+        else:
+            emptyFields = []
+            if len(str(datasetName)) == 0:
+                emptyFields.append("\nVeriseti")
+            if len(str(trainPercentage)) == 0:
+                emptyFields.append("\nEğitim%")
+            if len(str(dropoutRate)) == 0:
+                emptyFields.append("\nDropout")
+            if len(str(batchSize)) == 0:
+                emptyFields.append("\nBatch boyutu")
+            if len(str(epochsCount)) == 0:
+                emptyFields.append("\nEpoch sayısı")
+            if len(str(inputSizeW)) == 0 or len(str(inputSizeH)) == 0:
+                emptyFields.append("\nGirdi boyutu")
+
+            emptyFieldsStr = ", ".join(emptyFields)
+            getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Dikkat !",
+                              f"Lütfen aşağıdaki alanları doldurunuz! {emptyFieldsStr}", QMessageBox.Warning,
+                              QMessageBox.Ok, isQuestion=False).exec_()
 
     def onTextBoxEpochsCountChange(self, newValue):
         self.epochsCount = newValue
@@ -316,4 +375,4 @@ def createFaceModel(datasetName, batchSize, trainPercentage, inputSizeW, inputSi
     model.save(pathModels + modelName + '.h5')
     createTable(modelName + '.h5')
 
-    return True
+    return modelName + '.h5'

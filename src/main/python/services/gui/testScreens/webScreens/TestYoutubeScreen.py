@@ -13,7 +13,7 @@ from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabel
 from src.main.python.services.YoutubeDownloaderService import downloadYoutubeVideo
 from src.main.python.services.gui.testScreens.TestLocalFileScreen import testVideo
 from src.resources.Environments import pngYoutube, pathFaceResultsMap, pngFaceDetectionYoutube0, \
-    pngFaceDetectionYoutube1
+    pngFaceDetectionYoutube1, pngWarningBox
 
 
 class TestYoutube(QWidget):
@@ -149,12 +149,12 @@ class TestYoutube(QWidget):
             durationEndTime = int(eTHH + eTMM + etSS)
 
             if len(self.startTimeText) != 8 and len(self.endTimeText) != 8:
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı",
                                   "Lütfen geçerli formatta (HH:mm:ss) zaman giriniz!",
                                   QMessageBox.Warning,
                                   QMessageBox.Ok, isQuestion=False).exec_()
             elif durationStartTime >= durationEndTime:
-                getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı",
                                   "Videonun başlangıç süresi, bitiş süresinden büyük veya eşit olamaz!",
                                   QMessageBox.Warning,
                                   QMessageBox.Ok, isQuestion=False).exec_()

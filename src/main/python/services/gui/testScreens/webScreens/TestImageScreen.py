@@ -17,7 +17,7 @@ from keras.api.keras.preprocessing import image
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getFaceButtonFeatures, getExceptionMsgBox, fontTextBox
 from src.resources.Environments import pathFaceResultsMap, pngImageUrl, pngFaceDetection0, pngFaceDetection1, \
-    pathFaceCascade, minFaceSize, inputSize, pathModels, pathTempFolder, pngFaceDetection2
+    pathFaceCascade, minFaceSize, inputSize, pathModels, pathTempFolder, pngFaceDetection2, pngWarningBox, pngErrorBox
 from utils.Utils import changeNameToASCII, randomString
 
 
@@ -103,7 +103,7 @@ class TestImage(QWidget):
 
                 faceCascade = cv2.CascadeClassifier(pathFaceCascade)
                 if img is None:
-                    getMsgBoxFeatures(QMessageBox(self), "Hata",
+                    getMsgBoxFeatures(QMessageBox(self), pngErrorBox, "Hata",
                                       "Resim yüklenemedi.",
                                       QMessageBox.Critical,
                                       QMessageBox.Ok, isQuestion=False).exec_()
@@ -151,7 +151,7 @@ class TestImage(QWidget):
                         cv2.imwrite(name, img)
                         self.openAnalizedImageScreen(name, img)
                     else:
-                        getMsgBoxFeatures(QMessageBox(self), "Uyarı",
+                        getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı",
                                           "Yüz bulunamadı.",
                                           QMessageBox.Warning,
                                           QMessageBox.Ok, isQuestion=False).exec_()
@@ -159,7 +159,7 @@ class TestImage(QWidget):
                         self.window.destroyed.connect(self.testUrlImageScreen)
                         self.window.close()
             elif self.mainWidget.control:
-                getMsgBoxFeatures(QMessageBox(self), "Hata",
+                getMsgBoxFeatures(QMessageBox(self), pngErrorBox, "Hata",
                                   "Resim indirilemedi.",
                                   QMessageBox.Critical,
                                   QMessageBox.Ok, isQuestion=False).exec_()
