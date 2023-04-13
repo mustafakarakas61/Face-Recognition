@@ -130,7 +130,7 @@ dmypy.json
 
 # Ignore
 src/main/datasets/*
-src/main/datasets-split/*
+src/main/datasets-split/*/
 src/main/models/*
 utils/clippedVideos/*
 utils/dataset/*
