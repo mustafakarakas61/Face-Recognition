@@ -27,8 +27,16 @@ useEnviron()
 class TrainModel(QWidget):
     def __init__(self, mainWidget):
         super(TrainModel, self).__init__()
+        self.window = None
+        self.inputSize = None
+        self.epochsCount = None
+        self.selectedBatchSize = None
+        self.selectedDropoutRate = None
+        self.selectedTrainPercentage = None
+        self.selectedDatasetName = None
         self.mainWidget = mainWidget
 
+    def modelTrainScreen(self):
         # started
         self.selectedDatasetName = ""
         self.selectedTrainPercentage = ""
@@ -37,7 +45,6 @@ class TrainModel(QWidget):
         self.epochsCount = "30"
         self.inputSize = "128x128"
 
-    def modelTrainScreen(self):
         mainWith = 500
         mainHeight = 250
         screen = QtWidgets.QApplication.desktop().screenGeometry()
@@ -152,6 +159,8 @@ class TrainModel(QWidget):
     def startTrain(self):
         datasetName = self.selectedDatasetName
         trainPercentage = self.selectedTrainPercentage
+        if trainPercentage:
+            valPercentage = str(100 - int(trainPercentage.replace("%", ""))) + "%"
         dropoutRate = self.selectedDropoutRate
         batchSize = self.selectedBatchSize
         epochsCount = self.epochsCount
@@ -165,6 +174,7 @@ class TrainModel(QWidget):
                                                                               f"<table border=1>"
                                                                               f"<tr><td><b>Veriseti</b></td><td>{datasetName}</td></tr>"
                                                                               f"<tr><td><b>Eğitim%</b></td><td>{trainPercentage}</td></tr>"
+                                                                              f"<tr><td><b>Doğrulama%</b></td><td>{valPercentage}</td></tr>"
                                                                               f"<tr><td><b>Dropout</b></td><td>{dropoutRate}</td></tr>"
                                                                               f"<tr><td><b>Batch boyutu</b></td><td>{batchSize}</td></tr>"
                                                                               f"<tr><td><b>Epoch sayısı</b></td><td>{epochsCount}</td></tr>"
@@ -174,13 +184,14 @@ class TrainModel(QWidget):
                                       isQuestion=True).exec_()
 
             if reply == QtWidgets.QMessageBox.Yes:
-                print("Model eğitimi")
-
-                trainedModelName = createFaceModel(str(datasetName), int(batchSize),
-                                                   float(trainPercentage.replace("%", "")),
-                                                   int(inputSizeW),
-                                                   int(inputSizeH), float(dropoutRate), int(epochsCount))
                 self.window.close()
+                # todo : model eğitiliyor bilgisi ekranı olsun
+                # trainedModelName = createFaceModel(str(datasetName), int(batchSize),
+                #                                    float(trainPercentage.replace("%", "")),
+                #                                    int(inputSizeW),
+                #                                    int(inputSizeH), float(dropoutRate), int(epochsCount))
+
+                trainedModelName = "face_faceset_v1_20_8_30_128x128_gjw.h5"
 
                 infoModelOutputs = pathFaceOutputs + trainedModelName.replace(".h5", ".txt")
 
@@ -199,14 +210,6 @@ class TrainModel(QWidget):
                                   f"<tr><td><b>Doğrulama Seti</b></td><td>{round(float(valLoss), 4)}</td><td>{round(float(valAccuracy), 4)}</td></tr>"
                                   f"</table>",
                                   QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
-                self.selectedDatasetName = ""
-                self.selectedTrainPercentage = ""
-                self.selectedDropoutRate = ""
-                self.selectedBatchSize = ""
-                self.epochsCount = "30"
-                self.inputSize = "128x128"
-
-
 
         else:
             emptyFields = []
