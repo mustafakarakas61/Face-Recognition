@@ -27,7 +27,7 @@ queueFaceFromImage = "py_face_from_image"
 queueFaceFromVideo = "py_face_from_video"
 
 # Environments_PostgreSQL
-dbName = "student-list"
+dbName = "face_recognition"
 dbUser = "postgres"
 dbPass = "180200"
 dbHost = "localhost"

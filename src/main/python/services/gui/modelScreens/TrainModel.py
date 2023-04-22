@@ -17,7 +17,7 @@ from src.main.python.services.FeaturesService import getComboBoxFeatures, getLab
 from src.resources.Environments import pathFaceOutputs, \
     pathModels, \
     pathFaceResultsMap, pngTrain, pathDatasets, pathDatasetsSplit, pngWarningBox, pngInfoBox
-from src.main.python.PostgreSQL import createTable
+from src.main.python.PostgreSQL import createTable, executeSql
 from utils.Utils import randomString, useEnviron
 
 useEnviron()
@@ -45,7 +45,7 @@ class TrainModel(QWidget):
         self.epochsCount = "30"
         self.inputSize = "128x128"
 
-        mainWith = 500
+        mainWith = 520
         mainHeight = 250
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -56,7 +56,7 @@ class TrainModel(QWidget):
         self.window.setWindowIcon(QIcon(pngTrain))
 
         # Combobox
-        labelDataset = getLabelFeatures(QLabel("Veriseti:"), False, True)
+        labelDataset = getLabelFeatures(QLabel("<b>Veriseti:</b>"), False, True)
         datasetFolders = [f for f in os.listdir(pathDatasets) if os.path.isdir(os.path.join(pathDatasets, f))]
         datasetNames = [''] + datasetFolders
         comboDatasets = getComboBoxFeatures(QComboBox(self))
@@ -67,7 +67,7 @@ class TrainModel(QWidget):
         layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
         layoutHDataset.addWidget(comboDatasets, alignment=Qt.AlignRight)
 
-        labelTrain = getLabelFeatures(QLabel("Eğitim%:"), False, True)
+        labelTrain = getLabelFeatures(QLabel("<b>Eğitim%:</b>"), False, True)
         trainPercentage = [''] + ['70%'] + ['80%']
         comboTrain = getComboBoxFeatures(QComboBox(self))
         comboTrain.addItems(trainPercentage)
@@ -76,7 +76,7 @@ class TrainModel(QWidget):
         layoutHTrain.addWidget(labelTrain, alignment=Qt.AlignLeft)
         layoutHTrain.addWidget(comboTrain, alignment=Qt.AlignRight)
 
-        labelDropout = getLabelFeatures(QLabel("Dropout:"), False, True)
+        labelDropout = getLabelFeatures(QLabel("<b>Dropout:</b>"), False, True)
         dropoutRate = [''] + ['0.3'] + ['0.4'] + ['0.5']
         comboDropout = getComboBoxFeatures(QComboBox(self))
         comboDropout.addItems(dropoutRate)
@@ -86,7 +86,7 @@ class TrainModel(QWidget):
         layoutHDropout.addWidget(labelDropout, alignment=Qt.AlignLeft)
         layoutHDropout.addWidget(comboDropout, alignment=Qt.AlignRight)
 
-        labelBatchSize = getLabelFeatures(QLabel("Batch boyutu:"), False, True)
+        labelBatchSize = getLabelFeatures(QLabel("<b>Batch boyutu:</b>"), False, True)
         batchSizes = [''] + ['4'] + ['8'] + ['16'] + ['32'] + ['64'] + ['128']
         comboBatch = getComboBoxFeatures(QComboBox(self))
         comboBatch.addItems(batchSizes)
@@ -96,7 +96,7 @@ class TrainModel(QWidget):
         layoutHBatchSize.addWidget(comboBatch, alignment=Qt.AlignRight)
 
         # Textbox
-        labelInputSize = getLabelFeatures(QLabel("Girdi boyutu:"), False, True)
+        labelInputSize = getLabelFeatures(QLabel("<b>Girdi boyutu:</b>"), False, True)
         textBoxInputSize = QLineEdit()
         textBoxInputSize.setFont(fontTextBox)
         textBoxInputSize.setText("128x128")
@@ -106,7 +106,7 @@ class TrainModel(QWidget):
         layoutHInputSize.addWidget(labelInputSize, alignment=Qt.AlignLeft)
         layoutHInputSize.addWidget(textBoxInputSize, alignment=Qt.AlignRight)
 
-        labelEpochsCount = getLabelFeatures(QLabel("Epoch sayısı:"), False, True)
+        labelEpochsCount = getLabelFeatures(QLabel("<b>Epoch sayısı:</b>"), False, True)
         textBoxEpochsCount = QLineEdit()
         textBoxEpochsCount.setFont(fontTextBox)
         validator = QIntValidator(1, 999)
@@ -186,19 +186,52 @@ class TrainModel(QWidget):
             if reply == QtWidgets.QMessageBox.Yes:
                 self.window.close()
                 # todo : model eğitiliyor bilgisi ekranı olsun
-                # trainedModelName = createFaceModel(str(datasetName), int(batchSize),
-                #                                    float(trainPercentage.replace("%", "")),
-                #                                    int(inputSizeW),
-                #                                    int(inputSizeH), float(dropoutRate), int(epochsCount))
-
-                trainedModelName = "face_faceset_v1_20_8_30_128x128_gjw.h5"
+                affectedId, trainedModelName = createFaceModel(str(datasetName), int(batchSize),
+                                                               float(trainPercentage.replace("%", "")),
+                                                               int(inputSizeW),
+                                                               int(inputSizeH), float(dropoutRate), int(epochsCount))
 
                 infoModelOutputs = pathFaceOutputs + trainedModelName.replace(".h5", ".txt")
 
                 with open(infoModelOutputs, 'r') as file:
                     lines = file.readlines()
-                    infoTime = lines[-1].strip().replace("\t", "").replace("minutes", "dakika")
+                    infoTime: str = lines[-1].strip().replace("\t", "").replace("hours", "saat").replace("minutes", "dakika").replace("seconds", "saniye")
                     epoch, trainLoss, trainAccuracy, valLoss, valAccuracy = lines[-3].strip().split("\t")
+
+                    sqlInsertModelsResults = "insert into models_results (models_id, total_time, train_loss, train_acc, validation_loss, validation_acc) " \
+                                             "values (%s, %s, %s, %s, %s, %s)"
+
+                    if infoTime.__contains__("saat"):
+                        HH, mm, ss = infoTime.replace("saat", "").replace("dakika", "").replace("saniye", "").strip().replace("  ", " ").split(" ")
+
+                        if len(HH) == 1:
+                            HH = "0" + HH
+                        if len(mm) == 1:
+                            mm = "0" + mm
+                        if len(ss) == 1:
+                            ss = "0" + ss
+                        totalTime = HH + ":" + mm + ":" + ss
+                    elif infoTime.__contains__("dakika"):
+                        mm, ss = infoTime.replace("dakika", "").replace("saniye", "").strip().replace("  ", " ").split(" ")
+
+                        if len(mm) == 1:
+                            mm = "0" + mm
+                        if len(ss) == 1:
+                            ss = "0" + ss
+                        totalTime = "00:" + mm + ":" + ss
+                    else:
+                        ss = infoTime.replace("saniye", "").strip().replace("  ", " ")
+
+                        if len(ss) == 1:
+                            ss = "0" + ss
+                        totalTime = "00:00:" + ss
+
+                    paramInsertModelsResults = affectedId, totalTime, round(float(trainLoss), 4), round(
+                        float(trainAccuracy), 4), round(float(valLoss),
+                                                        4), round(
+                        float(valAccuracy), 4)
+
+                    executeSql(sqlInsertModelsResults, paramInsertModelsResults)
 
                 getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Model Başarıyla Kaydedildi",
                                   f"<b>Model ismi:</b> {trainedModelName}"
@@ -214,21 +247,21 @@ class TrainModel(QWidget):
         else:
             emptyFields = []
             if len(str(datasetName)) == 0:
-                emptyFields.append("\nVeriseti")
+                emptyFields.append("<br>Veriseti")
             if len(str(trainPercentage)) == 0:
-                emptyFields.append("\nEğitim%")
+                emptyFields.append("<br>Eğitim%")
             if len(str(dropoutRate)) == 0:
-                emptyFields.append("\nDropout")
+                emptyFields.append("<br>Dropout")
             if len(str(batchSize)) == 0:
-                emptyFields.append("\nBatch boyutu")
+                emptyFields.append("<br>Batch boyutu")
             if len(str(epochsCount)) == 0:
-                emptyFields.append("\nEpoch sayısı")
+                emptyFields.append("<br>Epoch sayısı")
             if len(str(inputSizeW)) == 0 or len(str(inputSizeH)) == 0:
-                emptyFields.append("\nGirdi boyutu")
+                emptyFields.append("<br>Girdi boyutu")
 
             emptyFieldsStr = ", ".join(emptyFields)
             getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Dikkat !",
-                              f"Lütfen aşağıdaki alanları doldurunuz! {emptyFieldsStr}", QMessageBox.Warning,
+                              f"<b>Lütfen aşağıdaki alanları doldurunuz!</b> {emptyFieldsStr}", QMessageBox.Warning,
                               QMessageBox.Ok, isQuestion=False).exec_()
 
     def onTextBoxEpochsCountChange(self, newValue):
@@ -250,7 +283,7 @@ class TrainModel(QWidget):
         self.selectedBatchSize = newName
 
 
-def createFaceModel(datasetName, batchSize, trainPercentage, inputSizeW, inputSizeH, dropoutRate, epochsCount):
+def createFaceModel(datasetName: str, batchSize: int, trainPercentage: float, inputSizeW: int, inputSizeH: int, dropoutRate: float, epochsCount: int):
     trainPercentage = float(trainPercentage / 100)
     pathSet = pathDatasets + datasetName
 
@@ -372,10 +405,20 @@ def createFaceModel(datasetName, batchSize, trainPercentage, inputSizeW, inputSi
             loss, accuracy = model.train_on_batch(xTrain, yTrain)
             valLoss, valAccuracy = model.test_on_batch(xVal, yVal)
             f.write('{}\t{}\t{}\t{}\t{}\n'.format(epoch + 1, loss, accuracy, valLoss, valAccuracy))
-        f.write('\n{} minutes'.format(int(round(endTime - startTime) / 60)))
+        duration = round(endTime - startTime)
+        hours, remainder = divmod(duration, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        if int(hours) != 0:
+            f.write('\n{} hours {} minutes {} seconds'.format(hours, minutes, seconds))
+        elif int(minutes) != 0:
+            f.write('\n{} minutes {} seconds'.format(minutes, seconds))
+        else:
+            f.write('\n{} seconds'.format(seconds))
 
     # save the model
     model.save(pathModels + modelName + '.h5')
-    createTable(modelName + '.h5')
 
-    return modelName + '.h5'
+    affectedId = createTable(modelName + '.h5', trainPercentage, dropoutRate)
+
+    return affectedId, modelName + '.h5'

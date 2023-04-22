@@ -4,29 +4,49 @@ import psycopg2
 from src.resources.Environments import dbName, dbUser, dbPass, dbHost, dbPort, pathFaceResultsMap
 
 
-def createTable(modelName):
+def createTable(modelName: str, trainPercentage: float, dropoutRate: float):
+    trainPercentage = trainPercentage * 100
+    validationPercentage = 100 - trainPercentage
+
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
                             port=dbPort)
 
     cur = conn.cursor()
+    # face_faceset_v1_20_4_1_128x128_xbc
+    mType, mName, mVersion, mDataCount, mBatchSize, mEpochsCount, mInputSize, mRandomString = modelName.replace(".h5", "").split("_")
 
     cur.execute(
-        "CREATE TABLE " + modelName.replace(".h5",
-                                            "") + " (id serial PRIMARY KEY, no integer NOT NULL, student VARCHAR(50) NOT NULL, attendance BOOLEAN NOT NULL)")
+        "INSERT INTO models (type, name, version, data_count, batch_size, epochs_count, input_size, random_string, dropout_rate, data_train_percentage, data_validation_percentage) "
+        "VALUES (%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s) RETURNING id",
+        (mType, mName, mVersion.replace("v", ""), mDataCount, mBatchSize, mEpochsCount, mInputSize, mRandomString,
+         dropoutRate, str(trainPercentage).replace(".0", "") + "%", str(validationPercentage).replace(".0", "") + "%"))
+
+    affectedId: int = cur.fetchone()[0]
 
     with open(pathFaceResultsMap + modelName.replace(".h5", ".pkl"), 'rb') as f:
         resultsMap = pickle.load(f)
 
-    for ids, values in resultsMap.items():
-        cur.execute("INSERT INTO " + modelName.replace(".h5",
-                                                       "") + " (no, student, attendance) VALUES (%s, %s, %s)",
-                    (ids, values, False))
+    for itemId, itemName in resultsMap.items():
+        cur.execute(
+            "INSERT INTO models_data (models_id, data_id, data_name) "
+            "VALUES (%s, %s, %s)",
+            (affectedId, itemId, itemName))
 
     conn.commit()
     conn.close()
 
+    return affectedId
 
-# createTable("face_myset_v2_18_50_128_swc.h5")
+
+def executeSql(sql: str, params: tuple):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+
+    cur = conn.cursor()
+    cur.execute(sql, params)
+
+    conn.commit()
+    conn.close()
 
 
 def updateAttendance(tableName, studentNo, studentName):
