@@ -6,9 +6,9 @@
 |-----------------------------------------|---------------------------------------|
 | ![](utils/projectImages/mainScreen.png) | ![](utils/projectImages/addFace.png)  |
 
-| Model Eğitimi | Model Sil       |
-|---------------|-----------------|
-| ![](utils/projectImages/modelTrain.png)  | ![](utils/projectImages/modelDelete.png)  |
+| Model Eğitimi                           | Model Sil                                |
+|-----------------------------------------|------------------------------------------|
+| ![](utils/projectImages/modelTrain.png) | ![](utils/projectImages/modelDelete.png) |
 
 | Test Web                              | Yerel Klasör Dosya Seçimi                |
 |---------------------------------------|------------------------------------------|

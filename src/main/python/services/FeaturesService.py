@@ -43,6 +43,28 @@ def getButtonFeatures(btn, pngName):
     return btn
 
 
+def getButtonFeaturesSelectAll(btn, text):
+    butonSizes = (130, 50)
+    fontButton = QtGui.QFont("Times New Roman", 15)
+    btn.setFont(fontButton)
+    btn.setFixedSize(*butonSizes)
+    btn.setText(text)
+    btn.setIconSize(QtCore.QSize(*butonSizes))
+    btn.setStyleSheet("background-color: #1565C0; color: white; border-radius: 5px; font-weight: bold;")
+    return btn
+
+
+def getButtonFeaturesClear(btn, text):
+    butonSizes = (100, 50)
+    fontButton = QtGui.QFont("Times New Roman", 15)
+    btn.setFont(fontButton)
+    btn.setFixedSize(*butonSizes)
+    btn.setText(text)
+    btn.setIconSize(QtCore.QSize(*butonSizes))
+    btn.setStyleSheet("background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
+    return btn
+
+
 def getButtonFeaturesDelete(btn, text):
     butonSizes = (70, 50)
     fontButton = QtGui.QFont("Times New Roman", 15)
@@ -52,6 +74,7 @@ def getButtonFeaturesDelete(btn, text):
     btn.setIconSize(QtCore.QSize(*butonSizes))
     btn.setStyleSheet("background-color: #DC143C; color: white; border-radius: 5px; font-weight: bold;")
     return btn
+
 
 def getButtonFeaturesTrain(btn, text):
     butonSizes = (70, 50)

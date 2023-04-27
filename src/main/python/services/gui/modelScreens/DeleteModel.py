@@ -7,14 +7,17 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QHBoxL
     QMessageBox
 
 from src.main.python.PostgreSQL import removeFromDB, listModels
-from src.main.python.services.FeaturesService import getComboBoxFeatures, getButtonFeaturesDelete
+from src.main.python.services.FeaturesService import getComboBoxFeatures, getButtonFeaturesDelete, \
+    getButtonFeaturesSelectAll, getButtonFeaturesClear
 from src.resources.Environments import pngDelete, pathModels, pngTrash, pathFaceOutputs, pathFaceMaps, pathEyeOutputs, \
-    pathEyeMaps
+    pathEyeMaps, pngUnChecked, pngChecked
 
 
 class DeleteModel(QWidget):
     def __init__(self, mainWidget):
         super(DeleteModel, self).__init__()
+        self.window = None
+        self.selectedModel = None
         self.mainWidget = mainWidget
 
     def modelDeleteScreen(self):
@@ -41,6 +44,12 @@ class DeleteModel(QWidget):
         comboDeleteModel.addItems(modelNames)
         comboDeleteModel.currentIndexChanged.connect(
             lambda index: self.onComboboxSelection(comboDeleteModel.itemText(index)))
+
+        btnSelectAll = getButtonFeaturesSelectAll(QPushButton(self), text="Tümünü Seç")
+        btnSelectAll.clicked.connect(lambda: self.selectAllCheckboxes(table))
+
+        btnClearSelected = getButtonFeaturesClear(QPushButton(self), text="Temizle")
+        btnClearSelected.clicked.connect(lambda: self.clearSelectedCheckboxes(table))
 
         btnDeleteModel = getButtonFeaturesDelete(QPushButton(self), text="Sil")
         btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table, comboDeleteModel))
@@ -74,6 +83,11 @@ class DeleteModel(QWidget):
             table.setItem(i, 1, itemName)
 
             itemCheckbox = QCheckBox()
+            itemCheckbox.setStyleSheet(
+                "QCheckBox::indicator { width: 20px; height: 20px; background-color: white;}"
+                "QCheckBox::indicator:checked { image: url("+str(pngChecked)+"); }"
+                "QCheckBox::indicator:unchecked { image: url("+str(pngUnChecked)+"); }"
+            )
             table.setCellWidget(i, 2, itemCheckbox)
 
         # Ana layout oluşturma
@@ -88,6 +102,8 @@ class DeleteModel(QWidget):
         # Butonu içeren layout
         layoutButton = QHBoxLayout()
         layoutButton.addStretch(1)
+        layoutButton.addWidget(btnSelectAll)
+        layoutButton.addWidget(btnClearSelected)
         layoutButton.addWidget(btnDeleteModel)
         layoutButton.addStretch(1)
         mainLayout.addLayout(layoutButton)
@@ -99,6 +115,17 @@ class DeleteModel(QWidget):
 
     def onComboboxSelection(self, selectedText):
         self.selectedModel = selectedText
+
+    def selectAllCheckboxes(self, table):
+        for i in range(table.rowCount()):
+            checkbox = table.cellWidget(i, 2)
+            checkbox.setChecked(True)
+
+    def clearSelectedCheckboxes(self, table):
+        for i in range(table.rowCount()):
+            checkbox = table.cellWidget(i, 2)
+            if checkbox.isChecked():
+                checkbox.setChecked(False)
 
     def deleteSelectedCheckBox(self, table, combo):
         checkedItems = []
@@ -128,7 +155,8 @@ class DeleteModel(QWidget):
                     modelPath: str = os.path.join(pathModels, modelName)
                     if modelName.__contains__("face_"):
                         outputsPath: str = os.path.join(pathFaceOutputs, modelName.replace(".h5", ".txt"))
-                        mapsPath: str = os.path.join(pathFaceMaps, str("ResultsMap-" + modelName.replace(".h5", ".pkl")))
+                        mapsPath: str = os.path.join(pathFaceMaps,
+                                                     str("ResultsMap-" + modelName.replace(".h5", ".pkl")))
                     else:
                         outputsPath: str = os.path.join(pathEyeOutputs, modelName.replace(".h5", ".txt"))
                         mapsPath: str = os.path.join(pathEyeMaps, str("ResultsMap-" + modelName.replace(".h5", ".pkl")))
