@@ -6,6 +6,10 @@
 |-----------------------------------------|---------------------------------------|
 | ![](utils/projectImages/mainScreen.png) | ![](utils/projectImages/addFace.png)  |
 
+| Model Eğitimi | Model Sil       |
+|---------------|-----------------|
+| ![](utils/projectImages/modelTrain.png)  | ![](utils/projectImages/modelDelete.png)  |
+
 | Test Web                              | Yerel Klasör Dosya Seçimi                |
 |---------------------------------------|------------------------------------------|
 | ![](utils/projectImages/testWeb.png)  | ![](utils/projectImages/localFolder.png) |
@@ -16,6 +20,7 @@
 
 ### Model isimlendirmesi:
 
-| Kullanılan veri seti | Veri çeşit sayısı | Epoch | input_shape girdi boyutu | Model ismi     |
-|----------------------|-------------------|-------|--------------------------|----------------|
-| myset                | 17                | 30    | 64                       | myset_17_30_64 |
+| Veriseti Türü | Veriseti Adı | Veriseti Versiyonu | Veri Çeşit Sayısı | Batch Boyutu | Epoch Sayısı | Girdi Boyutu (GxY) | 3 Karakterli Rastgele Dize | Model Uzantısı | Elde Edilen Model İsmi                  |
+|---------------|--------------|--------------------|-------------------|--------------|--------------|--------------------|----------------------------|----------------|-----------------------------------------|
+| face          | faceset      | v1                 | 20                | 32           | 50           | 128x128            | dvy                        | .h5            | face_faceset_v1_20_32_50_128x128_dvy.h5 |
+| face          | faceset      | v1                 | 20                | 8            | 30           | 128x128            | esy                        | .h5            | face_faceset_v1_20_8_30_128x128_esy.h5  |
