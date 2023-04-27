@@ -243,6 +243,7 @@ class TrainModel(QWidget):
                                   f"<tr><td><b>Doğrulama Seti</b></td><td>{round(float(valLoss), 4)}</td><td>{round(float(valAccuracy), 4)}</td></tr>"
                                   f"</table>",
                                   QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
+                self.mainWidget.updateModelList()
 
         else:
             emptyFields = []

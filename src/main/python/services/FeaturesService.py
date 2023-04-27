@@ -94,7 +94,14 @@ def getMsgBoxFeatures(msgBox, windowIconType, title, txt, iconType, btnType, isQ
     msgBox.setWindowTitle(title)
     msgBox.setStandardButtons(btnType)  # QMessageBox.Ok
     if isQuestion:
-        msgBox.setDefaultButton(QtWidgets.QMessageBox.No)
+        buttonY = msgBox.button(QMessageBox.Yes)
+        buttonY.setText('Evet')
+        buttonN = msgBox.button(QMessageBox.No)
+        buttonN.setText('Hayır')
+        msgBox.setDefaultButton(buttonN)
+    else:
+        buttonOK = msgBox.button(QMessageBox.Ok)
+        buttonOK.setText("Tamam")
     return msgBox
 
 

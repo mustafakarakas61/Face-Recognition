@@ -31,6 +31,7 @@ class MainWidget(QWidget):
         super().__init__()
 
         # started
+        self.comboModel = None
         self.control = False
         self.controlOpenGoogle = True
         self.selectedModel = "Model Seçiniz"
@@ -117,9 +118,9 @@ class MainWidget(QWidget):
         # Dosya isimlerinden model adlarını ayırma
         modelNames = ['Model Seçiniz'] + [os.path.splitext(f)[0] + ".h5" for f in modelFiles]
         # ComboBox oluşturma ve model isimlerini ekleme
-        comboModel = getComboBoxFeatures(QComboBox(self))
-        comboModel.addItems(modelNames)
-        comboModel.currentIndexChanged.connect(lambda index: self.onComboboxSelection(comboModel.itemText(index)))
+        self.comboModel = getComboBoxFeatures(QComboBox(self))
+        self.comboModel.addItems(modelNames)
+        self.comboModel.currentIndexChanged.connect(lambda index: self.onComboboxSelection(self.comboModel.itemText(index)))
         # Test için butonlar
         btnTestCamera = getButtonFeatures(QPushButton(self), pngCamera)
         btnTestCamera.clicked.connect(self.testCameraWidget.testCameraScreen)
@@ -154,7 +155,7 @@ class MainWidget(QWidget):
 
         labelSuccessRate.setAlignment(Qt.AlignLeft)
         layoutH.addWidget(labelSuccessRate)
-        layoutV.addWidget(comboModel)
+        layoutV.addWidget(self.comboModel)
         layoutV.addLayout(layoutH)
         layoutV.addLayout(layoutTest)
         self.setLayout(layoutV)
@@ -287,6 +288,15 @@ class MainWidget(QWidget):
             event.accept()
         else:
             event.ignore()
+
+    def updateModelList(self):
+        # Dosya isimlerini yeniden elde etme
+        modelFiles = [f for f in os.listdir(pathModels) if f.endswith('.h5')]
+        # Dosya isimlerinden model adlarını ayırma
+        modelNames = ['Model Seçiniz'] + [os.path.splitext(f)[0] + ".h5" for f in modelFiles]
+        # ComboBox öğesi güncelleme
+        self.comboModel.clear()
+        self.comboModel.addItems(modelNames)
 
     def showWarn(self):
         getMsgBoxFeatures(QMessageBox(self), pngInfoBox,"Kullanılacak Model ve Başarı Oranı",
