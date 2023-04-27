@@ -2,12 +2,14 @@ import os
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QFont, QPixmap
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QHBoxLayout, QTableWidget, QCheckBox, \
-    QMessageBox, QLabel
+    QMessageBox
 
+from src.main.python.PostgreSQL import removeFromDB, listModels
 from src.main.python.services.FeaturesService import getComboBoxFeatures, getButtonFeaturesDelete
-from src.resources.Environments import pngDelete, pathModels, pngTrash
+from src.resources.Environments import pngDelete, pathModels, pngTrash, pathFaceOutputs, pathFaceMaps, pathEyeOutputs, \
+    pathEyeMaps
 
 
 class DeleteModel(QWidget):
@@ -24,15 +26,13 @@ class DeleteModel(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngDelete))
 
-        # ComboBox ayarı
-        # Dizin içindeki .h5 uzantılı dosyaları bulma
-        modelFiles = [f for f in os.listdir(pathModels) if f.endswith('.h5')]
-        # Dosya isimlerinden model adlarını ayırma
-        modelNames = [os.path.splitext(f)[0] + ".h5" for f in modelFiles]
+        models = listModels()
+        modelNames = [model["model_name"] for model in models]
+        modelIds = [model["id"] for model in models]
 
-        mainWith = 440
-        if len(modelFiles) <= 10:
-            mainHeight = 260
+        mainWith = 500
+        if len(modelNames) <= 10:
+            mainHeight = 230
         else:
             mainHeight = 410
 
@@ -47,30 +47,34 @@ class DeleteModel(QWidget):
 
         # QTableWidget oluşturma
         table = QTableWidget()
-        table.setColumnCount(2)
+        table.setColumnCount(3)
         table.setRowCount(len(modelNames))  # tablo satır sayısı combobox seçeneklerinin sayısı kadar olacak
 
-        table.setHorizontalHeaderLabels(["Model Listesi", ""])  # tablo başlığı
-        table.setMinimumSize(420, 180)  # tablonun minimum boyutu
-        table.setMaximumSize(420, 330)  # tablonun maksimum boyutu
+        table.setHorizontalHeaderLabels(["id", "Model Listesi", ""])  # tablo başlığı
+        table.setMinimumSize(480, 180)  # tablonun minimum boyutu width, height
+        table.setMaximumSize(480, 335)  # tablonun maksimum boyutu width, height
+        table.setColumnWidth(0, 20)
+        table.setColumnWidth(1, 360)
+        table.setColumnWidth(2, 20)
         table.horizontalHeaderItem(0).setFont(QFont("Arial", 15, QFont.Bold))
         table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
-        table.setColumnWidth(0, 360)
-        table.setColumnWidth(1, 40)
-        table.horizontalHeaderItem(1).setIcon(QIcon(pngTrash))
+        table.horizontalHeaderItem(1).setFont(QFont("Arial", 15, QFont.Bold))
         table.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
-
-        # table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        table.horizontalHeaderItem(2).setIcon(QIcon(pngTrash))
+        table.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
+        table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         for i in range(len(modelNames)):
-            # Model ismini QTableWidget'e ekleme
-            item = QtWidgets.QTableWidgetItem(modelNames[i])
-            item.setFont(QFont("Times New Roman", 13))
-            table.setItem(i, 0, item)
+            itemId = QtWidgets.QTableWidgetItem(str(modelIds[i]))
+            itemId.setFont(QFont("Times New Roman", 13))
+            table.setItem(i, 0, itemId)
 
-            # Seçim kutusunu QTableWidget'e ekleme
-            checkbox = QCheckBox()
-            table.setCellWidget(i, 1, checkbox)
+            itemName = QtWidgets.QTableWidgetItem(modelNames[i])
+            itemName.setFont(QFont("Times New Roman", 13))
+            table.setItem(i, 1, itemName)
+
+            itemCheckbox = QCheckBox()
+            table.setCellWidget(i, 2, itemCheckbox)
 
         # Ana layout oluşturma
         mainLayout = QVBoxLayout()
@@ -100,7 +104,7 @@ class DeleteModel(QWidget):
         checkedItems = []
 
         for i in range(table.rowCount()):
-            checkbox = table.cellWidget(i, 1)
+            checkbox = table.cellWidget(i, 2)
             if checkbox.isChecked():
                 checkedItems.append(i)
 
@@ -119,10 +123,23 @@ class DeleteModel(QWidget):
             messageBox.exec_()
             if messageBox.clickedButton() == buttonY:
                 for i in reversed(checkedItems):
-                    modelName = table.item(i, 0).text()
-                    filePath = os.path.join(pathModels, modelName)
-                    if os.path.exists(filePath):
-                        os.remove(filePath)
+                    modelId: int = table.item(i, 0).text()
+                    modelName: str = table.item(i, 1).text()
+                    modelPath: str = os.path.join(pathModels, modelName)
+                    if modelName.__contains__("face_"):
+                        outputsPath: str = os.path.join(pathFaceOutputs, modelName.replace(".h5", ".txt"))
+                        mapsPath: str = os.path.join(pathFaceMaps, str("ResultsMap-" + modelName.replace(".h5", ".pkl")))
+                    else:
+                        outputsPath: str = os.path.join(pathEyeOutputs, modelName.replace(".h5", ".txt"))
+                        mapsPath: str = os.path.join(pathEyeMaps, str("ResultsMap-" + modelName.replace(".h5", ".pkl")))
+                    # removes
+                    removeFromDB(modelId)
+                    if os.path.exists(modelPath):
+                        os.remove(modelPath)
+                    if os.path.exists(outputsPath):
+                        os.remove(outputsPath)
+                    if os.path.exists(mapsPath):
+                        os.remove(mapsPath)
                     combo.removeItem(combo.findText(modelName))
                     table.removeRow(i)
                 self.mainWidget.updateModelList()

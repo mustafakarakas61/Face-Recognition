@@ -13,7 +13,9 @@ def createTable(modelName: str, trainPercentage: float, dropoutRate: float):
 
     cur = conn.cursor()
     # face_faceset_v1_20_4_1_128x128_xbc
-    mType, mName, mVersion, mDataCount, mBatchSize, mEpochsCount, mInputSize, mRandomString = modelName.replace(".h5", "").split("_")
+    mType, mName, mVersion, mDataCount, mBatchSize, mEpochsCount, mInputSize, mRandomString = modelName.replace(".h5",
+                                                                                                                "").split(
+        "_")
 
     cur.execute(
         "INSERT INTO models (type, name, version, data_count, batch_size, epochs_count, input_size, random_string, dropout_rate, data_train_percentage, data_validation_percentage) "
@@ -38,7 +40,49 @@ def createTable(modelName: str, trainPercentage: float, dropoutRate: float):
     return affectedId
 
 
-def executeSql(sql: str, params: tuple):
+def removeFromDB(modelId: int):
+    sql: str = "DELETE FROM attendance WHERE model_id = " + modelId + "; DELETE FROM statistics WHERE model_id = " + modelId + "; DELETE FROM models_data WHERE models_id = " + modelId + "; DELETE FROM models_results WHERE models_id = " + modelId + "; DELETE FROM models WHERE id = " + modelId + ";"
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost, port=dbPort)
+    cur = conn.cursor()
+    cur.execute(sql)
+
+    conn.commit()
+    conn.close()
+
+
+def listModels():
+    sql = "SELECT id, type, name, version, data_count, batch_size, epochs_count, input_size, random_string, dropout_rate, data_train_percentage, data_validation_percentage, create_date_time FROM models"
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost, port=dbPort)
+    cur = conn.cursor()
+    cur.execute(sql)
+    rows = cur.fetchall()
+    conn.close()
+    models = []
+    for row in rows:
+        model = {
+            "id": row[0],
+            "type": row[1],
+            "name": row[2],
+            "version": row[3],
+            "data_count": row[4],
+            "batch_size": row[5],
+            "epochs_count": row[6],
+            "input_size": row[7],
+            "random_string": row[8],
+            "dropout_rate": row[9],
+            "data_train_percentage": row[10],
+            "data_validation_percentage": row[11],
+            "create_date_time": row[12],
+            "model_name": row[1] + "_" + row[2] + "_v" + str(row[3]) + "_" + str(row[4]) + "_" + str(
+                row[5]) + "_" + str(row[6]) + "_" + row[
+                              7] + "_" + row[8] + ".h5"
+        }
+        models.append(model)
+
+    return models
+
+
+def executeSql(sql: str, params: tuple = ()):
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
                             port=dbPort)
 

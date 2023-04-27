@@ -6,6 +6,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox
 
+from src.main.python.PostgreSQL import listModels
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, fontTextBox
 from src.main.python.services.gui.faceScreens.DeleteFaceScreen import DeleteFace
@@ -112,15 +113,12 @@ class MainWidget(QWidget):
         ###########
         # Test etiketi
         labelTest = getLabelFeatures(QLabel('Test'), isUseFont=True, isUseSecondFont=False)
-        # ComboBox ayarı
-        # Dizin içindeki .h5 uzantılı dosyaları bulma
-        modelFiles = [f for f in os.listdir(pathModels) if f.endswith('.h5')]
-        # Dosya isimlerinden model adlarını ayırma
-        modelNames = ['Model Seçiniz'] + [os.path.splitext(f)[0] + ".h5" for f in modelFiles]
+
         # ComboBox oluşturma ve model isimlerini ekleme
         self.comboModel = getComboBoxFeatures(QComboBox(self))
-        self.comboModel.addItems(modelNames)
-        self.comboModel.currentIndexChanged.connect(lambda index: self.onComboboxSelection(self.comboModel.itemText(index)))
+        self.updateModelList()
+        self.comboModel.currentIndexChanged.connect(
+            lambda index: self.onComboboxSelection(self.comboModel.itemText(index)))
         # Test için butonlar
         btnTestCamera = getButtonFeatures(QPushButton(self), pngCamera)
         btnTestCamera.clicked.connect(self.testCameraWidget.testCameraScreen)
@@ -151,7 +149,6 @@ class MainWidget(QWidget):
         labelSuccessRate.setEnabled(False)
         labelSuccessRate.setFont(fontTextBox)
         labelSuccessRate.setStyleSheet("background-color: white; color: black;")
-
 
         labelSuccessRate.setAlignment(Qt.AlignLeft)
         layoutH.addWidget(labelSuccessRate)
@@ -228,7 +225,8 @@ class MainWidget(QWidget):
             rateLimit = 35
             if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
                 if modelName.__eq__("Model Seçiniz"):
-                    getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı", "Lütfen bir model seçin.", QMessageBox.Warning,
+                    getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı", "Lütfen bir model seçin.",
+                                      QMessageBox.Warning,
                                       QMessageBox.Ok, isQuestion=False).exec_()
                 if int(sRate) < int(rateLimit):
                     getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Uyarı",
@@ -290,16 +288,14 @@ class MainWidget(QWidget):
             event.ignore()
 
     def updateModelList(self):
-        # Dosya isimlerini yeniden elde etme
-        modelFiles = [f for f in os.listdir(pathModels) if f.endswith('.h5')]
-        # Dosya isimlerinden model adlarını ayırma
-        modelNames = ['Model Seçiniz'] + [os.path.splitext(f)[0] + ".h5" for f in modelFiles]
+        models = listModels()
+        modelNames = ["Model Seçiniz"] + [model["model_name"] for model in models]
         # ComboBox öğesi güncelleme
         self.comboModel.clear()
         self.comboModel.addItems(modelNames)
 
     def showWarn(self):
-        getMsgBoxFeatures(QMessageBox(self), pngInfoBox,"Kullanılacak Model ve Başarı Oranı",
+        getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Kullanılacak Model ve Başarı Oranı",
                           self.selectedModel + "\nBaşarı oranı " + str(
                               self.textBoxSuccessRate.text()) + " olarak belirlenmiştir.",
                           QMessageBox.Information, QMessageBox.Ok, isQuestion=False).exec_()
