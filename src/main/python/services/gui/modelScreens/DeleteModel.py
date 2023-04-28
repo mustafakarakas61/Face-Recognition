@@ -3,11 +3,11 @@ import os
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QHBoxLayout, QTableWidget, QCheckBox, \
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QTableWidget, QCheckBox, \
     QMessageBox
 
 from src.main.python.PostgreSQL import removeFromDB, listModels
-from src.main.python.services.FeaturesService import getComboBoxFeatures, getButtonFeaturesDelete, \
+from src.main.python.services.FeaturesService import getButtonFeaturesDelete, \
     getButtonFeaturesSelectAll, getButtonFeaturesClear
 from src.resources.Environments import pngDelete, pathModels, pngTrash, pathFaceOutputs, pathFaceMaps, pathEyeOutputs, \
     pathEyeMaps, pngUnChecked, pngChecked
@@ -31,19 +31,13 @@ class DeleteModel(QWidget):
 
         models = listModels()
         modelNames = [model["model_name"] for model in models]
-        modelIds = [model["id"] for model in models]
+        modelIds = [model["m_id"] for model in models]
 
         mainWith = 500
         if len(modelNames) <= 10:
             mainHeight = 230
         else:
             mainHeight = 410
-
-        # ComboBox oluşturma ve model isimlerini ekleme
-        comboDeleteModel = getComboBoxFeatures(QComboBox(self))
-        comboDeleteModel.addItems(modelNames)
-        comboDeleteModel.currentIndexChanged.connect(
-            lambda index: self.onComboboxSelection(comboDeleteModel.itemText(index)))
 
         btnSelectAll = getButtonFeaturesSelectAll(QPushButton(self), text="Tümünü Seç")
         btnSelectAll.clicked.connect(lambda: self.selectAllCheckboxes(table))
@@ -52,7 +46,7 @@ class DeleteModel(QWidget):
         btnClearSelected.clicked.connect(lambda: self.clearSelectedCheckboxes(table))
 
         btnDeleteModel = getButtonFeaturesDelete(QPushButton(self), text="Sil")
-        btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table, comboDeleteModel))
+        btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table))
 
         # QTableWidget oluşturma
         table = QTableWidget()
@@ -60,18 +54,19 @@ class DeleteModel(QWidget):
         table.setRowCount(len(modelNames))  # tablo satır sayısı combobox seçeneklerinin sayısı kadar olacak
 
         table.setHorizontalHeaderLabels(["id", "Model Listesi", ""])  # tablo başlığı
-        table.setMinimumSize(480, 180)  # tablonun minimum boyutu width, height
-        table.setMaximumSize(480, 335)  # tablonun maksimum boyutu width, height
+        table.setMinimumSize(455, 180)  # tablonun minimum boyutu width, height
+        table.setMaximumSize(455, 335)  # tablonun maksimum boyutu width, height
         table.setColumnWidth(0, 20)
         table.setColumnWidth(1, 360)
-        table.setColumnWidth(2, 20)
-        table.horizontalHeaderItem(0).setFont(QFont("Arial", 15, QFont.Bold))
+        table.setColumnWidth(2, 10)
+        table.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 15, QFont.Bold))
         table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
-        table.horizontalHeaderItem(1).setFont(QFont("Arial", 15, QFont.Bold))
+        table.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 15, QFont.Bold))
         table.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
         table.horizontalHeaderItem(2).setIcon(QIcon(pngTrash))
         table.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
         table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        # table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
         for i in range(len(modelNames)):
             itemId = QtWidgets.QTableWidgetItem(str(modelIds[i]))
@@ -127,7 +122,7 @@ class DeleteModel(QWidget):
             if checkbox.isChecked():
                 checkbox.setChecked(False)
 
-    def deleteSelectedCheckBox(self, table, combo):
+    def deleteSelectedCheckBox(self, table):
         checkedItems = []
 
         for i in range(table.rowCount()):
@@ -168,7 +163,6 @@ class DeleteModel(QWidget):
                         os.remove(outputsPath)
                     if os.path.exists(mapsPath):
                         os.remove(mapsPath)
-                    combo.removeItem(combo.findText(modelName))
                     table.removeRow(i)
                 self.mainWidget.updateModelList()
         else:

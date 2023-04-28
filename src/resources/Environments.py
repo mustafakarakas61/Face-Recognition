@@ -20,12 +20,6 @@ countTestImage = 1
 countEpochs = 30
 inputSize = 128  # 64
 
-# Environments_RabbitMQ
-queueYoutubeVideoTest = "py_youtube_video_test"
-queueFaceFromYoutube = "py_face_from_youtube"
-queueFaceFromImage = "py_face_from_image"
-queueFaceFromVideo = "py_face_from_video"
-
 # Environments_PostgreSQL
 dbName = "face_recognition"
 dbUser = "postgres"
@@ -94,3 +88,5 @@ pngErrorBox = pathIcons + "boxError.png"
 pngTrash = pathIcons + "trash.png"
 pngChecked = pathIcons + "checked.png"
 pngUnChecked = pathIcons + "unchecked.png"
+pngMainGraphic = pathIcons + "mainGraphic.png"
+pngGraphic = pathIcons + "graphic.png"

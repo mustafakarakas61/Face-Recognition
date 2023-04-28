@@ -51,7 +51,7 @@ def removeFromDB(modelId: int):
 
 
 def listModels():
-    sql = "SELECT id, type, name, version, data_count, batch_size, epochs_count, input_size, random_string, dropout_rate, data_train_percentage, data_validation_percentage, create_date_time FROM models"
+    sql = "SELECT m.id as \"m_id\", m.type, m.name, m.version, m.data_count, m.batch_size, m.epochs_count, m.input_size, m.random_string, m.dropout_rate, m.data_train_percentage, m.data_validation_percentage, m.create_date_time, mr.id as \"mr_id\", mr.total_time, mr.train_loss, mr.train_acc, mr.validation_loss, mr.validation_acc FROM models as m LEFT JOIN models_results as mr on mr.models_id = m.id"
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost, port=dbPort)
     cur = conn.cursor()
     cur.execute(sql)
@@ -60,7 +60,7 @@ def listModels():
     models = []
     for row in rows:
         model = {
-            "id": row[0],
+            "m_id": row[0],
             "type": row[1],
             "name": row[2],
             "version": row[3],
@@ -72,7 +72,13 @@ def listModels():
             "dropout_rate": row[9],
             "data_train_percentage": row[10],
             "data_validation_percentage": row[11],
-            "create_date_time": row[12],
+            "create_date_time": str(row[12]).split(".")[0],
+            "mr_id": row[13],
+            "total_time": row[14],
+            "train_loss": row[15],
+            "train_acc": row[16],
+            "validation_loss": row[17],
+            "validation_acc": row[18],
             "model_name": row[1] + "_" + row[2] + "_v" + str(row[3]) + "_" + str(row[4]) + "_" + str(
                 row[5]) + "_" + str(row[6]) + "_" + row[
                               7] + "_" + row[8] + ".h5"
