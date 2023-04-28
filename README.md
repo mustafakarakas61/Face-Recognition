@@ -10,6 +10,10 @@
 |-----------------------------------------|------------------------------------------|
 | ![](utils/projectImages/modelTrain.png) | ![](utils/projectImages/modelDelete.png) |
 
+| Model Bilgisi                          |
+|----------------------------------------|
+| ![](utils/projectImages/modelInfo.png) |
+
 | Test Web                              | Yerel Klasör Dosya Seçimi                |
 |---------------------------------------|------------------------------------------|
 | ![](utils/projectImages/testWeb.png)  | ![](utils/projectImages/localFolder.png) |
