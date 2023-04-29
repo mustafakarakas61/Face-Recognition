@@ -74,7 +74,7 @@ def listModels():
             "data_validation_percentage": row[11],
             "create_date_time": str(row[12]).split(".")[0],
             "mr_id": row[13],
-            "total_time": row[14],
+            "total_time": "0" + str(row[14]) if len(str(row[14]).split(":")[0]) == 1 else row[14],
             "train_loss": row[15],
             "train_acc": row[16],
             "validation_loss": row[17],
