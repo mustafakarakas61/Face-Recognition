@@ -17,7 +17,7 @@ class DeleteFace(QWidget):
         screenWidth, screenHeight = screen.width(), screen.height()
 
         self.window = QWidget()
-        self.window.setWindowTitle('Yüz Sil')
+        self.window.setWindowTitle('Veri Sil')
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngDelete))
 

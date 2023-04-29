@@ -9,12 +9,12 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit
 from src.main.python.PostgreSQL import listModels
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, fontTextBox
-from src.main.python.services.gui.faceScreens.DeleteFaceScreen import DeleteFace
-from src.main.python.services.gui.faceScreens.InfoFaceScreen import InfoFace
-from src.main.python.services.gui.faceScreens.addFaceScreens.CameraScreen import Camera
-from src.main.python.services.gui.faceScreens.addFaceScreens.ImageScreen import Image
-from src.main.python.services.gui.faceScreens.addFaceScreens.LocalFileScreen import LocalFile
-from src.main.python.services.gui.faceScreens.addFaceScreens.YoutubeScreen import Youtube
+from src.main.python.services.gui.faceScreens.DeleteDataScreen import DeleteFace
+from src.main.python.services.gui.faceScreens.InfoDataScreen import InfoFace
+from src.main.python.services.gui.faceScreens.addDataScreens.CameraScreen import Camera
+from src.main.python.services.gui.faceScreens.addDataScreens.ImageScreen import Image
+from src.main.python.services.gui.faceScreens.addDataScreens.LocalFileScreen import LocalFile
+from src.main.python.services.gui.faceScreens.addDataScreens.YoutubeScreen import Youtube
 from src.main.python.services.gui.modelScreens.DeleteModel import DeleteModel
 from src.main.python.services.gui.modelScreens.InfoModel import InfoModel
 from src.main.python.services.gui.modelScreens.TrainModel import TrainModel
@@ -74,17 +74,17 @@ class MainWidget(QWidget):
         self.setWindowIcon(QIcon(pngMustafa))
 
         ###########
-        # F A C E #
+        # D A T A #
         ###########
-        labelFace = getLabelFeatures(QLabel('Yüz'), isUseFont=True, isUseSecondFont=False)
-        # Yüzler için butonlar
+        labelFace = getLabelFeatures(QLabel('Veri'), isUseFont=True, isUseSecondFont=False)
+        # Veri için butonlar
         btnFaceAdd = getButtonFeatures(QPushButton(self), pngAdd)
         btnFaceAdd.clicked.connect(self.faceAddScreen)
         btnFaceDelete = getButtonFeatures(QPushButton(self), pngDelete)
         btnFaceDelete.clicked.connect(self.faceDeleteWidget.faceDeleteScreen)
         btnFaceInfo = getButtonFeatures(QPushButton(self), pngInfo)
         btnFaceInfo.clicked.connect(self.faceInfoWidget.faceInfoScreen)
-        # Yüzler için düzenleyici
+        # Veri için düzenleyici
         layoutFace = QHBoxLayout()
         layoutFace.addWidget(btnFaceAdd)
         layoutFace.addWidget(btnFaceDelete)
@@ -167,7 +167,7 @@ class MainWidget(QWidget):
             screenWidth, screenHeight = screen.width(), screen.height()
 
             self.window = QWidget()
-            self.window.setWindowTitle('Yüz Ekle')
+            self.window.setWindowTitle('Veri Ekle')
             self.window.setStyleSheet("background-color: white;")
             self.window.setWindowIcon(QIcon(pngAdd))
 
