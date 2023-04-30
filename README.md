@@ -2,9 +2,14 @@
 
 ## GUI Ekran Görüntüleri
 
-| Ana Ekran                               | Yüz Ekle                              |
-|-----------------------------------------|---------------------------------------|
-| ![](utils/projectImages/mainScreen.png) | ![](utils/projectImages/addFace.png)  |
+| Ana Ekran                               | Veri Ekle                            |
+|-----------------------------------------|--------------------------------------|
+| ![](utils/projectImages/mainScreen.png) | ![](utils/projectImages/addFace.png) |
+
+
+| Veri Sil                                | Veri Bilgisi                             |
+|-----------------------------------------|------------------------------------------|
+| ![](utils/projectImages/modelTrain.png) | ![](utils/projectImages/modelDelete.png) |
 
 | Model Eğitimi                           | Model Sil                                |
 |-----------------------------------------|------------------------------------------|
