@@ -65,8 +65,7 @@ def getButtonFeaturesClear(btn, text):
     return btn
 
 
-def getButtonFeaturesDelete(btn, text):
-    butonSizes = (70, 50)
+def getButtonFeaturesDelete(btn, text, butonSizes:tuple):
     fontButton = QtGui.QFont("Times New Roman", 15)
     btn.setFont(fontButton)
     btn.setFixedSize(*butonSizes)

@@ -15,9 +15,9 @@ from src.main.python.services.gui.faceScreens.addDataScreens.CameraScreen import
 from src.main.python.services.gui.faceScreens.addDataScreens.ImageScreen import Image
 from src.main.python.services.gui.faceScreens.addDataScreens.LocalFileScreen import LocalFile
 from src.main.python.services.gui.faceScreens.addDataScreens.YoutubeScreen import Youtube
-from src.main.python.services.gui.modelScreens.DeleteModel import DeleteModel
-from src.main.python.services.gui.modelScreens.InfoModel import InfoModel
-from src.main.python.services.gui.modelScreens.TrainModel import TrainModel
+from src.main.python.services.gui.modelScreens.DeleteModelScreen import DeleteModel
+from src.main.python.services.gui.modelScreens.InfoModelScreen import InfoModel
+from src.main.python.services.gui.modelScreens.TrainModelScreen import TrainModel
 from src.main.python.services.gui.testScreens.TestCameraScreen import TestCamera
 from src.main.python.services.gui.testScreens.TestLocalFileScreen import TestLocalFile
 from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage

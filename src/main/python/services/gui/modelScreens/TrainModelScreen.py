@@ -45,7 +45,7 @@ class TrainModel(QWidget):
         self.epochsCount = "30"
         self.inputSize = "128x128"
 
-        mainWith = 520
+        mainWith = 550
         mainHeight = 250
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()

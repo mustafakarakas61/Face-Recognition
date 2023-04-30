@@ -11,10 +11,11 @@ from src.resources.Environments import pngInfo, pathDatasets
 class InfoFace(QWidget):
     def __init__(self, mainWidget):
         super(InfoFace, self).__init__()
+        self.window = None
         self.mainWidget = mainWidget
 
     def faceInfoScreen(self):
-        mainWith = 500
+        mainWith = 530
         mainHeight = 330
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()

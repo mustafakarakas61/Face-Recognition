@@ -39,15 +39,6 @@ class DeleteModel(QWidget):
         else:
             mainHeight = 410
 
-        btnSelectAll = getButtonFeaturesSelectAll(QPushButton(self), text="Tümünü Seç")
-        btnSelectAll.clicked.connect(lambda: self.selectAllCheckboxes(table))
-
-        btnClearSelected = getButtonFeaturesClear(QPushButton(self), text="Temizle")
-        btnClearSelected.clicked.connect(lambda: self.clearSelectedCheckboxes(table))
-
-        btnDeleteModel = getButtonFeaturesDelete(QPushButton(self), text="Sil")
-        btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table))
-
         # QTableWidget oluşturma
         table = QTableWidget()
         table.setColumnCount(3)
@@ -79,11 +70,21 @@ class DeleteModel(QWidget):
 
             itemCheckbox = QCheckBox()
             itemCheckbox.setStyleSheet(
-                "QCheckBox::indicator { width: 20px; height: 20px; background-color: white;}"
-                "QCheckBox::indicator:checked { image: url("+str(pngChecked)+"); }"
-                "QCheckBox::indicator:unchecked { image: url("+str(pngUnChecked)+"); }"
+                "QCheckBox::indicator { width: 20px; height: 20px; background-color: white;padding-left: 9px;}"
+                "QCheckBox::indicator:checked { image: url(" + str(pngChecked) + "); }"
+                                                                                 "QCheckBox::indicator:unchecked { image: url(" + str(
+                    pngUnChecked) + "); }"
             )
             table.setCellWidget(i, 2, itemCheckbox)
+
+        btnSelectAll = getButtonFeaturesSelectAll(QPushButton(self), text="Tümünü Seç")
+        btnSelectAll.clicked.connect(lambda: self.selectAllCheckboxes(table))
+
+        btnClearSelected = getButtonFeaturesClear(QPushButton(self), text="Temizle")
+        btnClearSelected.clicked.connect(lambda: self.clearSelectedCheckboxes(table))
+
+        btnDeleteModel = getButtonFeaturesDelete(QPushButton(self), text="Sil", butonSizes=(70, 50))
+        btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table))
 
         # Ana layout oluşturma
         mainLayout = QVBoxLayout()
@@ -107,9 +108,6 @@ class DeleteModel(QWidget):
         self.window.setGeometry(int((screenWidth - mainWith) / 2), int((screenHeight - mainHeight) / 2), mainWith,
                                 mainHeight)
         self.window.show()
-
-    def onComboboxSelection(self, selectedText):
-        self.selectedModel = selectedText
 
     def selectAllCheckboxes(self, table):
         for i in range(table.rowCount()):
