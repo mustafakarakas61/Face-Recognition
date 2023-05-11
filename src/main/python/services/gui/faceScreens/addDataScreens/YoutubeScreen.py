@@ -8,6 +8,7 @@ from src.resources.Environments import pngYoutube
 class Youtube(QWidget):
     def __init__(self, mainWidget):
         super(Youtube, self).__init__()
+        self.window = None
         self.mainWidget = mainWidget
 
     def faceAddVideoYoutubeScreen(self):
@@ -21,9 +22,9 @@ class Youtube(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngYoutube))
 
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.mainWidget.faceAddScreen)
+        # # Çarpı işaretine basıldığında eski pencere açılsın
+        # self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        # self.window.destroyed.connect(self.mainWidget.faceAddScreen)
 
         # Ana düzenleyici
         layout = QVBoxLayout()
@@ -32,3 +33,7 @@ class Youtube(QWidget):
         self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWith, mainHeight)
         self.window.show()
+
+    def closeScreen(self):
+        if self.window is not None:
+            self.window.close()

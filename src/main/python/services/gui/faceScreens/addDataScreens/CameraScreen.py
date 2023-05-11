@@ -6,7 +6,7 @@ import time
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 
 from src.resources.Environments import pngCamera
 from utils.Utils import checkFolder, changeNameToASCII
@@ -15,6 +15,7 @@ from utils.Utils import checkFolder, changeNameToASCII
 class Camera(QWidget):
     def __init__(self, mainWidget):
         super(Camera, self).__init__()
+        self.window = None
         self.mainWidget = mainWidget
 
     def faceAddVideoCameraScreen(self):
@@ -28,17 +29,25 @@ class Camera(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngCamera))
 
-        # Çarpı işaretine basıldığında eski pencere açılsın
-        self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.window.destroyed.connect(self.mainWidget.faceAddScreen)
+        # # Çarpı işaretine basıldığında eski pencere açılsın
+        # self.window.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        # self.window.destroyed.connect(self.mainWidget.faceAddScreen)
+
+        layoutH = QHBoxLayout()
 
         # Ana düzenleyici
         layout = QVBoxLayout()
+        layout.addLayout(layoutH)
 
         self.window.setLayout(layout)
         self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWith, mainHeight)
         self.window.show()
+
+    def closeScreen(self):
+        if self.window is not None:
+            self.window.close()
+
 
 
 # inputs

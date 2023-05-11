@@ -1,6 +1,6 @@
 import os
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
@@ -14,6 +14,8 @@ from src.main.python.services.gui.faceScreens.InfoDataScreen import InfoFace
 from src.main.python.services.gui.faceScreens.addDataScreens.CameraScreen import Camera
 from src.main.python.services.gui.faceScreens.addDataScreens.ImageScreen import Image
 from src.main.python.services.gui.faceScreens.addDataScreens.LocalFileScreen import LocalFile
+from src.main.python.services.gui.faceScreens.addDataScreens.NewDatasetDataScreen import NewDatasetData
+from src.main.python.services.gui.faceScreens.addDataScreens.NewDatasetScreen import NewDataset
 from src.main.python.services.gui.faceScreens.addDataScreens.YoutubeScreen import Youtube
 from src.main.python.services.gui.modelScreens.DeleteModelScreen import DeleteModel
 from src.main.python.services.gui.modelScreens.InfoModelScreen import InfoModel
@@ -23,7 +25,7 @@ from src.main.python.services.gui.testScreens.TestLocalFileScreen import TestLoc
 from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
-    pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder, pngInfoBox, pngWarningBox
+    pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder, pngInfoBox, pngWarningBox, pathDatasets
 from utils.Utils import deleteJpgFilesOnFolder, getLine, deleteMp4FilesOnFolder
 
 
@@ -32,6 +34,11 @@ class MainWidget(QWidget):
         super().__init__()
 
         # started
+        self.comboDatasetsData = None
+        self.comboDatasets = None
+        self.window = None
+        self.selectedDatasetDataName = None
+        self.selectedDatasetName = None
         self.comboModel = None
         self.control = False
         self.controlOpenGoogle = True
@@ -40,7 +47,9 @@ class MainWidget(QWidget):
         self.isMainScreenClosing = False
 
         # another classes
-        # face
+        # Data
+        self.newDatasetWidget = NewDataset(self)
+        self.newDatasetDataWidget = NewDatasetData(self)
         self.faceAddLocalFileWidget = LocalFile(self)
         self.faceAddCameraWidget = Camera(self)
         self.faceAddImageWidget = Image(self)
@@ -161,58 +170,123 @@ class MainWidget(QWidget):
     # Main Screens
     def faceAddScreen(self):
         if not self.getIsMainScreenClosing():
-            mainWith = 300
-            mainHeight = 300
+            mainWith = 330
+            mainHeight = 420
             screen = QtWidgets.QApplication.desktop().screenGeometry()
             screenWidth, screenHeight = screen.width(), screen.height()
 
             self.window = QWidget()
-            self.window.setWindowTitle('Veri Ekle')
+            self.window.setWindowTitle('Yüz Verisi Ekle')
             self.window.setStyleSheet("background-color: white;")
             self.window.setWindowIcon(QIcon(pngAdd))
+
+            # todo : ÖNEMLİ ! NEDEN ANA EKRAN KAPATILDIĞINDA SUB EKRAN KAPANMIYOR !
+
+            #############
+            #  D A T A  #
+            #############
+            # Combobox
+            labelDataset: QLabel = getLabelFeatures(QLabel("<b>Veriseti:</b>"), False, True)
+            self.comboDatasets: QComboBox = getComboBoxFeatures(QComboBox(self))
+            self.comboDatasets.setFixedSize(150, 30)
+            self.updateDatasetList()
+
+            self.comboDatasetsData: QComboBox = getComboBoxFeatures(QComboBox(self))
+            self.comboDatasetsData.setFixedSize(150, 30)
+            self.comboDatasets.currentIndexChanged.connect(
+                lambda index: self.onComboDatasetsSelection(self.comboDatasets.itemText(index), self.comboDatasetsData))
+
+            layoutHDataset = QHBoxLayout()
+            layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
+            layoutHDataset.addWidget(self.comboDatasets, alignment=Qt.AlignRight)
+
+            labelDatasetData: QLabel = getLabelFeatures(QLabel("<b>Veri:</b>"), False, True)
+            layoutHDatasetData = QHBoxLayout()
+            layoutHDatasetData.addWidget(labelDatasetData, alignment=Qt.AlignLeft)
+            layoutHDatasetData.addWidget(self.comboDatasetsData, alignment=Qt.AlignRight)
+
+            layoutHNew = QHBoxLayout()
+            # Button
+            fontButton = QtGui.QFont("Times New Roman", 15)
+            buttonSizes = (150, 50)
+
+            btnNewDataset = QPushButton(self)
+            btnNewDataset.setText("Veriseti Oluştur")
+            btnNewDataset.setFont(fontButton)
+            btnNewDataset.setFixedSize(*buttonSizes)
+            btnNewDataset.setStyleSheet("background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
+            btnNewDataset.clicked.connect(self.newDatasetWidget.newDatasetScreen)
+            layoutHNew.addWidget(btnNewDataset)
+
+            btnNewDatasetData = QPushButton(self)
+            btnNewDatasetData.setText("Veri Oluştur")
+            btnNewDatasetData.setFont(fontButton)
+            btnNewDatasetData.setFixedSize(*buttonSizes)
+            btnNewDatasetData.setStyleSheet(
+                "background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
+            btnNewDatasetData.clicked.connect(
+                lambda: self.newDatasetDataWidget.newDatasetDataScreen() if not str(self.selectedDatasetName).__eq__(
+                    "Veriseti Seçiniz") and self.selectedDatasetName is not None else getMsgBoxFeatures(
+                    QMessageBox(), pngWarningBox, "Uyarı", "Lütfen bir Veriseti seçin.",
+                    QMessageBox.Warning,
+                    QMessageBox.Ok, isQuestion=False).exec_())
+            layoutHNew.addWidget(btnNewDatasetData)
 
             #############
             # Y E R E L #
             #############
             # Yerel etiketi
-            labelImage = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
+            labelLocal = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
             # Yerel için butonlar
             btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
             btnVideoCamera.clicked.connect(self.faceAddCameraWidget.faceAddVideoCameraScreen)
             btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
             btnImageFolder.clicked.connect(self.faceAddLocalFileWidget.faceAddLocalFileScreen)
             # Yerel için düzenleyici
-            layoutImage = QHBoxLayout()
-            layoutImage.addWidget(btnVideoCamera)
-            layoutImage.addWidget(btnImageFolder)
+            layoutLocal = QHBoxLayout()
+            layoutLocal.addWidget(btnVideoCamera)
+            layoutLocal.addWidget(btnImageFolder)
 
             #########
             # W E B #
             #########
             # Web etiketi
-            labelVideo = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
+            labelWeb = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
             # Web için butonlar
             btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
             btnImageUrl.clicked.connect(self.faceAddImageWidget.faceAddImageUrlScreen)
             btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
             btnVideoYoutube.clicked.connect(self.faceAddYoutubeWidget.faceAddVideoYoutubeScreen)
             # Web için düzenleyici
-            layoutVideo = QHBoxLayout()
-            layoutVideo.addWidget(btnImageUrl)
-            layoutVideo.addWidget(btnVideoYoutube)
+            layoutWeb = QHBoxLayout()
+            layoutWeb.addWidget(btnImageUrl)
+            layoutWeb.addWidget(btnVideoYoutube)
 
             # Ana düzenleyici
             layout = QVBoxLayout()
-            layout.addWidget(labelImage)
-            layout.addLayout(layoutImage)
+
+            layoutV = QVBoxLayout()
+            layoutV.addLayout(layoutHDataset)
+            layoutV.addLayout(layoutHDatasetData)
+
+            layoutV.addLayout(layoutHNew)
+
+            layout.addLayout(layoutV)
             layout.addWidget(getLine())
-            layout.addWidget(labelVideo)
-            layout.addLayout(layoutVideo)
+            layout.addWidget(labelLocal)
+            layout.addLayout(layoutLocal)
+            layout.addWidget(getLine())
+            layout.addWidget(labelWeb)
+            layout.addLayout(layoutWeb)
 
             self.window.setLayout(layout)
             self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
                                     int(screenHeight / 2 - int(mainHeight / 2)),
                                     mainWith, mainHeight)
+            # Çarpı işaretine basıldığında
+            self.window.setAttribute(Qt.WA_DeleteOnClose)
+            # self.window.destroyed.connect(self.onClosedFaceAddScreen)
+            self.window.closeEvent = self.onClosedFaceAddScreen
             self.window.show()
 
     def testUrlScreen(self):
@@ -278,21 +352,64 @@ class MainWidget(QWidget):
                                   isQuestion=True).exec_()
 
         if reply == QtWidgets.QMessageBox.Yes:
+            self.setIsMainScreenClosing(True)
             for widget in QtWidgets.QApplication.topLevelWidgets():
                 widget.close()
-            self.setIsMainScreenClosing(True)
             deleteJpgFilesOnFolder(pathTempFolder)
             deleteMp4FilesOnFolder(pathTempFolder)
             event.accept()
         else:
             event.ignore()
 
+    def onClosedFaceAddScreen(self, event):
+        if not self.getIsMainScreenClosing():
+            if self.selectedDatasetName is not None or self.selectedDatasetDataName is not None:
+                reply = getMsgBoxFeatures(QMessageBox(), pngWarningBox, "Dikkat!",
+                                          'Veri Ekle ekranından çıkış yapılsın mı?',
+                                          QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
+                                          isQuestion=True).exec_()
+                if reply == QtWidgets.QMessageBox.Yes:
+                    self.selectedDatasetName = None
+                    self.selectedDatasetDataName = None
+                    if self.newDatasetWidget and self.newDatasetWidget.window and self.newDatasetWidget.window.isVisible():
+                        self.newDatasetWidget.window.close()
+                    if self.newDatasetDataWidget and self.newDatasetDataWidget.window and self.newDatasetDataWidget.window.isVisible():
+                        self.newDatasetDataWidget.window.close()
+                    event.accept()
+                    # self.closeSubScreens()
+                else:
+                    event.ignore()
+            # else:
+            #     self.closeSubScreens()
+            self.closeSubScreens()
+
+    def closeSubScreens(self):
+        if self.faceAddCameraWidget is not None:
+            self.faceAddCameraWidget.closeScreen()
+
+        if self.faceAddLocalFileWidget is not None:
+            self.faceAddLocalFileWidget.closeScreen()
+
+        if self.faceAddImageWidget is not None:
+            self.faceAddImageWidget.closeScreen()
+
+        if self.faceAddYoutubeWidget is not None:
+            self.faceAddYoutubeWidget.closeScreen()
+
+    def updateDatasetList(self):
+        if self.comboDatasets is not None:
+            datasetFolders = [f for f in os.listdir(pathDatasets) if os.path.isdir(os.path.join(pathDatasets, f))]
+            datasetNames = ['Veriseti Seçiniz'] + datasetFolders
+            self.comboDatasets.clear()
+            self.comboDatasets.addItems(datasetNames)
+
     def updateModelList(self):
-        models = listModels()
-        modelNames = ["Model Seçiniz"] + [model["model_name"] for model in models]
-        # ComboBox öğesi güncelleme
-        self.comboModel.clear()
-        self.comboModel.addItems(modelNames)
+        if self.comboModel is not None:
+            models = listModels()
+            modelNames = ["Model Seçiniz"] + [model["model_name"] for model in models]
+            # ComboBox öğesi güncelleme
+            self.comboModel.clear()
+            self.comboModel.addItems(modelNames)
 
     def showWarn(self):
         getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Kullanılacak Model ve Başarı Oranı",
@@ -309,6 +426,23 @@ class MainWidget(QWidget):
     # Seçili olan modelin adını alma
     def onComboboxSelection(self, newName):
         self.selectedModel = newName
+
+    def onComboDatasetsSelection(self, newName, comboDatasetsData: QComboBox):
+        self.selectedDatasetName = newName
+        if self.selectedDatasetName is not None and len(
+                self.selectedDatasetName) > 0 and not self.selectedDatasetName.__eq__("Veriseti Seçiniz"):
+            datasetDataFolders = [f for f in os.listdir(pathDatasets + self.selectedDatasetName) if
+                                  os.path.isdir(os.path.join(pathDatasets + self.selectedDatasetName, f))]
+            datasetDataNames = ['Veri Seçiniz'] + datasetDataFolders
+            comboDatasetsData.clear()
+            comboDatasetsData.addItems(datasetDataNames)
+            comboDatasetsData.currentIndexChanged.connect(
+                lambda index: self.onComboDatasetsDataSelection(comboDatasetsData.itemText(index)))
+        else:
+            comboDatasetsData.clear()
+
+    def onComboDatasetsDataSelection(self, newName):
+        self.selectedDatasetDataName = newName
 
 
 if __name__ == '__main__':
