@@ -33,7 +33,7 @@ class DeleteModel(QWidget):
         modelNames = [model["model_name"] for model in models]
         modelIds = [model["m_id"] for model in models]
 
-        mainWith = 500
+        mainWidth = 500
         if len(modelNames) <= 10:
             mainHeight = 230
         else:
@@ -105,7 +105,7 @@ class DeleteModel(QWidget):
         mainLayout.addLayout(layoutButton)
 
         self.window.setLayout(mainLayout)
-        self.window.setGeometry(int((screenWidth - mainWith) / 2), int((screenHeight - mainHeight) / 2), mainWith,
+        self.window.setGeometry(int((screenWidth - mainWidth) / 2), int((screenHeight - mainHeight) / 2), mainWidth,
                                 mainHeight)
         self.window.show()
 

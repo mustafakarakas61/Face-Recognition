@@ -39,7 +39,7 @@ class InfoModel(QWidget):
         modelItems = modelMId, modelMRId, modelNames, modelTrainDataPercentage, modelValidationDataPercentage, modelTrainDuration, modelTrainLoss, modelTrainAcc, modelValidationLoss, modelValidationAcc, modelCreateDateTime
         # todo: model analiz sayısı da eklensin
 
-        mainWith = 1570
+        mainWidth = 1570
         if len(modelNames) <= 10:
             mainHeight = 230
         else:
@@ -88,8 +88,8 @@ class InfoModel(QWidget):
         mainLayout.addLayout(layoutTable)
 
         self.window.setLayout(mainLayout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
         self.window.show()
 
     def printModelName(self, table, row):

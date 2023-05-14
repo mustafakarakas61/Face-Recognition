@@ -18,7 +18,7 @@ class NewDataset(QWidget):
         self.mainWidget = mainWidget
 
     def newDatasetScreen(self):
-        mainWith = 300
+        mainWidth = 300
         mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -49,8 +49,8 @@ class NewDataset(QWidget):
         layout.addLayout(layoutVNewDataset)
 
         self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
         self.window.show()
 
     def addNewDataset(self):
@@ -74,14 +74,14 @@ class NewDataset(QWidget):
                 os.makedirs(pathDatasets + finalDatasetName)
                 self.mainWidget.updateDatasetList()
                 getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Bilgi",
-                                  finalDatasetName + " veriseti başarıyla eklendi.",
+                                  "<b>"+finalDatasetName + "</b> veriseti başarıyla eklendi.",
                                   QMessageBox.Information,
                                   QMessageBox.Ok, isQuestion=False).exec_()
             else:
                 os.makedirs(pathDatasets + finalDatasetName)
                 self.mainWidget.updateDatasetList()
                 getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Bilgi",
-                                  finalDatasetName + " veriseti başarıyla eklendi.",
+                                  "<b>" + finalDatasetName + "</b> veriseti başarıyla eklendi.",
                                   QMessageBox.Information,
                                   QMessageBox.Ok, isQuestion=False).exec_()
         else:

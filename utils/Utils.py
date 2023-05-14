@@ -39,7 +39,7 @@ def switchFile(srcFolder, destFolder, fileName):
 
 
 def controlFilesNumbers(sourceFolder):
-    deleteJpgFilesOnFolder(pathControlFolder)
+    deleteJpgAndMp4FilesOnFolder(pathControlFolder)
     switchFiles(sourceFolder, pathControlFolder)
     for file in os.listdir(pathControlFolder):
         file_list = getJpgFileList(sourceFolder)
@@ -48,18 +48,22 @@ def controlFilesNumbers(sourceFolder):
         oldPath = pathControlFolder + file
         newPath = sourceFolder + "/" + file.split("_")[0] + "_" + str(lenFileList + 1) + ".jpg"
         os.rename(oldPath, newPath)
-    print("Resim numaları kontrol edildi.")
 
 
-def deleteJpgFilesOnFolder(sourceFolder):
-    for file_name in os.listdir(sourceFolder):
-        if file_name.endswith(".jpg"):
-            os.remove(os.path.join(sourceFolder, file_name))
+def deleteJpgAndMp4FilesOnFolder(sourceFolder):
+    for filename in os.listdir(sourceFolder):
+        if filename.endswith(".jpg") or filename.endswith(".mp4"):
+            os.remove(os.path.join(sourceFolder, filename))
 
-def deleteMp4FilesOnFolder(sourceFolder):
-    for file_name in os.listdir(sourceFolder):
-        if file_name.endswith(".mp4"):
-            os.remove(os.path.join(sourceFolder, file_name))
+
+def deleteFoldersOnFolder(sourceFolder):
+    for filename in os.listdir(sourceFolder):
+        filepath = os.path.join(sourceFolder, filename)
+        try:
+            if os.path.isdir(filepath):
+                os.rmdir(filepath)
+        except Exception as e:
+            print(e)
 
 
 def checkURLsDublicates(filename):
@@ -129,9 +133,14 @@ def randomString(length):
 def randomInt(length):
     return int(''.join(str(random.randint(0, 9)) for _ in range(length)))
 
+
 def getLine():
     line = QFrame()
     line.setFrameShape(QFrame.HLine)
     line.setFrameShadow(QFrame.Sunken)
     line.setStyleSheet("background-color: black;")
     return line
+
+
+def dataCount(path: str):
+    return len(getJpgFileList(path))

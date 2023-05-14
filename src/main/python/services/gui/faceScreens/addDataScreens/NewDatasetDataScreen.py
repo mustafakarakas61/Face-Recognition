@@ -18,7 +18,7 @@ class NewDatasetData(QWidget):
         self.mainWidget = mainWidget
 
     def newDatasetDataScreen(self):
-        mainWith = 300
+        mainWidth = 300
         mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -50,24 +50,30 @@ class NewDatasetData(QWidget):
         layout.addLayout(layoutVNewDatasetData)
 
         self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
         self.window.show()
 
     def addNewDatasetData(self):
-        if self.newDatasetDataName is not None and len(self.newDatasetDataName) > 2:
+        if self.newDatasetDataName is not None and len(self.newDatasetDataName) > 2 and not self.mainWidget.selectedDatasetName.__eq__("Veriseti Seçiniz"):
             selectedDataset: str = self.mainWidget.selectedDatasetName
-            if not os.path.exists(pathDatasets + selectedDataset + "/" + self.newDatasetDataName):
-                os.makedirs(pathDatasets + selectedDataset + "/" + self.newDatasetDataName)
-                self.mainWidget.updateDatasetList()
-                getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Bilgi",
-                                  selectedDataset + " veriseti altına başarıyla " + self.newDatasetDataName + " verisi eklendi.",
-                                  QMessageBox.Information,
-                                  QMessageBox.Ok, isQuestion=False).exec_()
+            if not selectedDataset.__eq__("Veriseti Seçiniz"):
+                if not os.path.exists(pathDatasets + selectedDataset + "/" + self.newDatasetDataName):
+                    os.makedirs(pathDatasets + selectedDataset + "/" + self.newDatasetDataName)
+                    self.mainWidget.updateDatasetList()
+                    getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Bilgi",
+                                      "<b>"+selectedDataset + "</b> veriseti altına başarıyla <b><i>\"" + self.newDatasetDataName + "\"</i></b> verisi eklendi.",
+                                      QMessageBox.Information,
+                                      QMessageBox.Ok, isQuestion=False).exec_()
+                else:
+                    getMsgBoxFeatures(
+                        QMessageBox(self), pngWarningBox, "Uyarı",
+                        "<b>"+selectedDataset + "</b> veriseti altında bu isim zaten mevcut : <b><i>\"" + self.newDatasetDataName + "\"</i></b>",
+                        QMessageBox.Warning,
+                        QMessageBox.Ok, isQuestion=False).exec_()
             else:
                 getMsgBoxFeatures(
-                    QMessageBox(self), pngWarningBox, "Uyarı",
-                    selectedDataset + " veriseti altında bu isim zaten mevcut : " + self.newDatasetDataName,
+                    QMessageBox(self), pngWarningBox, "Uyarı", "Lütfen geçerli bir veri ismi girin.",
                     QMessageBox.Warning,
                     QMessageBox.Ok, isQuestion=False).exec_()
         else:

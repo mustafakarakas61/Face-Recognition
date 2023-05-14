@@ -25,8 +25,9 @@ from src.main.python.services.gui.testScreens.TestLocalFileScreen import TestLoc
 from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
-    pngFolder, pngImageUrl, pngYoutube, pathModels, pathTempFolder, pngInfoBox, pngWarningBox, pathDatasets
-from utils.Utils import deleteJpgFilesOnFolder, getLine, deleteMp4FilesOnFolder
+    pngFolder, pngImageUrl, pngYoutube, pathTempFolder, pngInfoBox, pngWarningBox, pathDatasets, pathClippedVideos, \
+    pathControlFolder
+from utils.Utils import getLine, deleteJpgAndMp4FilesOnFolder, deleteFoldersOnFolder
 
 
 class MainWidget(QWidget):
@@ -72,12 +73,12 @@ class MainWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        mainWith = 500
+        mainWidth = 500
         mainHeight = 500
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
-        self.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                         mainWith, mainHeight)
+        self.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                         mainWidth, mainHeight)
         self.setWindowTitle('Yüz Tanıma Projesi created by Mustafa Karakaş')
         self.setStyleSheet("background-color: white;")
         self.setWindowIcon(QIcon(pngMustafa))
@@ -170,7 +171,7 @@ class MainWidget(QWidget):
     # Main Screens
     def faceAddScreen(self):
         if not self.getIsMainScreenClosing():
-            mainWith = 330
+            mainWidth = 330
             mainHeight = 420
             screen = QtWidgets.QApplication.desktop().screenGeometry()
             screenWidth, screenHeight = screen.width(), screen.height()
@@ -180,7 +181,9 @@ class MainWidget(QWidget):
             self.window.setStyleSheet("background-color: white;")
             self.window.setWindowIcon(QIcon(pngAdd))
 
-            # todo : ÖNEMLİ ! NEDEN ANA EKRAN KAPATILDIĞINDA SUB EKRAN KAPANMIYOR !
+            # todo : veriseti ve veri seçildiğinde yüz ekleme ekranları açılsın
+            # todo : kameradan ve localfile'den ekle sayfası ayarlansın
+            # todo : webImage ve youtube 'dan ekle sayfası ayarlansın
 
             #############
             #  D A T A  #
@@ -227,7 +230,7 @@ class MainWidget(QWidget):
             btnNewDatasetData.clicked.connect(
                 lambda: self.newDatasetDataWidget.newDatasetDataScreen() if not str(self.selectedDatasetName).__eq__(
                     "Veriseti Seçiniz") and self.selectedDatasetName is not None else getMsgBoxFeatures(
-                    QMessageBox(), pngWarningBox, "Uyarı", "Lütfen bir Veriseti seçin.",
+                    QMessageBox(), pngWarningBox, "Uyarı", "Lütfen bir <b>veriseti</b> seçin.",
                     QMessageBox.Warning,
                     QMessageBox.Ok, isQuestion=False).exec_())
             layoutHNew.addWidget(btnNewDatasetData)
@@ -240,12 +243,12 @@ class MainWidget(QWidget):
             # Yerel için butonlar
             btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
             btnVideoCamera.clicked.connect(self.faceAddCameraWidget.faceAddVideoCameraScreen)
-            btnImageFolder = getButtonFeatures(QPushButton(self), pngFolder)
-            btnImageFolder.clicked.connect(self.faceAddLocalFileWidget.faceAddLocalFileScreen)
+            btnLocalFile = getButtonFeatures(QPushButton(self), pngFolder)
+            btnLocalFile.clicked.connect(self.faceAddLocalFileWidget.faceAddLocalFileScreen)
             # Yerel için düzenleyici
             layoutLocal = QHBoxLayout()
             layoutLocal.addWidget(btnVideoCamera)
-            layoutLocal.addWidget(btnImageFolder)
+            layoutLocal.addWidget(btnLocalFile)
 
             #########
             # W E B #
@@ -280,9 +283,9 @@ class MainWidget(QWidget):
             layout.addLayout(layoutWeb)
 
             self.window.setLayout(layout)
-            self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
+            self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
                                     int(screenHeight / 2 - int(mainHeight / 2)),
-                                    mainWith, mainHeight)
+                                    mainWidth, mainHeight)
             # Çarpı işaretine basıldığında
             self.window.setAttribute(Qt.WA_DeleteOnClose)
             # self.window.destroyed.connect(self.onClosedFaceAddScreen)
@@ -308,7 +311,7 @@ class MainWidget(QWidget):
                                       QMessageBox.Warning,
                                       QMessageBox.Ok, isQuestion=False).exec_()
             else:
-                mainWith = 300
+                mainWidth = 300
                 mainHeight = 150
                 screen = QtWidgets.QApplication.desktop().screenGeometry()
                 screenWidth, screenHeight = screen.width(), screen.height()
@@ -340,9 +343,9 @@ class MainWidget(QWidget):
                 layout.addLayout(layoutYoutube)
 
                 self.window.setLayout(layout)
-                self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)),
+                self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
                                         int(screenHeight / 2 - int(mainHeight / 2)),
-                                        mainWith, mainHeight)
+                                        mainWidth, mainHeight)
                 self.window.setObjectName("testUrlScreen")
                 self.window.show()
 
@@ -355,8 +358,11 @@ class MainWidget(QWidget):
             self.setIsMainScreenClosing(True)
             for widget in QtWidgets.QApplication.topLevelWidgets():
                 widget.close()
-            deleteJpgFilesOnFolder(pathTempFolder)
-            deleteMp4FilesOnFolder(pathTempFolder)
+            deleteJpgAndMp4FilesOnFolder(pathClippedVideos)
+            deleteJpgAndMp4FilesOnFolder(pathControlFolder)
+            deleteJpgAndMp4FilesOnFolder(pathTempFolder)
+            deleteFoldersOnFolder(pathTempFolder)
+
             event.accept()
         else:
             event.ignore()
@@ -376,11 +382,8 @@ class MainWidget(QWidget):
                     if self.newDatasetDataWidget and self.newDatasetDataWidget.window and self.newDatasetDataWidget.window.isVisible():
                         self.newDatasetDataWidget.window.close()
                     event.accept()
-                    # self.closeSubScreens()
                 else:
                     event.ignore()
-            # else:
-            #     self.closeSubScreens()
             self.closeSubScreens()
 
     def closeSubScreens(self):

@@ -45,7 +45,7 @@ class TrainModel(QWidget):
         self.epochsCount = "30"
         self.inputSize = "128x128"
 
-        mainWith = 550
+        mainWidth = 550
         mainHeight = 250
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -152,8 +152,8 @@ class TrainModel(QWidget):
         # Add the button to the layout
         layoutV.addWidget(btnTrainModel, alignment=Qt.AlignCenter)
         self.window.setLayout(layoutV)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
         self.window.show()
 
     def startTrain(self):

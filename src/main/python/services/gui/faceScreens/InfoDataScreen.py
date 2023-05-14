@@ -15,7 +15,7 @@ class InfoFace(QWidget):
         self.mainWidget = mainWidget
 
     def faceInfoScreen(self):
-        mainWith = 530
+        mainWidth = 530
         mainHeight = 330
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -52,8 +52,8 @@ class InfoFace(QWidget):
 
         # Layout ayarları
         self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
 
         datasetList.itemClicked.connect(lambda item: self.showFileList(item.text(), fileList))
 

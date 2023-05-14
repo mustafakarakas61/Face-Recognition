@@ -24,7 +24,7 @@ class DeleteFace(QWidget):
         self.mainWidget = mainWidget
 
     def faceDeleteScreen(self):
-        mainWith = 910
+        mainWidth = 910
         mainHeight = 330
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -125,8 +125,8 @@ class DeleteFace(QWidget):
 
         # Layout ayarları
         self.window.setLayout(mainLayout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWith / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWith, mainHeight)
+        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                mainWidth, mainHeight)
 
         self.window.destroyed.connect(self.onWindowClosed)
         self.window.show()
