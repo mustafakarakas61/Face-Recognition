@@ -23,10 +23,11 @@ class Camera(QWidget):
     def __init__(self, mainWidget):
         super(Camera, self).__init__()
         self.startSaveWindow = None
+        self.textboxDataInfoCount = None
         self.closeCameraStatus: bool = False
         self.saveStatus: bool = False
         self.saveData = None
-        self.textboxDataInfoCount = None
+
         self.window = None
         self.mainWidget = mainWidget
 
