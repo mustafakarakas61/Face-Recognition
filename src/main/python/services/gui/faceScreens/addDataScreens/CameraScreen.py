@@ -169,6 +169,8 @@ class Camera(QWidget):
         isThereTurkishChar: bool = False
         originalSavePath: str = pathDatasets + datasetName + "/" + datasetDataName
 
+        videoCapture = cv2.VideoCapture(0)
+
         if re.search("[ıİğĞüÜşŞöÖçÇ]", datasetDataName):
             isThereTurkishChar = True
 
@@ -177,7 +179,20 @@ class Camera(QWidget):
             asciiSavePath: str = pathTempFolder + asciiDatasetDataName
             checkFolder(asciiSavePath)
 
-        videoCapture = cv2.VideoCapture(0)
+
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+
+        videoWidth = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
+        videoHeight = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        if int(videoWidth) > int(screenWidth * 0.8) or int(videoHeight) > int(screenHeight * 0.8):
+            videoWidth = int(screenWidth * 0.7)
+            videoHeight = int(screenHeight * 0.7)
+
+        # Açılan videonun boyutunu değiştirme
+        videoCapture.set(cv2.CAP_PROP_FRAME_WIDTH, videoWidth)
+        videoCapture.set(cv2.CAP_PROP_FRAME_HEIGHT, videoHeight)
 
         while True:
             _, frame = videoCapture.read()
@@ -197,13 +212,13 @@ class Camera(QWidget):
             for (x, y, w, h) in faces:
                 faceImage = frame[y:y + h, x:x + w]
                 faceImage = cv2.resize(faceImage, (size, size))
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)  # blue
 
                 if self.saveStatus and self.getCloseCameraStatus() is False:
                     self.saveStatus = False
-
-                    cv2.putText(frame, "Yuz kaydedildi.", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (36, 255, 12),
-                                2)
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)  # green
+                    cv2.putText(frame, "Yuz kaydedildi.", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0),
+                                2)  # green
 
                     if isThereTurkishChar:
                         tempFileName = checkJpgFileOfTheHaveNumber(originalSavePath, datasetDataName + "_1.jpg")

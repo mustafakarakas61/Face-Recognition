@@ -32,8 +32,6 @@ def extractImageFromVideo(mp4Video, name, count):
         while True:
             # her kareyi okuyun
             ret, frame = cap.read()
-            if not ret:
-                break
 
             # yüzleri tespit etmek için gri tonlamalı görüntü oluşturun
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
