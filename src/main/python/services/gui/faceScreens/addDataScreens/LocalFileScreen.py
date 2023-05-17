@@ -100,7 +100,7 @@ class LocalFile(QWidget):
         screenWidth, screenHeight = screen.width(), screen.height()
 
         self.startSaveWindow = QWidget()
-        self.startSaveWindow.setWindowTitle('Kaydet')
+        self.startSaveWindow.setWindowTitle('Yerel')
         self.startSaveWindow.setStyleSheet("background-color: white;")
         self.startSaveWindow.setWindowIcon(QIcon(pngAdd))
 

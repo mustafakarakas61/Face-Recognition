@@ -26,6 +26,7 @@ class Camera(QWidget):
         self.textboxDataInfoCount = None
         self.closeCameraStatus: bool = False
         self.saveStatus: bool = False
+        self.isSaveButtonOpen: bool = False
         self.saveData = None
 
         self.window = None
@@ -101,6 +102,8 @@ class Camera(QWidget):
             self.textboxDataInfoCount.setVisible(True)
 
     def startSaveProcess(self, datasetName: str, datasetDataName: str):
+        self.setCloseCameraStatus(False)
+        self.setSaveButtonOpenStatus(True)
         getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Bilgi",
                           "Her yeni bir yüz kaydı için <b>Kaydet</b> butonuna tıklayınız.",
                           QMessageBox.Information,
@@ -112,7 +115,7 @@ class Camera(QWidget):
         screenWidth, screenHeight = screen.width(), screen.height()
 
         self.startSaveWindow = QWidget()
-        self.startSaveWindow.setWindowTitle('Kaydet')
+        self.startSaveWindow.setWindowTitle('Kamera')
         self.startSaveWindow.setStyleSheet("background-color: white;")
         self.startSaveWindow.setWindowIcon(QIcon(pngAdd))
 
@@ -138,18 +141,28 @@ class Camera(QWidget):
 
     def onClosedSaveProcess(self, event):
         if not self.mainWidget.getIsMainScreenClosing():
-            reply = getMsgBoxFeatures(QMessageBox(), pngWarningBox, "Dikkat!",
-                                      'Kaydet işlemi bitirilsin mi?',
-                                      QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
-                                      isQuestion=True).exec_()
-            if reply == QtWidgets.QMessageBox.Yes:
-                self.closeCameraStatus = True
-                event.accept()
+            if self.getSaveButtonOpenStatus():
+                reply = getMsgBoxFeatures(QMessageBox(), pngWarningBox, "Dikkat!",
+                                          'Kaydet işlemi bitirilsin mi?',
+                                          QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
+                                          isQuestion=True).exec_()
+                if reply == QtWidgets.QMessageBox.Yes:
+                    self.setCloseCameraStatus(True)
+                    self.setSaveButtonOpenStatus(False)
+                    event.accept()
+                else:
+                    event.ignore()
             else:
-                event.ignore()
+                event.accept()
+
+    def closeSaveProcess(self):
+        if not self.mainWidget.getIsMainScreenClosing():
+            self.setCloseCameraStatus(True)
+            self.setSaveButtonOpenStatus(False)
+            self.startSaveWindow.close()
 
     def saveFace(self):
-        self.closeCameraStatus = False
+        self.setCloseCameraStatus(False)
         self.saveStatus = True
 
     def startCamera(self, datasetName: str, datasetDataName: str):
@@ -186,7 +199,7 @@ class Camera(QWidget):
                 faceImage = cv2.resize(faceImage, (size, size))
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-                if self.saveStatus and self.closeCameraStatus is False:
+                if self.saveStatus and self.getCloseCameraStatus() is False:
                     self.saveStatus = False
 
                     cv2.putText(frame, "Yuz kaydedildi.", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (36, 255, 12),
@@ -214,14 +227,19 @@ class Camera(QWidget):
 
             cv2.imshow('Resim', frame)
 
-            if self.closeCameraStatus:
-                self.closeCameraStatus = False
+            if self.getCloseCameraStatus():
+                if self.getSaveButtonOpenStatus():
+                    self.closeSaveProcess()
                 break
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
+                if self.getSaveButtonOpenStatus():
+                    self.closeSaveProcess()
                 break
 
             if cv2.getWindowProperty('Resim', cv2.WND_PROP_VISIBLE) < 1:
+                if self.getSaveButtonOpenStatus():
+                    self.closeSaveProcess()
                 break
 
         videoCapture.release()
@@ -235,3 +253,15 @@ class Camera(QWidget):
     def closeScreen(self):
         if self.window is not None:
             self.window.close()
+
+    def getCloseCameraStatus(self):
+        return self.closeCameraStatus
+
+    def setCloseCameraStatus(self, newStatus: bool):
+        self.closeCameraStatus = newStatus
+
+    def getSaveButtonOpenStatus(self):
+        return self.isSaveButtonOpen
+
+    def setSaveButtonOpenStatus(self, newStatus: bool):
+        self.isSaveButtonOpen = newStatus

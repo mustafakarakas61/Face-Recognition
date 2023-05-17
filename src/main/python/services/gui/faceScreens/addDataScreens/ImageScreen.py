@@ -8,7 +8,7 @@ from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabel
 from src.resources.Environments import pngImageUrl, pngWarningBox, pathDatasets, pngAdd, pngInfoBox
 from utils.Utils import dataCount
 
-
+#todo : kaydet butonları özelleştirilsin yani baktım başka yerdekilere tıkladım farklı kaydetler açıldı. Kameradan kaydet Yerelden kaydet Resim urlsinden kaydet Youtubeden kaydet
 class Image(QWidget):
     def __init__(self, mainWidget):
         super(Image, self).__init__()
@@ -100,7 +100,7 @@ class Image(QWidget):
         screenWidth, screenHeight = screen.width(), screen.height()
 
         self.startSaveWindow = QWidget()
-        self.startSaveWindow.setWindowTitle('Kaydet')
+        self.startSaveWindow.setWindowTitle('Resim Url')
         self.startSaveWindow.setStyleSheet("background-color: white;")
         self.startSaveWindow.setWindowIcon(QIcon(pngAdd))
 
