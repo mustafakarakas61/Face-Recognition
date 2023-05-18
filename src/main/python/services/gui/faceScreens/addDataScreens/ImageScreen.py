@@ -101,9 +101,6 @@ class Image(QWidget):
                 lambda: self.deleteSavedFace(self.getOutputPath(), btnDeleteFace)
             )
 
-            self.window.setAttribute(Qt.WA_DeleteOnClose)
-            self.window.destroyed.connect(self.closeCv2)
-
     def deleteSavedFace(self, savedImagePath, btnDeleteFace: QPushButton):
         if savedImagePath is not None:
             reply = getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Dikkat!", 'Tespit edilen yüz silinsin mi?',
@@ -159,8 +156,6 @@ class Image(QWidget):
                                           "Resim yüklenemedi.",
                                           QMessageBox.Critical,
                                           QMessageBox.Ok, isQuestion=False).exec_()
-                        # textBoxGetUrl.setText("")
-                        # btnFaceScanner.setIcon(QtGui.QIcon(pngFace404))
                         self.window.setAttribute(Qt.WA_DeleteOnClose)
                         self.window.destroyed.connect(self.closeCv2)
                         self.window.close()
@@ -243,21 +238,18 @@ class Image(QWidget):
                                               QMessageBox.Ok, isQuestion=False).exec_()
                             # self.window.setAttribute(Qt.WA_DeleteOnClose)
                             # self.window.destroyed.connect(self.closeScreen)
-                            # self.window.close()
                 elif self.mainWidget.control:
                     getMsgBoxFeatures(QMessageBox(self), pngErrorBox, "Hata",
                                       "Resim indirilemedi.",
                                       QMessageBox.Critical,
                                       QMessageBox.Ok, isQuestion=False).exec_()
                     self.mainWidget.control = False
-                    # self.window.close()
             except Exception as e:
                 if self.getShowExceptionStatus():
                     getExceptionMsgBox(QMessageBox(self),
                                        str("Resim URL'sinden bir veri alınamadı : " + str(e))).exec_()
                     self.setShowExceptionStatus(False)
                     self.mainWidget.control = False
-                    # self.window.close()
 
     def closeCv2(self):
         cv2.destroyAllWindows()
@@ -265,7 +257,7 @@ class Image(QWidget):
     def closeScreen(self):
         if self.window is not None:
             self.window.close()
-            self.closeCv2()
+        self.closeCv2()
 
     def deleteText(self, textBoxGetUrl: QLineEdit):
         textBoxGetUrl.clear()
