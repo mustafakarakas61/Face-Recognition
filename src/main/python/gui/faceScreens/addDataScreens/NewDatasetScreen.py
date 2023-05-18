@@ -1,9 +1,9 @@
 import os.path
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRegExp, Qt
 from PyQt5.QtGui import QIcon, QRegExpValidator
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
 
 from src.main.python.services.FeaturesService import getLabelFeatures, fontTextBox, getButtonFeaturesTrain, \
     getMsgBoxFeatures

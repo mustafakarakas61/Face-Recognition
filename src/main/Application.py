@@ -87,14 +87,12 @@ class MainWidget(QWidget):
         # D A T A #
         ###########
         labelFace = getLabelFeatures(QLabel('Veri'), isUseFont=True, isUseSecondFont=False)
-        # Veri için butonlar
         btnFaceAdd = getButtonFeatures(QPushButton(self), pngAdd)
         btnFaceAdd.clicked.connect(self.faceAddScreen)
         btnFaceDelete = getButtonFeatures(QPushButton(self), pngDelete)
         btnFaceDelete.clicked.connect(self.faceDeleteWidget.faceDeleteScreen)
         btnFaceInfo = getButtonFeatures(QPushButton(self), pngInfo)
         btnFaceInfo.clicked.connect(self.faceInfoWidget.faceInfoScreen)
-        # Veri için düzenleyici
         layoutFace = QHBoxLayout()
         layoutFace.addWidget(btnFaceAdd)
         layoutFace.addWidget(btnFaceDelete)
@@ -103,16 +101,13 @@ class MainWidget(QWidget):
         ############
         # M O D E L#
         ############
-        # Modeller etiketi
         labelModel = getLabelFeatures(QLabel('Model'), isUseFont=True, isUseSecondFont=False)
-        # Modeller için butonlar
         btnModelTrain = getButtonFeatures(QPushButton(self), pngTrain)
         btnModelTrain.clicked.connect(self.modelTrainWidget.modelTrainScreen)
         btnModelDelete = getButtonFeatures(QPushButton(self), pngDelete)
         btnModelDelete.clicked.connect(self.modelDeleteWidget.modelDeleteScreen)
         btnModelInfo = getButtonFeatures(QPushButton(self), pngInfo)
         btnModelInfo.clicked.connect(self.modelInfoWidget.modelInfoScreen)
-        # Modeller için düzenleyici
         layoutModel = QHBoxLayout()
         layoutModel.addWidget(btnModelTrain)
         layoutModel.addWidget(btnModelDelete)
@@ -121,28 +116,23 @@ class MainWidget(QWidget):
         ###########
         # T E S T #
         ###########
-        # Test etiketi
         labelTest = getLabelFeatures(QLabel('Test'), isUseFont=True, isUseSecondFont=False)
 
-        # ComboBox oluşturma ve model isimlerini ekleme
         self.comboModel = getComboBoxFeatures(QComboBox(self))
         self.updateModelList()
         self.comboModel.currentIndexChanged.connect(
             lambda index: self.onComboboxSelection(self.comboModel.itemText(index)))
-        # Test için butonlar
         btnTestCamera = getButtonFeatures(QPushButton(self), pngCamera)
         btnTestCamera.clicked.connect(self.testCameraWidget.testCameraScreen)
         btnTestLocal = getButtonFeatures(QPushButton(self), pngFolder)
         btnTestLocal.clicked.connect(self.testLocalFileWidget.testLocalFileScreen)
         btnTestUrl = getButtonFeatures(QPushButton(self), pngUrl)
         btnTestUrl.clicked.connect(self.testUrlScreen)
-        # Test için düzenleyici
         layoutTest = QHBoxLayout()
         layoutTest.addWidget(btnTestCamera)
         layoutTest.addWidget(btnTestLocal)
         layoutTest.addWidget(btnTestUrl)
 
-        # Ana düzenleyici
         layoutV = QVBoxLayout()
         layoutH = QHBoxLayout()
         layoutV.addWidget(labelFace)
@@ -180,10 +170,6 @@ class MainWidget(QWidget):
             self.window.setWindowTitle('Yüz Verisi Ekle')
             self.window.setStyleSheet("background-color: white;")
             self.window.setWindowIcon(QIcon(pngAdd))
-
-            # todo : veriseti ve veri seçildiğinde yüz ekleme ekranları açılsın
-            # todo : kameradan ve localfile'den ekle sayfası ayarlansın
-            # todo : webImage ve youtube 'dan ekle sayfası ayarlansın
 
             #############
             #  D A T A  #
@@ -238,14 +224,11 @@ class MainWidget(QWidget):
             #############
             # Y E R E L #
             #############
-            # Yerel etiketi
             labelLocal = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
-            # Yerel için butonlar
             btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
             btnVideoCamera.clicked.connect(self.faceAddCameraWidget.faceAddVideoCameraScreen)
             btnLocalFile = getButtonFeatures(QPushButton(self), pngFolder)
             btnLocalFile.clicked.connect(self.faceAddLocalFileWidget.faceAddLocalFileScreen)
-            # Yerel için düzenleyici
             layoutLocal = QHBoxLayout()
             layoutLocal.addWidget(btnVideoCamera)
             layoutLocal.addWidget(btnLocalFile)
@@ -253,19 +236,15 @@ class MainWidget(QWidget):
             #########
             # W E B #
             #########
-            # Web etiketi
             labelWeb = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
-            # Web için butonlar
             btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
             btnImageUrl.clicked.connect(self.faceAddImageWidget.faceAddImageUrlScreen)
             btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
             btnVideoYoutube.clicked.connect(self.faceAddYoutubeWidget.faceAddVideoYoutubeScreen)
-            # Web için düzenleyici
             layoutWeb = QHBoxLayout()
             layoutWeb.addWidget(btnImageUrl)
             layoutWeb.addWidget(btnVideoYoutube)
 
-            # Ana düzenleyici
             layout = QVBoxLayout()
 
             layoutV = QVBoxLayout()
@@ -286,7 +265,6 @@ class MainWidget(QWidget):
             self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
                                     int(screenHeight / 2 - int(mainHeight / 2)),
                                     mainWidth, mainHeight)
-            # Çarpı işaretine basıldığında
             self.window.setAttribute(Qt.WA_DeleteOnClose)
             # self.window.destroyed.connect(self.onClosedFaceAddScreen)
             self.window.closeEvent = self.onClosedFaceAddScreen
@@ -298,7 +276,6 @@ class MainWidget(QWidget):
             sRate = self.textBoxSuccessRate.text()
             if str(sRate).__len__() == 0:
                 sRate = "0"
-            # Model seçilmemişse uyarı verme
             rateLimit = 35
             if modelName.__eq__("Model Seçiniz") or int(sRate) < int(rateLimit):
                 if modelName.__eq__("Model Seçiniz"):
@@ -410,7 +387,6 @@ class MainWidget(QWidget):
         if self.comboModel is not None:
             models = listModels()
             modelNames = ["Model Seçiniz"] + [model["model_name"] for model in models]
-            # ComboBox öğesi güncelleme
             self.comboModel.clear()
             self.comboModel.addItems(modelNames)
 
@@ -426,7 +402,6 @@ class MainWidget(QWidget):
     def setIsMainScreenClosing(self, value):
         self.isMainScreenClosing = value
 
-    # Seçili olan modelin adını alma
     def onComboboxSelection(self, newName):
         self.selectedModel = newName
 

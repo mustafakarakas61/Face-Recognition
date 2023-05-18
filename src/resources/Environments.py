@@ -1,23 +1,6 @@
 #  E  N  V  S  #
 # Environments
 minFaceSize = 128
-minTestFaceSize = 128
-skipFrames = 6
-durationVideo = 60  # 60sn
-
-imageLimit = 250
-timeSleep = 0  # 1 veya 2
-personName = "Mustafa Karakaş"
-datasetName = "myset_v3"
-successRate = 90
-
-totalImage = 20
-countTrainImage = int((totalImage * 70) / 100)  # Toplam Resmin %80 %70
-countValidationImage = int((totalImage * 30) / 100)  # Toplam Resmin %20 %30
-countTestImage = 1
-
-# Environments_Model
-countEpochs = 30
 inputSize = 128  # 64
 
 # Environments_PostgreSQL
@@ -26,6 +9,7 @@ dbUser = "postgres"
 dbPass = "180200"
 dbHost = "localhost"
 dbPort = "5432"
+
 
 #  P  A  T  H  S  #
 pathProject = "D:/Project/Proje-2/Face-Recognition/"
@@ -48,9 +32,6 @@ pathFaceResultsMap = pathFaceMaps + "ResultsMap-"
 # Datasets
 pathDatasetsSplit = pathProject + pathMain + "datasets-split/"
 pathDatasets = pathProject + pathMain + "datasets/"
-pathTrain = pathDatasets + datasetName + "/train/"
-pathValidation = pathDatasets + datasetName + "/validation/"
-pathTest = pathDatasets + datasetName + "/testScreens/"
 
 # Cascades
 pathFaceCascade = pathProject + pathResources + "haarcascade_frontalface_default.xml"
@@ -63,7 +44,8 @@ pathTempFolder = pathUtils + "tempFolder/"
 pathControlFolder = pathUtils + "controlFolder/"
 pathNoFace = pathUtils + "NoFace.txt"
 
-# ICONS
+
+#  I  C  O  N  S  #
 pathIcons = pathProject + "src/resources/icons/"
 pngAdd = pathIcons + "add.png"
 pngCamera = pathIcons + "camera.png"

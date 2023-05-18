@@ -116,7 +116,6 @@ class DeleteFace(QWidget):
         layoutV3.setAlignment(btnDeleteModel, Qt.AlignCenter)
         layoutV3.addLayout(layoutH)
 
-        # Ana düzenleyici
         mainLayout = QHBoxLayout()
         mainLayout.addLayout(layoutV1)
         mainLayout.addLayout(layoutV2)
@@ -126,7 +125,6 @@ class DeleteFace(QWidget):
         mainLayout.setAlignment(layoutV2, Qt.AlignCenter)
         mainLayout.setAlignment(layoutV3, Qt.AlignCenter)
 
-        # Layout ayarları
         self.window.setLayout(mainLayout)
         self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWidth, mainHeight)
@@ -452,7 +450,6 @@ class DeleteFace(QWidget):
                         os.remove(dataPath)
                     tableFileDataList.removeRow(i)
                 # updates
-                # todo : ilgili dataset data satırındaki veeri sayısını güncelle
                 item: QPushButton = tableFileList.cellWidget(self.selectedLastRow, 1)
                 item.setText(str(int(item.text()) - int(len(checkedItems))))
                 self.mainWidget.updateModelList()

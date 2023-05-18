@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtGui, QtCore
 from PyQt5.QtGui import QFont, QIntValidator, QIcon
 from PyQt5.QtWidgets import QMessageBox
 
@@ -12,7 +12,6 @@ def getLabelFeatures(lbl, isUseFont, isUseSecondFont):
         lbl.setFont(fontLabel)
     if isUseSecondFont:
         fontLabel = QtGui.QFont("Times New Roman", 15)
-        # fontLabel.setBold(True)
         lbl.setFont(fontLabel)
     lbl.setAlignment(QtCore.Qt.AlignCenter)
     return lbl

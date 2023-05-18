@@ -21,7 +21,6 @@ def switchFiles(srcFolder, destFolder):
     checkFolder(srcFolder)
     checkFolder(destFolder)
     for item in os.listdir(srcFolder):
-        # Dosya veya klasör mü kontrol et
         itemPath = os.path.join(srcFolder, item)
         if os.path.isfile(itemPath):
             if itemPath.endswith(".jpg"):
@@ -30,7 +29,6 @@ def switchFiles(srcFolder, destFolder):
 
 def switchFile(srcFolder, destFolder, fileName):
     for item in os.listdir(srcFolder):
-        # Dosya veya klasör mü kontrol et
         if item.__eq__(fileName):
             itemPath = os.path.join(srcFolder, item)
             if os.path.isfile(itemPath):

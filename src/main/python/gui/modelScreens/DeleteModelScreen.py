@@ -39,14 +39,13 @@ class DeleteModel(QWidget):
         else:
             mainHeight = 410
 
-        # QTableWidget oluşturma
         table = QTableWidget()
         table.setColumnCount(3)
-        table.setRowCount(len(modelNames))  # tablo satır sayısı combobox seçeneklerinin sayısı kadar olacak
+        table.setRowCount(len(modelNames))
 
-        table.setHorizontalHeaderLabels(["id", "Model Listesi", ""])  # tablo başlığı
-        table.setMinimumSize(455, 180)  # tablonun minimum boyutu width, height
-        table.setMaximumSize(455, 335)  # tablonun maksimum boyutu width, height
+        table.setHorizontalHeaderLabels(["id", "Model Listesi", ""])
+        table.setMinimumSize(455, 180)
+        table.setMaximumSize(455, 335)
         table.setColumnWidth(0, 20)
         table.setColumnWidth(1, 360)
         table.setColumnWidth(2, 10)
@@ -86,16 +85,13 @@ class DeleteModel(QWidget):
         btnDeleteModel = getButtonFeaturesDelete(QPushButton(self), text="Sil", butonSizes=(70, 50))
         btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table))
 
-        # Ana layout oluşturma
         mainLayout = QVBoxLayout()
         mainLayout.setAlignment(Qt.AlignCenter)
 
-        # Tabloyu içeren layout
         layoutTable = QHBoxLayout()
         layoutTable.addWidget(table)
         mainLayout.addLayout(layoutTable)
 
-        # Butonu içeren layout
         layoutButton = QHBoxLayout()
         layoutButton.addStretch(1)
         layoutButton.addWidget(btnSelectAll)

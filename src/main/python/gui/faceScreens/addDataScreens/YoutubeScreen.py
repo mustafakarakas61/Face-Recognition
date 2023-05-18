@@ -7,16 +7,17 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QHBoxLayout, QPushButton, QLabel, QLineEdit
 
-from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, getTextBoxSuccessRateFeatures, \
-    getButtonFeaturesTrain, fontTextBox, getFaceButtonFeatures, getExceptionMsgBox
+from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, fontTextBox, \
+    getFaceButtonFeatures, getExceptionMsgBox
 from src.main.python.services.YoutubeDownloaderService import downloadYoutubeVideo
 from src.resources.Environments import pngYoutube, pngWarningBox, pathDatasets, pngAdd, pngInfoBox, \
     pngFaceDetectionYoutube0, pngFaceDetectionYoutube1, minFaceSize, pathTempFolder, inputSize, pathFaceCascade
-from utils.Utils import dataCount, switchFiles, checkJpgFileOfTheHaveNumber, changeNameToASCII, checkFolder, useEnviron
+from utils.Utils import switchFiles, checkJpgFileOfTheHaveNumber, changeNameToASCII, checkFolder, useEnviron
 
 useEnviron()
 faceCascade = cv2.CascadeClassifier(pathFaceCascade)
 size = inputSize
+
 
 class Youtube(QWidget):
     def __init__(self, mainWidget):
@@ -165,7 +166,8 @@ class Youtube(QWidget):
                 filePath = downloadYoutubeVideo(url=url, startTime=str(startTime),
                                                 durationStartTime=int(durationStartTime),
                                                 durationEndTime=int(durationEndTime))
-                self.addDataFromYoutube(videoPath=str(filePath), datasetName=datasetName, datasetDataName=datasetDataName)
+                self.addDataFromYoutube(videoPath=str(filePath), datasetName=datasetName,
+                                        datasetDataName=datasetDataName)
 
                 self.window.setAttribute(Qt.WA_DeleteOnClose)
                 self.window.destroyed.connect(self.faceAddVideoYoutubeScreen())

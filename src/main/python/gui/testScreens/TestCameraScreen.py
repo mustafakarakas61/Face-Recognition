@@ -120,6 +120,5 @@ def testCamera(modelName, successRate):
         if cv2.getWindowProperty('Video', cv2.WND_PROP_VISIBLE) < 1:
             break
 
-    # Her şey tamamlandıktan sonra, video yakalama ve görüntüleme objelerinin serbest bırakılması
     videoCapture.release()
     cv2.destroyAllWindows()

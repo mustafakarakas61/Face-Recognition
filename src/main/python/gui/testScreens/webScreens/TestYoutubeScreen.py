@@ -42,7 +42,6 @@ class TestYoutube(QWidget):
         self.window.setWindowIcon(QIcon(pngYoutube))
 
         if self.controlOpenYoutube:
-            # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
             with open(pathFaceResultsMap + self.mainWidget.selectedModel.replace(".h5", ".pkl"),
                       'rb') as fileReadStream:
                 resultMap = pickle.load(fileReadStream)
@@ -57,7 +56,6 @@ class TestYoutube(QWidget):
         labelInfo.setAlignment(Qt.AlignCenter)
         labelInfo.setGeometry(0, 0, mainWidth, mainHeight)
 
-        # Ana düzenleyici V _   H |
         layoutV = QVBoxLayout()
         layoutV.addWidget(labelInfo)
 
@@ -112,10 +110,8 @@ class TestYoutube(QWidget):
             lambda: self.updateUrlYoutubeButtonStatus(textBoxGetUrl, btnFaceScanner))
 
     def updateUrlYoutubeButtonStatus(self, textBoxGetUrl, btnFaceScanner):
-        # Metin kutusunun içeriğini al
         url = str(textBoxGetUrl.text())
 
-        # Metin kutusunun uzunluğunu kontrol et
         if len(url) <= 1:
             btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube0))
         else:

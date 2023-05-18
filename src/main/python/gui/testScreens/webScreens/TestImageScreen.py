@@ -39,7 +39,6 @@ class TestImage(QWidget):
         self.window.setWindowIcon(QIcon(pngImageUrl))
 
         if self.controlOpenGoogle:
-            # eğitilmiş yüz tanıma modelinin sonuçlarını içeren dosyayı aç
             with open(pathFaceResultsMap + self.mainWidget.selectedModel.replace(".h5", ".pkl"), 'rb') as fileReadStream:
                 resultMap = pickle.load(fileReadStream)
 
@@ -49,12 +48,10 @@ class TestImage(QWidget):
             webbrowser.open("https://www.google.com/search?q=" + str(name).replace(" ",
                                                                                    "+") + "&sxsrf=APwXEdesmw72efa4-dds-FUED9TjAXQVAQ:1680383725172&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjhu5mYzYn-AhVLQvEDHS4EBnMQ_AUoAnoECAEQBA&biw=951&bih=612&dpr=1")
             self.controlOpenGoogle = False
-        # URL'nin görüntülendiği etiket
         labelInfo = getLabelFeatures(QLabel("Görüntü bağlantısını yapıştırın.", self.window), False, True)
         labelInfo.setAlignment(Qt.AlignCenter)
         labelInfo.setGeometry(0, 0, mainWidth, mainHeight)
 
-        # Ana düzenleyici
         layout = QVBoxLayout()
         layout.addWidget(labelInfo)
 
@@ -74,14 +71,11 @@ class TestImage(QWidget):
                                 mainWidth, mainHeight)
         self.window.setObjectName("testUrlImageScreen")
         self.window.show()
-        # Metin kutusunu dinle
         textBoxGetUrl.textChanged.connect(lambda: self.updateUrlImageButtonStatus(textBoxGetUrl, btnFaceScanner))
 
     def updateUrlImageButtonStatus(self, textBoxGetUrl, btnFaceScanner):
-        # Metin kutusunun içeriğini al
         text = textBoxGetUrl.text()
 
-        # Metin kutusunun uzunluğunu kontrol et
         if len(text) <= 1:
             btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetection0))
         else:
@@ -119,7 +113,7 @@ class TestImage(QWidget):
                         ResultMap = pickle.load(fileReadStream)
 
                     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                    # Yüzleri algıla
+
                     faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5,
                                                          minSize=(minFaceSize, minFaceSize))
 

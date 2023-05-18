@@ -3,10 +3,9 @@ import os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QWidget, QListWidget, QTableWidget, QTableWidgetItem, QHBoxLayout, QPushButton, QLabel, \
-    QCheckBox
+from PyQt5.QtWidgets import QWidget, QListWidget, QTableWidget, QHBoxLayout, QPushButton, QLabel
 
-from src.resources.Environments import pngInfo, pathDatasets, pngChecked, pngUnChecked
+from src.resources.Environments import pngInfo, pathDatasets
 
 
 class InfoFace(QWidget):
@@ -31,7 +30,6 @@ class InfoFace(QWidget):
         self.window.setStyleSheet("background-color: white;")
         self.window.setWindowIcon(QIcon(pngInfo))
 
-        # Ana düzenleyici
         layout = QHBoxLayout()
 
         # Dataset listesi
@@ -74,7 +72,6 @@ class InfoFace(QWidget):
         layout.addWidget(fileList)
         layout.addWidget(fileDataList)
 
-        # Layout ayarları
         self.window.setLayout(layout)
         self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                                 mainWidth, mainHeight)

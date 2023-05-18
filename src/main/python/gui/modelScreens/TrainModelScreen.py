@@ -123,7 +123,6 @@ class TrainModel(QWidget):
         btnTrainModel = getButtonFeaturesTrain(QPushButton(self), text="Eğit")
         btnTrainModel.clicked.connect(self.startTrain)
 
-        # Ana düzenleyici
         layoutV = QVBoxLayout()
         layoutH = QHBoxLayout()
         layoutV1 = QVBoxLayout()

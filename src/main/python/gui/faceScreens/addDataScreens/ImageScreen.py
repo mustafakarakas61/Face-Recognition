@@ -9,12 +9,12 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QHBoxLayout, QPushButton, QLabel, QLineEdit
 
-from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, getTextBoxSuccessRateFeatures, \
-    getButtonFeaturesTrain, fontTextBox, getFaceButtonFeatures, getExceptionMsgBox
-from src.resources.Environments import pngImageUrl, pngWarningBox, pathDatasets, pngAdd, pngInfoBox, pngSaveImage0, \
+from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, fontTextBox, \
+    getFaceButtonFeatures, getExceptionMsgBox
+from src.resources.Environments import pngImageUrl, pngWarningBox, pathDatasets, pngSaveImage0, \
     pngSaveImage1, pngErrorBox, pathFaceCascade, inputSize, minFaceSize, pathTempFolder, pngClearText, pngDeleteImage0, \
     pngDeleteImage1
-from utils.Utils import dataCount, useEnviron, changeNameToASCII, checkFolder, checkJpgFileOfTheHaveNumber, switchFiles
+from utils.Utils import useEnviron, changeNameToASCII, checkFolder, checkJpgFileOfTheHaveNumber, switchFiles
 
 useEnviron()
 faceCascade = cv2.CascadeClassifier(pathFaceCascade)

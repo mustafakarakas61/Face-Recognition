@@ -1,5 +1,4 @@
 import subprocess
-import os
 
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from yt_dlp import YoutubeDL
@@ -8,7 +7,6 @@ from src.resources.Environments import pathTempFolder, pathClippedVideos
 from utils.Utils import randomString
 
 
-# {"name":"Recep Tayyip Erdoğan","url":"https://www.youtube.com/watch?v=fxUox86xQGc&t=7s","startTime":"00:00:30","endTime":"00:00:44"}
 def downloadYoutubeVideo(url, startTime, durationStartTime, durationEndTime):
     name = randomString(12)
 
@@ -30,7 +28,7 @@ def downloadYoutubeVideo(url, startTime, durationStartTime, durationEndTime):
 
     clip = VideoFileClip(videoPath)
 
-    maxDuration = clip.duration  # Video uzunluğu saniye cinsinden alınır
+    maxDuration = clip.duration
 
     if int(durationEndTime) > int(maxDuration):
         durationEndTime = maxDuration

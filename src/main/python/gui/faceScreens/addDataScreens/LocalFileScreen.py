@@ -2,16 +2,15 @@ import os
 import re
 
 import cv2
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QWidget, QMessageBox, QPushButton, QHBoxLayout, QFileDialog
 
-from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, getTextBoxSuccessRateFeatures, \
-    getButtonFeaturesTrain
-from src.resources.Environments import pngFolder, pngWarningBox, pathDatasets, pngInfoBox, pngAdd, pngErrorBox, \
+from src.main.python.services.FeaturesService import getMsgBoxFeatures
+from src.resources.Environments import pngWarningBox, pathDatasets, pngInfoBox, pngAdd, pngErrorBox, \
     pathFaceCascade, inputSize, minFaceSize, pathTempFolder
-from utils.Utils import dataCount, useEnviron, checkJpgFileOfTheHaveNumber, changeNameToASCII, checkFolder, switchFiles
+from utils.Utils import useEnviron, checkJpgFileOfTheHaveNumber, changeNameToASCII, checkFolder, switchFiles
 
 useEnviron()
 faceCascade = cv2.CascadeClassifier(pathFaceCascade)

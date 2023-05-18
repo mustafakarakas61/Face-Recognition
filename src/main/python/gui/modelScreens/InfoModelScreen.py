@@ -37,7 +37,6 @@ class InfoModel(QWidget):
         modelCreateDateTime = [model["create_date_time"] for model in models]
 
         modelItems = modelMId, modelMRId, modelNames, modelTrainDataPercentage, modelValidationDataPercentage, modelTrainDuration, modelTrainLoss, modelTrainAcc, modelValidationLoss, modelValidationAcc, modelCreateDateTime
-        # todo: model analiz sayısı da eklensin
 
         mainWidth = 1570
         if len(modelNames) <= 10:
@@ -53,8 +52,8 @@ class InfoModel(QWidget):
             ["m_id", "mr_id", "Model", "Eğitim Veri Yüzdesi", "Doğrulama Veri Yüzdesi", "Eğitim Süresi",
              "Eğitim Kayıp Oranı", "Eğitim Doğruluk Oranı", "Doğrulama Kayıp Oranı", "Doğrulama Doğruluk Oranı",
              "Oluşturulma Tarihi", ""])
-        table.setMinimumSize(1555, 180)  # tablonun minimum boyutu width, height
-        table.setMaximumSize(1555, 335)  # tablonun maksimum boyutu width, height
+        table.setMinimumSize(1555, 180)
+        table.setMaximumSize(1555, 335)
         # table.setColumnWidth(0, 20)
         # table.setColumnWidth(1, 360)
         # table.setColumnWidth(2, 20)
@@ -73,16 +72,14 @@ class InfoModel(QWidget):
                 table.setItem(i, j, item)
 
             itemButton = QPushButton()
-            itemButton.setIcon(QIcon(pngGraphic))  # todo : güzel renk ayarla
+            itemButton.setIcon(QIcon(pngGraphic))
             itemButton.setStyleSheet("background-color: #Cbe2e2; color: white; font-weight: bold;")
             itemButton.clicked.connect(lambda checked, row=i: self.printModelName(table, row))
             table.setCellWidget(i, len(modelItems), itemButton)
 
-        # Ana düzenleyici
         mainLayout = QVBoxLayout()
         mainLayout.setAlignment(Qt.AlignCenter)
 
-        # Tabloyu içeren layout
         layoutTable = QHBoxLayout()
         layoutTable.addWidget(table)
         mainLayout.addLayout(layoutTable)
