@@ -24,7 +24,7 @@ class DeleteFace(QWidget):
         self.mainWidget = mainWidget
 
     def faceDeleteScreen(self):
-        mainWidth = 910
+        mainWidth = 1020
         mainHeight = 330
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
@@ -43,13 +43,15 @@ class DeleteFace(QWidget):
 
         # Dosya listesi tablo
         tableFileList = QTableWidget()
-        tableFileList.setColumnCount(1)
+        tableFileList.setColumnCount(2)
         tableFileList.setColumnWidth(0, 200)
-        tableFileList.setHorizontalHeaderLabels(["Veri Listesi"])
-        tableFileList.setMinimumSize(250, 330)  # tablonun minimum boyutu width, height
-        tableFileList.setMaximumSize(250, 330)  # tablonun maksimum boyutu width, height
+        tableFileList.setHorizontalHeaderLabels(["Veri Listesi", "Veri Sayısı"])
+        tableFileList.setMinimumSize(345, 331)  # tablonun minimum boyutu width, height
+        tableFileList.setMaximumSize(345, 331)  # tablonun maksimum boyutu width, height
         tableFileList.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 13, QFont.Bold))
+        tableFileList.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 13, QFont.Bold))
         tableFileList.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
+        tableFileList.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
         tableFileList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         # Dosya veri listesi tablo
@@ -57,8 +59,8 @@ class DeleteFace(QWidget):
         tableFileDataList.setColumnCount(3)
         # tableFileDataList.setColumnWidth(0, 200)
         tableFileDataList.setHorizontalHeaderLabels(["Resim", "Dosya İsmi", ""])
-        tableFileDataList.setMinimumSize(480, 332)  # tablonun minimum boyutu width, height
-        tableFileDataList.setMaximumSize(480, 332)  # tablonun maksimum boyutu width, height
+        tableFileDataList.setMinimumSize(500, 332)  # tablonun minimum boyutu width, height
+        tableFileDataList.setMaximumSize(500, 332)  # tablonun maksimum boyutu width, height
         tableFileDataList.setColumnWidth(0, 100)
         tableFileDataList.setColumnWidth(1, 300)
         tableFileDataList.setColumnWidth(2, 30)
@@ -74,7 +76,8 @@ class DeleteFace(QWidget):
             lambda item: self.showFileList(item.text(), tableFileList, tableFileDataList))
 
         btnDeleteDataSet = getButtonFeaturesDelete(QPushButton(), text="Verisetini Sil", butonSizes=(130, 50))
-        btnDeleteDataSet.clicked.connect(lambda: self.deleteSelectedDataset(datasetList, tableFileList, tableFileDataList))
+        btnDeleteDataSet.clicked.connect(
+            lambda: self.deleteSelectedDataset(datasetList, tableFileList, tableFileDataList))
 
         btnDeleteDataSetFile = getButtonFeaturesDelete(QPushButton(), text="Veriyi Sil", butonSizes=(110, 50))
         btnDeleteDataSetFile.clicked.connect(
@@ -88,7 +91,7 @@ class DeleteFace(QWidget):
         btnClearSelected.clicked.connect(lambda: self.clearSelectedCheckboxes(tableFileDataList))
 
         btnDeleteModel = getButtonFeaturesDelete(QPushButton(), text="Sil", butonSizes=(70, 50))
-        btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(tableFileDataList))
+        btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(tableFileList, tableFileDataList))
 
         layoutV1 = QVBoxLayout()
         layoutV1.addWidget(datasetList)
@@ -144,23 +147,43 @@ class DeleteFace(QWidget):
         if len(files) > 0:
             for i, file in enumerate(files):
                 itemButton = QPushButton()
+                countItemButton = QPushButton()
+
                 itemButton.setText(file)
                 itemButton.setStyleSheet(
                     "background-color: white; color: black; border-radius: 0px; text-align:left; padding-left: 2px;")
+
+                itemButton.setFont(QFont("Times New Roman", 12))
+
+                data = os.listdir(f'{pathDatasets}/{datasetName}/{file}')
+                countItemButton.setText(str(len(data)))
+                countItemButton.setStyleSheet(
+                    "background-color: white; color: black; border-radius: 0px; text-align:left; padding-left: 2px;")
+                countItemButton.setFont(QFont("Times New Roman", 12))
+
+                tableFileList.setCellWidget(i, 0, itemButton)
+                tableFileList.setCellWidget(i, 1, countItemButton)
+
                 itemButton.clicked.connect(
                     lambda checked, row=i: self.selectedButton(datasetName, tableFileList, row,
                                                                tableFileDataList))
-                itemButton.setFont(QFont("Times New Roman", 12))
-                tableFileList.setCellWidget(i, 0, itemButton)
+
+                countItemButton.clicked.connect(
+                    lambda checked, row=i: self.selectedButton(datasetName, tableFileList, row,
+                                                               tableFileDataList))
 
     def selectedButton(self, datasetName, tableFileList, row, tableFileDataList):
         for i in range(tableFileList.rowCount()):
             if i == row:
                 tableFileList.cellWidget(i, 0).setStyleSheet(
                     "background-color: #DC143C; color: white; border-radius: 0px; text-align:left; padding-left: 2px;")
-            # Diğer düğmelerin arkaplan rengini değiştir
+                tableFileList.cellWidget(i, 1).setStyleSheet(
+                    "background-color: #DC143C; color: white; border-radius: 0px; text-align:left; padding-left: 2px;")
+
             else:
                 tableFileList.cellWidget(i, 0).setStyleSheet(
+                    "background-color: white; color: black; border-radius: 0px; text-align:left; padding-left: 2px;")
+                tableFileList.cellWidget(i, 1).setStyleSheet(
                     "background-color: white; color: black; border-radius: 0px; text-align:left; padding-left: 2px;")
 
         self.setterSelectedLast(tableFileList, datasetName, row, tableFileDataList)
@@ -398,11 +421,11 @@ class DeleteFace(QWidget):
             if checkbox.isChecked():
                 checkbox.setChecked(False)
 
-    def deleteSelectedCheckBox(self, table):
+    def deleteSelectedCheckBox(self, tableFileList, tableFileDataList):
         checkedItems = []
 
-        for i in range(table.rowCount()):
-            checkbox = table.cellWidget(i, 2)
+        for i in range(tableFileDataList.rowCount()):
+            checkbox = tableFileDataList.cellWidget(i, 2)
             if checkbox.isChecked():
                 checkedItems.append(i)
 
@@ -422,13 +445,16 @@ class DeleteFace(QWidget):
             messageBox.exec_()
             if messageBox.clickedButton() == buttonY:
                 for i in reversed(checkedItems):
-                    dataFileName: str = table.cellWidget(i, 1).text()
+                    dataFileName: str = tableFileDataList.cellWidget(i, 1).text()
                     dataName: str = dataFileName.split("_")[0]
                     dataPath: str = f'{pathDatasets}{self.dataset}/{dataName}/{dataFileName}'
                     if os.path.exists(dataPath):
                         os.remove(dataPath)
-                    table.removeRow(i)
+                    tableFileDataList.removeRow(i)
                 # updates
+                # todo : ilgili dataset data satırındaki veeri sayısını güncelle
+                item: QPushButton = tableFileList.cellWidget(self.selectedLastRow, 1)
+                item.setText(str(int(item.text()) - int(len(checkedItems))))
                 self.mainWidget.updateModelList()
         else:
             msgBox = QMessageBox(self)
