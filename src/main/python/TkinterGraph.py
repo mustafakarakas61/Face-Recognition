@@ -1,13 +1,14 @@
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-import warnings
 
 from src.resources.Environments import pathFaceOutputs, pathEyeOutputs
 
-warnings.filterwarnings("ignore",
-                        message="Support for FigureCanvases without a required_interactive_framework attribute was deprecated in Matplotlib 3.6")
-
 
 def printGraph(modelName: str):
+    root = tk.Tk()
+    root.geometry("800x600")
+
     epochs = []
     loss = []
     acc = []
@@ -30,17 +31,24 @@ def printGraph(modelName: str):
             val_loss.append(float(val_loss_val))
             val_acc.append(float(val_acc_val))
 
-    fig, ax = plt.subplots(2)
-    ax[0].plot(epochs, acc, label='Train Set', linewidth=2)
-    ax[0].plot(epochs, val_acc, label='Validation Set', linestyle='--')
-    ax[0].set_ylabel('Accuracy - Doğruluk')
-    ax[0].legend()
+    fig = plt.Figure(figsize=(6, 6), dpi=100)
+    ax1 = fig.add_subplot(211)
+    ax1.plot(epochs, acc, label='Train Set', linewidth=2)
+    ax1.plot(epochs, val_acc, label='Validation Set', linestyle='--')
+    ax1.set_ylabel('Accuracy - Doğruluk')
+    ax1.legend()
 
-    ax[1].plot(epochs, loss, label='Train Set', linewidth=2)
-    ax[1].plot(epochs, val_loss, label='Validation Set', linestyle='--')
-    ax[1].set_xlabel('Epoch - Tur')
-    ax[1].set_ylabel('Loss - Kayıp')
-    ax[1].legend()
+    ax2 = fig.add_subplot(212)
+    ax2.plot(epochs, loss, label='Train Set', linewidth=2)
+    ax2.plot(epochs, val_loss, label='Validation Set', linestyle='--')
+    ax2.set_xlabel('Epoch - Tur')
+    ax2.set_ylabel('Loss - Kayıp')
+    ax2.legend()
 
-    plt.suptitle(modelName, fontsize=12, fontweight='bold')
-    plt.show()
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.draw()
+    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+    fig.suptitle(modelName, fontsize=12, fontweight='bold')
+
+    root.mainloop()
