@@ -37,7 +37,7 @@ def downloadYoutubeVideo(url, startTime, durationStartTime, durationEndTime):
 
     duration = int(durationEndTime - durationStartTime)
 
-    cmd = f"ffmpeg -y -loglevel fatal -ss {startTime} -i \"{videoPath}\" -t {duration} -c copy \"{pathClippedVideos}/{fileName}\""
+    cmd = f"ffmpeg -y -loglevel fatal -ss {startTime} -i \"{videoPath}\" -t {duration} -vf scale=w=854:h=480 -c copy \"{pathClippedVideos}/{fileName}\""
 
     print("Klip Başlıyor : " + cmd)
     subprocess.call(

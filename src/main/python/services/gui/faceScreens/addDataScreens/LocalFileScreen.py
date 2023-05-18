@@ -283,11 +283,6 @@ class LocalFile(QWidget):
         videoCapture.release()
         cv2.destroyAllWindows()
 
-    # def updateCount(self, datasetName: str, datasetDataName: str):
-    #     newCount: int = dataCount(pathDatasets + datasetName + "/" + datasetDataName)
-    #     if self.textboxDataInfoCount is not None:
-    #         self.textboxDataInfoCount.setText(str(newCount))
-
     def closeScreen(self):
         if self.window is not None:
             self.window.close()

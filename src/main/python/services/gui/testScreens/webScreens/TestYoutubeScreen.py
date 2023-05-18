@@ -133,7 +133,6 @@ class TestYoutube(QWidget):
             else:
                 btnFaceScanner.setIcon(QtGui.QIcon(pngFaceDetectionYoutube0))
 
-    # todo : inen videolar, kliplenen videolar silinsin
     def getVideo(self, url, startTime, endTime, modelName, sRate):
         try:
             splitStartTime = str(startTime).split(":")
