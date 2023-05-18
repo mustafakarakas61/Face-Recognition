@@ -10,7 +10,7 @@ from keras.models import load_model
 from src.main.python.services.FeaturesService import getMsgBoxFeatures
 from src.resources.Environments import pathModels, pathFaceResultsMap, pathFaceCascade, minFaceSize, \
     inputSize, pngMustafa, pngWarningBox
-from src.main.python.PostgreSQL import updateAttendance
+from src.main.python.services.DatabaseService import updateAttendance
 from utils.Utils import useEnviron, changeNameToASCII
 
 useEnviron()

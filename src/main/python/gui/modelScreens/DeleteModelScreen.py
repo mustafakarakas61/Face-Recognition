@@ -6,7 +6,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QTableWidget, QCheckBox, \
     QMessageBox
 
-from src.main.python.PostgreSQL import removeFromDB, listModels
+from src.main.python.services.DatabaseService import removeFromDB, listModels
 from src.main.python.services.FeaturesService import getButtonFeaturesDelete, \
     getButtonFeaturesSelectAll, getButtonFeaturesClear
 from src.resources.Environments import pngDelete, pathModels, pngTrash, pathFaceOutputs, pathFaceMaps, pathEyeOutputs, \

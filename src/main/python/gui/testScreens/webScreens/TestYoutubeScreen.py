@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getFaceButtonFeatures, fontTextBox
 from src.main.python.services.YoutubeDownloaderService import downloadYoutubeVideo
-from src.main.python.services.gui.testScreens.TestLocalFileScreen import testVideo
+from src.main.python.gui.testScreens.TestLocalFileScreen import testVideo
 from src.resources.Environments import pngYoutube, pathFaceResultsMap, pngFaceDetectionYoutube0, \
     pngFaceDetectionYoutube1, pngWarningBox
 

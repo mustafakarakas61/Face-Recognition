@@ -6,24 +6,24 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox
 
-from src.main.python.PostgreSQL import listModels
+from src.main.python.services.DatabaseService import listModels
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, fontTextBox
-from src.main.python.services.gui.faceScreens.DeleteDataScreen import DeleteFace
-from src.main.python.services.gui.faceScreens.InfoDataScreen import InfoFace
-from src.main.python.services.gui.faceScreens.addDataScreens.CameraScreen import Camera
-from src.main.python.services.gui.faceScreens.addDataScreens.ImageScreen import Image
-from src.main.python.services.gui.faceScreens.addDataScreens.LocalFileScreen import LocalFile
-from src.main.python.services.gui.faceScreens.addDataScreens.NewDatasetDataScreen import NewDatasetData
-from src.main.python.services.gui.faceScreens.addDataScreens.NewDatasetScreen import NewDataset
-from src.main.python.services.gui.faceScreens.addDataScreens.YoutubeScreen import Youtube
-from src.main.python.services.gui.modelScreens.DeleteModelScreen import DeleteModel
-from src.main.python.services.gui.modelScreens.InfoModelScreen import InfoModel
-from src.main.python.services.gui.modelScreens.TrainModelScreen import TrainModel
-from src.main.python.services.gui.testScreens.TestCameraScreen import TestCamera
-from src.main.python.services.gui.testScreens.TestLocalFileScreen import TestLocalFile
-from src.main.python.services.gui.testScreens.webScreens.TestImageScreen import TestImage
-from src.main.python.services.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
+from src.main.python.gui.faceScreens.DeleteDataScreen import DeleteFace
+from src.main.python.gui.faceScreens.InfoDataScreen import InfoFace
+from src.main.python.gui.faceScreens.addDataScreens.CameraScreen import Camera
+from src.main.python.gui.faceScreens.addDataScreens.ImageScreen import Image
+from src.main.python.gui.faceScreens.addDataScreens.LocalFileScreen import LocalFile
+from src.main.python.gui.faceScreens.addDataScreens.NewDatasetDataScreen import NewDatasetData
+from src.main.python.gui.faceScreens.addDataScreens.NewDatasetScreen import NewDataset
+from src.main.python.gui.faceScreens.addDataScreens.YoutubeScreen import Youtube
+from src.main.python.gui.modelScreens.DeleteModelScreen import DeleteModel
+from src.main.python.gui.modelScreens.InfoModelScreen import InfoModel
+from src.main.python.gui.modelScreens.TrainModelScreen import TrainModel
+from src.main.python.gui.testScreens.TestCameraScreen import TestCamera
+from src.main.python.gui.testScreens.TestLocalFileScreen import TestLocalFile
+from src.main.python.gui.testScreens.webScreens.TestImageScreen import TestImage
+from src.main.python.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathTempFolder, pngInfoBox, pngWarningBox, pathDatasets, pathClippedVideos, \
     pathControlFolder

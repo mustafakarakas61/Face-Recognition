@@ -2,10 +2,9 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QPushButton, QHBoxLayout
-from tqdm import tk
 
-from src.main.python.TkinterGraph import printGraph
-from src.main.python.PostgreSQL import listModels
+from src.main.python.services.TkinterGraphService import printGraph
+from src.main.python.services.DatabaseService import listModels
 from src.resources.Environments import pngInfo, pngMainGraphic, pngGraphic
 
 

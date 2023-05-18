@@ -17,7 +17,7 @@ from src.main.python.services.FeaturesService import getComboBoxFeatures, getLab
 from src.resources.Environments import pathFaceOutputs, \
     pathModels, \
     pathFaceResultsMap, pngTrain, pathDatasets, pathDatasetsSplit, pngWarningBox, pngInfoBox
-from src.main.python.PostgreSQL import createTable, executeSql
+from src.main.python.services.DatabaseService import createTable, executeSql
 from utils.Utils import randomString, useEnviron
 
 useEnviron()
