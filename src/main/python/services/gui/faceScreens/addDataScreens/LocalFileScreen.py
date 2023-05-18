@@ -223,8 +223,6 @@ class LocalFile(QWidget):
                     self.startSaveWindow.close()
                 break
 
-
-
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             faces = faceCascade.detectMultiScale(
@@ -284,7 +282,6 @@ class LocalFile(QWidget):
 
         videoCapture.release()
         cv2.destroyAllWindows()
-
 
     # def updateCount(self, datasetName: str, datasetDataName: str):
     #     newCount: int = dataCount(pathDatasets + datasetName + "/" + datasetDataName)
