@@ -21,89 +21,92 @@ class DeleteModel(QWidget):
         self.mainWidget = mainWidget
 
     def modelDeleteScreen(self):
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
+        if self.mainWidget.role is not None:
+            screen = QtWidgets.QApplication.desktop().screenGeometry()
+            screenWidth, screenHeight = screen.width(), screen.height()
 
-        self.window = QWidget()
-        self.window.setWindowTitle('Model Sil')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngDelete))
+            self.window = QWidget()
+            self.window.setWindowTitle('Model Sil')
+            self.window.setStyleSheet("background-color: white;")
+            self.window.setWindowIcon(QIcon(pngDelete))
 
-        models = listModels()
-        modelNames = [model["model_name"] for model in models]
-        modelIds = [model["m_id"] for model in models]
+            models = listModels()
+            modelNames = [model["model_name"] for model in models]
+            modelIds = [model["m_id"] for model in models]
 
-        mainWidth = 500
-        if len(modelNames) <= 10:
-            mainHeight = 230
+            mainWidth = 500
+            if len(modelNames) <= 10:
+                mainHeight = 230
+            else:
+                mainHeight = 410
+
+            table = QTableWidget()
+            table.setColumnCount(3)
+            table.setRowCount(len(modelNames))
+
+            table.setHorizontalHeaderLabels(["id", "Model Listesi", ""])
+            table.setMinimumSize(455, 180)
+            table.setMaximumSize(455, 335)
+            table.setColumnWidth(0, 20)
+            table.setColumnWidth(1, 360)
+            table.setColumnWidth(2, 10)
+            table.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 15, QFont.Bold))
+            table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
+            table.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 15, QFont.Bold))
+            table.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
+            table.horizontalHeaderItem(2).setIcon(QIcon(pngTrash))
+            table.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
+            table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+            # table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+
+            for i in range(len(modelNames)):
+                itemId = QtWidgets.QTableWidgetItem(str(modelIds[i]))
+                itemId.setFont(QFont("Times New Roman", 13))
+                table.setItem(i, 0, itemId)
+
+                itemName = QtWidgets.QTableWidgetItem(modelNames[i])
+                itemName.setFont(QFont("Times New Roman", 13))
+                table.setItem(i, 1, itemName)
+
+                itemCheckbox = QCheckBox()
+                itemCheckbox.setStyleSheet(
+                    "QCheckBox::indicator { width: 20px; height: 20px; background-color: white;padding-left: 9px;}"
+                    "QCheckBox::indicator:checked { image: url(" + str(pngChecked) + "); }"
+                                                                                     "QCheckBox::indicator:unchecked { image: url(" + str(
+                        pngUnChecked) + "); }"
+                )
+                table.setCellWidget(i, 2, itemCheckbox)
+
+            btnSelectAll = getButtonFeaturesSelectAll(QPushButton(self), text="Tümünü Seç")
+            btnSelectAll.clicked.connect(lambda: self.selectAllCheckboxes(table))
+
+            btnClearSelected = getButtonFeaturesClear(QPushButton(self), text="Temizle")
+            btnClearSelected.clicked.connect(lambda: self.clearSelectedCheckboxes(table))
+
+            btnDeleteModel = getButtonFeaturesDelete(QPushButton(self), text="Sil", butonSizes=(70, 50))
+            btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table))
+
+            mainLayout = QVBoxLayout()
+            mainLayout.setAlignment(Qt.AlignCenter)
+
+            layoutTable = QHBoxLayout()
+            layoutTable.addWidget(table)
+            mainLayout.addLayout(layoutTable)
+
+            layoutButton = QHBoxLayout()
+            layoutButton.addStretch(1)
+            layoutButton.addWidget(btnSelectAll)
+            layoutButton.addWidget(btnClearSelected)
+            layoutButton.addWidget(btnDeleteModel)
+            layoutButton.addStretch(1)
+            mainLayout.addLayout(layoutButton)
+
+            self.window.setLayout(mainLayout)
+            self.window.setGeometry(int((screenWidth - mainWidth) / 2), int((screenHeight - mainHeight) / 2), mainWidth,
+                                    mainHeight)
+            self.window.show()
         else:
-            mainHeight = 410
-
-        table = QTableWidget()
-        table.setColumnCount(3)
-        table.setRowCount(len(modelNames))
-
-        table.setHorizontalHeaderLabels(["id", "Model Listesi", ""])
-        table.setMinimumSize(455, 180)
-        table.setMaximumSize(455, 335)
-        table.setColumnWidth(0, 20)
-        table.setColumnWidth(1, 360)
-        table.setColumnWidth(2, 10)
-        table.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 15, QFont.Bold))
-        table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
-        table.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 15, QFont.Bold))
-        table.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
-        table.horizontalHeaderItem(2).setIcon(QIcon(pngTrash))
-        table.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
-        table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        # table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-
-        for i in range(len(modelNames)):
-            itemId = QtWidgets.QTableWidgetItem(str(modelIds[i]))
-            itemId.setFont(QFont("Times New Roman", 13))
-            table.setItem(i, 0, itemId)
-
-            itemName = QtWidgets.QTableWidgetItem(modelNames[i])
-            itemName.setFont(QFont("Times New Roman", 13))
-            table.setItem(i, 1, itemName)
-
-            itemCheckbox = QCheckBox()
-            itemCheckbox.setStyleSheet(
-                "QCheckBox::indicator { width: 20px; height: 20px; background-color: white;padding-left: 9px;}"
-                "QCheckBox::indicator:checked { image: url(" + str(pngChecked) + "); }"
-                                                                                 "QCheckBox::indicator:unchecked { image: url(" + str(
-                    pngUnChecked) + "); }"
-            )
-            table.setCellWidget(i, 2, itemCheckbox)
-
-        btnSelectAll = getButtonFeaturesSelectAll(QPushButton(self), text="Tümünü Seç")
-        btnSelectAll.clicked.connect(lambda: self.selectAllCheckboxes(table))
-
-        btnClearSelected = getButtonFeaturesClear(QPushButton(self), text="Temizle")
-        btnClearSelected.clicked.connect(lambda: self.clearSelectedCheckboxes(table))
-
-        btnDeleteModel = getButtonFeaturesDelete(QPushButton(self), text="Sil", butonSizes=(70, 50))
-        btnDeleteModel.clicked.connect(lambda: self.deleteSelectedCheckBox(table))
-
-        mainLayout = QVBoxLayout()
-        mainLayout.setAlignment(Qt.AlignCenter)
-
-        layoutTable = QHBoxLayout()
-        layoutTable.addWidget(table)
-        mainLayout.addLayout(layoutTable)
-
-        layoutButton = QHBoxLayout()
-        layoutButton.addStretch(1)
-        layoutButton.addWidget(btnSelectAll)
-        layoutButton.addWidget(btnClearSelected)
-        layoutButton.addWidget(btnDeleteModel)
-        layoutButton.addStretch(1)
-        mainLayout.addLayout(layoutButton)
-
-        self.window.setLayout(mainLayout)
-        self.window.setGeometry(int((screenWidth - mainWidth) / 2), int((screenHeight - mainHeight) / 2), mainWidth,
-                                mainHeight)
-        self.window.show()
+            QMessageBox.critical(self.mainWidget.applicationWindow, 'Dikkat', 'Bu işlem için lütfen kayıt olunuz.')
 
     def selectAllCheckboxes(self, table):
         for i in range(table.rowCount()):

@@ -1,6 +1,8 @@
+import datetime
 import pickle
 import psycopg2
 
+from src.main.python.services.SecurityService import check_password, hash_password
 from src.resources.Environments import dbName, dbUser, dbPass, dbHost, dbPort, pathFaceResultsMap
 
 
@@ -99,37 +101,118 @@ def executeSql(sql: str, params: tuple = ()):
     conn.close()
 
 
+def compareUser(username: str, password: str):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+
+    cur = conn.cursor()
+
+    selectQuery = "SELECT u.id, u.name, u.password, u.surname, er.name FROM \"user\" as u left join enum_role as er on er.id = u.role_id WHERE u.username = %s"
+    cur.execute(selectQuery, (username,))
+
+    row = cur.fetchone()
+    if row:
+        id, name, hashedPassword, surname, role = row
+        if check_password(password=password, hashed_password=hashedPassword):
+            currentTime = datetime.datetime.now()
+            updateQuery = "UPDATE \"user\" SET last_login = %s WHERE id = %s"
+            cur.execute(updateQuery, (currentTime, id))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+            return id, name, surname, role
+        else:
+            cur.close()
+            conn.close()
+            return None, None, None, None
+    else:
+        cur.close()
+        conn.close()
+        return None, None, None, None
+
+
+def findUser(username: str):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+
+    cur = conn.cursor()
+
+    selectQuery = "SELECT u.id, u.mail, u.name, u.surname, er.name FROM \"user\" as u left join enum_role as er on er.id = u.role_id WHERE u.username = %s"
+    cur.execute(selectQuery, (username,))
+
+    row = cur.fetchone()
+    if row:
+        id, mail, name, surname, role = row
+        cur.close()
+        conn.close()
+        return id, mail, name, surname, role
+    else:
+        cur.close()
+        conn.close()
+        return None, None, None, None, None
+
+def findUserMail(userMail: str):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+
+    cur = conn.cursor()
+
+    selectQuery = "SELECT u.id, u.mail, u.name, u.surname, er.name FROM \"user\" as u left join enum_role as er on er.id = u.role_id WHERE u.mail = %s"
+    cur.execute(selectQuery, (userMail,))
+
+    row = cur.fetchone()
+    if row:
+        id, mail, name, surname, role = row
+        cur.close()
+        conn.close()
+        return id, mail, name, surname, role
+    else:
+        cur.close()
+        conn.close()
+        return None, None, None, None, None
+
+
+def insertUser(user_username, user_password, user_name, user_surname, user_mail):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost, port=dbPort)
+    cur = conn.cursor()
+
+    query = "INSERT INTO \"user\" (username, password, name, surname, role_id, mail) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
+    values = (user_username, hash_password(user_password), user_name, user_surname, 2, user_mail)
+
+    cur.execute(query, values)
+
+    lastId = cur.fetchone()[0]
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return lastId
+
+
+def updateSecurityCode(userId, securityCode):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+    cur = conn.cursor()
+
+    cur.execute("UPDATE \"user\" SET u.security_code=%s WHERE u.id=%s", (hash_password(securityCode), userId))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 def updateAttendance(tableName, studentNo, studentName):
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
                             port=dbPort)
-
-    cur = conn.cursor()
-
-    cur.execute("SELECT attendance FROM " + tableName + " WHERE no=%s", (int(studentNo),))
-    attendance = cur.fetchone()[0]
-
-    if not attendance:
-        cur.execute("UPDATE " + tableName + " SET attendance=true WHERE no=%s", (int(studentNo),))
-        conn.commit()
-        print(studentName + " adlı öğrencinin yoklaması güncellendi.")
-    conn.close()
-
-
-def printAttendance(tableName):
-    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
-                            port=dbPort)
-
-    cur = conn.cursor()
-
-    cur.execute("SELECT no, name FROM " + tableName + " WHERE attendance=true")
-
-    rows = cur.fetchall()
-
-    if len(rows) == 0:
-        print("Kaydedilmiş yoklama bulunmamaktadır.")
-    else:
-        print("Yoklaması True Olan Öğrenciler:\n")
-        for row in rows:
-            print("No: {} - İsim: {}".format(row[0], row[1]))
-
-    conn.close()
+    #
+    # cur = conn.cursor()
+    #
+    # cur.execute("SELECT attendance FROM " + tableName + " WHERE no=%s", (int(studentNo),))
+    # attendance = cur.fetchone()[0]
+    #
+    # if not attendance:
+    #     cur.execute("UPDATE " + tableName + " SET attendance=true WHERE no=%s", (int(studentNo),))
+    #     conn.commit()
+    #     print(studentName + " adlı öğrencinin yoklaması güncellendi.")
+    # conn.close()

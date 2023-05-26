@@ -3,7 +3,7 @@ import os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QWidget, QListWidget, QTableWidget, QHBoxLayout, QPushButton, QLabel
+from PyQt5.QtWidgets import QWidget, QListWidget, QTableWidget, QHBoxLayout, QPushButton, QLabel, QMessageBox
 
 from src.resources.Environments import pngInfo, pathDatasets
 
@@ -20,65 +20,68 @@ class InfoFace(QWidget):
         self.mainWidget = mainWidget
 
     def faceInfoScreen(self):
-        mainWidth = 950
-        mainHeight = 330
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
+        if self.mainWidget.role is not None:
+            mainWidth = 950
+            mainHeight = 330
+            screen = QtWidgets.QApplication.desktop().screenGeometry()
+            screenWidth, screenHeight = screen.width(), screen.height()
 
-        self.window = QWidget()
-        self.window.setWindowTitle('Veri Bilgileri')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngInfo))
+            self.window = QWidget()
+            self.window.setWindowTitle('Veri Bilgileri')
+            self.window.setStyleSheet("background-color: white;")
+            self.window.setWindowIcon(QIcon(pngInfo))
 
-        layout = QHBoxLayout()
+            layout = QHBoxLayout()
 
-        # Dataset listesi
-        datasetList = QListWidget()
-        datasetList.addItems(os.listdir(pathDatasets))
-        datasetList.setMinimumSize(150, 332)
-        datasetList.setMaximumSize(150, 332)
-        datasetList.setFont(QFont("Times New Roman", 12, QFont.Bold))
+            # Dataset listesi
+            datasetList = QListWidget()
+            datasetList.addItems(os.listdir(pathDatasets))
+            datasetList.setMinimumSize(150, 332)
+            datasetList.setMaximumSize(150, 332)
+            datasetList.setFont(QFont("Times New Roman", 12, QFont.Bold))
 
 
-        # Dosya listesi
-        fileList = QTableWidget()
-        fileList.setColumnCount(2)
-        fileList.setColumnWidth(0, 200)
-        fileList.setHorizontalHeaderLabels(["Veri Listesi", "Veri Sayısı"])
-        fileList.setMinimumSize(345, 331)  # tablonun minimum boyutu width, height
-        fileList.setMaximumSize(345, 331)  # tablonun maksimum boyutu width, height
-        fileList.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 13, QFont.Bold))
-        fileList.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 13, QFont.Bold))
-        fileList.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
-        fileList.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
-        fileList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+            # Dosya listesi
+            fileList = QTableWidget()
+            fileList.setColumnCount(2)
+            fileList.setColumnWidth(0, 200)
+            fileList.setHorizontalHeaderLabels(["Veri Listesi", "Veri Sayısı"])
+            fileList.setMinimumSize(345, 331)  # tablonun minimum boyutu width, height
+            fileList.setMaximumSize(345, 331)  # tablonun maksimum boyutu width, height
+            fileList.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 13, QFont.Bold))
+            fileList.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 13, QFont.Bold))
+            fileList.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
+            fileList.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
+            fileList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
-        # Dosya veri listesi tablo
-        fileDataList = QTableWidget()
-        fileDataList.setColumnCount(2)
-        # tableFileDataList.setColumnWidth(0, 200)
-        fileDataList.setHorizontalHeaderLabels(["Resim", "Dosya İsmi"])
-        fileDataList.setMinimumSize(450, 332)  # tablonun minimum boyutu width, height
-        fileDataList.setMaximumSize(450, 332)  # tablonun maksimum boyutu width, height
-        fileDataList.setColumnWidth(0, 100)
-        fileDataList.setColumnWidth(1, 300)
-        fileDataList.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 13, QFont.Bold))
-        fileDataList.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
-        fileDataList.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 13, QFont.Bold))
-        fileDataList.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
-        fileDataList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+            # Dosya veri listesi tablo
+            fileDataList = QTableWidget()
+            fileDataList.setColumnCount(2)
+            # tableFileDataList.setColumnWidth(0, 200)
+            fileDataList.setHorizontalHeaderLabels(["Resim", "Dosya İsmi"])
+            fileDataList.setMinimumSize(450, 332)  # tablonun minimum boyutu width, height
+            fileDataList.setMaximumSize(450, 332)  # tablonun maksimum boyutu width, height
+            fileDataList.setColumnWidth(0, 100)
+            fileDataList.setColumnWidth(1, 300)
+            fileDataList.horizontalHeaderItem(0).setFont(QFont("Times New Roman", 13, QFont.Bold))
+            fileDataList.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
+            fileDataList.horizontalHeaderItem(1).setFont(QFont("Times New Roman", 13, QFont.Bold))
+            fileDataList.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
+            fileDataList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
-        layout.addWidget(datasetList)
-        layout.addWidget(fileList)
-        layout.addWidget(fileDataList)
+            layout.addWidget(datasetList)
+            layout.addWidget(fileList)
+            layout.addWidget(fileDataList)
 
-        self.window.setLayout(layout)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWidth, mainHeight)
+            self.window.setLayout(layout)
+            self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                    mainWidth, mainHeight)
 
-        datasetList.itemClicked.connect(lambda item: self.showFileList(item.text(), fileList, fileDataList))
+            datasetList.itemClicked.connect(lambda item: self.showFileList(item.text(), fileList, fileDataList))
 
-        self.window.show()
+            self.window.show()
+        else:
+            QMessageBox.critical(self.mainWidget.applicationWindow, 'Dikkat', 'Bu işlem için lütfen kayıt olunuz.')
 
     def showFileList(self, datasetName, fileList, fileDataList):
         self.setterDataSetName(datasetName)

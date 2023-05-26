@@ -37,123 +37,126 @@ class TrainModel(QWidget):
         self.mainWidget = mainWidget
 
     def modelTrainScreen(self):
-        # started
-        self.selectedDatasetName = ""
-        self.selectedTrainPercentage = ""
-        self.selectedDropoutRate = ""
-        self.selectedBatchSize = ""
-        self.epochsCount = "30"
-        self.inputSize = "128x128"
+        if self.mainWidget.role is not None:
+            # started
+            self.selectedDatasetName = ""
+            self.selectedTrainPercentage = ""
+            self.selectedDropoutRate = ""
+            self.selectedBatchSize = ""
+            self.epochsCount = "30"
+            self.inputSize = "128x128"
 
-        mainWidth = 550
-        mainHeight = 250
-        screen = QtWidgets.QApplication.desktop().screenGeometry()
-        screenWidth, screenHeight = screen.width(), screen.height()
+            mainWidth = 550
+            mainHeight = 250
+            screen = QtWidgets.QApplication.desktop().screenGeometry()
+            screenWidth, screenHeight = screen.width(), screen.height()
 
-        self.window = QWidget()
-        self.window.setWindowTitle('Model Eğitimi')
-        self.window.setStyleSheet("background-color: white;")
-        self.window.setWindowIcon(QIcon(pngTrain))
+            self.window = QWidget()
+            self.window.setWindowTitle('Model Eğitimi')
+            self.window.setStyleSheet("background-color: white;")
+            self.window.setWindowIcon(QIcon(pngTrain))
 
-        # Combobox
-        labelDataset = getLabelFeatures(QLabel("<b>Veriseti:</b>"), False, True)
-        datasetFolders = [f for f in os.listdir(pathDatasets) if os.path.isdir(os.path.join(pathDatasets, f))]
-        datasetNames = [''] + datasetFolders
-        comboDatasets = getComboBoxFeatures(QComboBox(self))
-        comboDatasets.addItems(datasetNames)
-        comboDatasets.currentIndexChanged.connect(
-            lambda index: self.onComboDatasetsSelection(comboDatasets.itemText(index)))
-        layoutHDataset = QHBoxLayout()
-        layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
-        layoutHDataset.addWidget(comboDatasets, alignment=Qt.AlignRight)
+            # Combobox
+            labelDataset = getLabelFeatures(QLabel("<b>Veriseti:</b>"), False, True)
+            datasetFolders = [f for f in os.listdir(pathDatasets) if os.path.isdir(os.path.join(pathDatasets, f))]
+            datasetNames = [''] + datasetFolders
+            comboDatasets = getComboBoxFeatures(QComboBox(self))
+            comboDatasets.addItems(datasetNames)
+            comboDatasets.currentIndexChanged.connect(
+                lambda index: self.onComboDatasetsSelection(comboDatasets.itemText(index)))
+            layoutHDataset = QHBoxLayout()
+            layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
+            layoutHDataset.addWidget(comboDatasets, alignment=Qt.AlignRight)
 
-        labelTrain = getLabelFeatures(QLabel("<b>Eğitim%:</b>"), False, True)
-        trainPercentage = [''] + ['70%'] + ['80%']
-        comboTrain = getComboBoxFeatures(QComboBox(self))
-        comboTrain.addItems(trainPercentage)
-        comboTrain.currentIndexChanged.connect(lambda index: self.onComboTrainSelection(comboTrain.itemText(index)))
-        layoutHTrain = QHBoxLayout()
-        layoutHTrain.addWidget(labelTrain, alignment=Qt.AlignLeft)
-        layoutHTrain.addWidget(comboTrain, alignment=Qt.AlignRight)
+            labelTrain = getLabelFeatures(QLabel("<b>Eğitim%:</b>"), False, True)
+            trainPercentage = [''] + ['70%'] + ['80%']
+            comboTrain = getComboBoxFeatures(QComboBox(self))
+            comboTrain.addItems(trainPercentage)
+            comboTrain.currentIndexChanged.connect(lambda index: self.onComboTrainSelection(comboTrain.itemText(index)))
+            layoutHTrain = QHBoxLayout()
+            layoutHTrain.addWidget(labelTrain, alignment=Qt.AlignLeft)
+            layoutHTrain.addWidget(comboTrain, alignment=Qt.AlignRight)
 
-        labelDropout = getLabelFeatures(QLabel("<b>Dropout:</b>"), False, True)
-        dropoutRate = [''] + ['0.3'] + ['0.4'] + ['0.5']
-        comboDropout = getComboBoxFeatures(QComboBox(self))
-        comboDropout.addItems(dropoutRate)
-        comboDropout.currentIndexChanged.connect(
-            lambda index: self.onComboDropoutSelection(comboDropout.itemText(index)))
-        layoutHDropout = QHBoxLayout()
-        layoutHDropout.addWidget(labelDropout, alignment=Qt.AlignLeft)
-        layoutHDropout.addWidget(comboDropout, alignment=Qt.AlignRight)
+            labelDropout = getLabelFeatures(QLabel("<b>Dropout:</b>"), False, True)
+            dropoutRate = [''] + ['0.3'] + ['0.4'] + ['0.5']
+            comboDropout = getComboBoxFeatures(QComboBox(self))
+            comboDropout.addItems(dropoutRate)
+            comboDropout.currentIndexChanged.connect(
+                lambda index: self.onComboDropoutSelection(comboDropout.itemText(index)))
+            layoutHDropout = QHBoxLayout()
+            layoutHDropout.addWidget(labelDropout, alignment=Qt.AlignLeft)
+            layoutHDropout.addWidget(comboDropout, alignment=Qt.AlignRight)
 
-        labelBatchSize = getLabelFeatures(QLabel("<b>Batch boyutu:</b>"), False, True)
-        batchSizes = [''] + ['4'] + ['8'] + ['16'] + ['32'] + ['64'] + ['128']
-        comboBatch = getComboBoxFeatures(QComboBox(self))
-        comboBatch.addItems(batchSizes)
-        comboBatch.currentIndexChanged.connect(lambda index: self.onComboBatchSelection(comboBatch.itemText(index)))
-        layoutHBatchSize = QHBoxLayout()
-        layoutHBatchSize.addWidget(labelBatchSize, alignment=Qt.AlignLeft)
-        layoutHBatchSize.addWidget(comboBatch, alignment=Qt.AlignRight)
+            labelBatchSize = getLabelFeatures(QLabel("<b>Batch boyutu:</b>"), False, True)
+            batchSizes = [''] + ['4'] + ['8'] + ['16'] + ['32'] + ['64'] + ['128']
+            comboBatch = getComboBoxFeatures(QComboBox(self))
+            comboBatch.addItems(batchSizes)
+            comboBatch.currentIndexChanged.connect(lambda index: self.onComboBatchSelection(comboBatch.itemText(index)))
+            layoutHBatchSize = QHBoxLayout()
+            layoutHBatchSize.addWidget(labelBatchSize, alignment=Qt.AlignLeft)
+            layoutHBatchSize.addWidget(comboBatch, alignment=Qt.AlignRight)
 
-        # Textbox
-        labelInputSize = getLabelFeatures(QLabel("<b>Girdi boyutu:</b>"), False, True)
-        textBoxInputSize = QLineEdit()
-        textBoxInputSize.setFont(fontTextBox)
-        textBoxInputSize.setText("128x128")
-        textBoxInputSize.setInputMask("999\\x999")
-        textBoxInputSize.textChanged.connect(lambda index: self.onTextBoxInputSizeChange(textBoxInputSize.text()))
-        layoutHInputSize = QHBoxLayout()
-        layoutHInputSize.addWidget(labelInputSize, alignment=Qt.AlignLeft)
-        layoutHInputSize.addWidget(textBoxInputSize, alignment=Qt.AlignRight)
+            # Textbox
+            labelInputSize = getLabelFeatures(QLabel("<b>Girdi boyutu:</b>"), False, True)
+            textBoxInputSize = QLineEdit()
+            textBoxInputSize.setFont(fontTextBox)
+            textBoxInputSize.setText("128x128")
+            textBoxInputSize.setInputMask("999\\x999")
+            textBoxInputSize.textChanged.connect(lambda index: self.onTextBoxInputSizeChange(textBoxInputSize.text()))
+            layoutHInputSize = QHBoxLayout()
+            layoutHInputSize.addWidget(labelInputSize, alignment=Qt.AlignLeft)
+            layoutHInputSize.addWidget(textBoxInputSize, alignment=Qt.AlignRight)
 
-        labelEpochsCount = getLabelFeatures(QLabel("<b>Epoch sayısı:</b>"), False, True)
-        textBoxEpochsCount = QLineEdit()
-        textBoxEpochsCount.setFont(fontTextBox)
-        validator = QIntValidator(1, 999)
-        textBoxEpochsCount.setValidator(validator)
-        textBoxEpochsCount.setText("30")
-        textBoxEpochsCount.setFixedSize(40, 30)
-        textBoxEpochsCount.setMaxLength(3)
-        textBoxEpochsCount.textChanged.connect(lambda index: self.onTextBoxEpochsCountChange(textBoxEpochsCount.text()))
-        layoutHEpochsCount = QHBoxLayout()
-        layoutHEpochsCount.addWidget(labelEpochsCount, alignment=Qt.AlignLeft)
-        layoutHEpochsCount.addWidget(textBoxEpochsCount, alignment=Qt.AlignRight)
+            labelEpochsCount = getLabelFeatures(QLabel("<b>Epoch sayısı:</b>"), False, True)
+            textBoxEpochsCount = QLineEdit()
+            textBoxEpochsCount.setFont(fontTextBox)
+            validator = QIntValidator(1, 999)
+            textBoxEpochsCount.setValidator(validator)
+            textBoxEpochsCount.setText("30")
+            textBoxEpochsCount.setFixedSize(40, 30)
+            textBoxEpochsCount.setMaxLength(3)
+            textBoxEpochsCount.textChanged.connect(lambda index: self.onTextBoxEpochsCountChange(textBoxEpochsCount.text()))
+            layoutHEpochsCount = QHBoxLayout()
+            layoutHEpochsCount.addWidget(labelEpochsCount, alignment=Qt.AlignLeft)
+            layoutHEpochsCount.addWidget(textBoxEpochsCount, alignment=Qt.AlignRight)
 
-        # button
-        btnTrainModel = getButtonFeaturesTrain(QPushButton(self), text="Eğit")
-        btnTrainModel.clicked.connect(self.startTrain)
+            # button
+            btnTrainModel = getButtonFeaturesTrain(QPushButton(self), text="Eğit")
+            btnTrainModel.clicked.connect(self.startTrain)
 
-        layoutV = QVBoxLayout()
-        layoutH = QHBoxLayout()
-        layoutV1 = QVBoxLayout()
-        layoutV2 = QVBoxLayout()
+            layoutV = QVBoxLayout()
+            layoutH = QHBoxLayout()
+            layoutV1 = QVBoxLayout()
+            layoutV2 = QVBoxLayout()
 
-        layoutV1.addLayout(layoutHDataset)
-        layoutV1.addLayout(layoutHInputSize)
-        layoutV1.addLayout(layoutHEpochsCount)
+            layoutV1.addLayout(layoutHDataset)
+            layoutV1.addLayout(layoutHInputSize)
+            layoutV1.addLayout(layoutHEpochsCount)
 
-        layoutV2.addLayout(layoutHTrain)
-        layoutV2.addLayout(layoutHBatchSize)
-        layoutV2.addLayout(layoutHDropout)
+            layoutV2.addLayout(layoutHTrain)
+            layoutV2.addLayout(layoutHBatchSize)
+            layoutV2.addLayout(layoutHDropout)
 
-        layoutH.addLayout(layoutV1)
-        layoutH.addLayout(layoutV2)
-        layoutV.addLayout(layoutH)
-        # Add spacing and margins to the layouts
-        layoutV.setSpacing(20)
-        layoutV.setContentsMargins(50, 50, 50, 50)
-        layoutH.setSpacing(20)
-        layoutV1.setSpacing(10)
-        layoutV1.setContentsMargins(0, 0, 0, 10)
-        layoutV2.setSpacing(10)
-        layoutV2.setContentsMargins(0, 0, 0, 10)
+            layoutH.addLayout(layoutV1)
+            layoutH.addLayout(layoutV2)
+            layoutV.addLayout(layoutH)
+            # Add spacing and margins to the layouts
+            layoutV.setSpacing(20)
+            layoutV.setContentsMargins(50, 50, 50, 50)
+            layoutH.setSpacing(20)
+            layoutV1.setSpacing(10)
+            layoutV1.setContentsMargins(0, 0, 0, 10)
+            layoutV2.setSpacing(10)
+            layoutV2.setContentsMargins(0, 0, 0, 10)
 
-        # Add the button to the layout
-        layoutV.addWidget(btnTrainModel, alignment=Qt.AlignCenter)
-        self.window.setLayout(layoutV)
-        self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
-                                mainWidth, mainHeight)
-        self.window.show()
+            # Add the button to the layout
+            layoutV.addWidget(btnTrainModel, alignment=Qt.AlignCenter)
+            self.window.setLayout(layoutV)
+            self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
+                                    mainWidth, mainHeight)
+            self.window.show()
+        else:
+            QMessageBox.critical(self.mainWidget.applicationWindow, 'Dikkat', 'Bu işlem için lütfen kayıt olunuz.')
 
     def startTrain(self):
         datasetName = self.selectedDatasetName

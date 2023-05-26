@@ -1,7 +1,8 @@
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtGui import QFont, QIntValidator, QIcon
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QPushButton
 
+fontLabel = QtGui.QFont("Times New Roman", 12)
 fontTextBox = QtGui.QFont("Times New Roman", 15)
 
 
@@ -64,7 +65,7 @@ def getButtonFeaturesClear(btn, text):
     return btn
 
 
-def getButtonFeaturesDelete(btn, text, butonSizes:tuple):
+def getButtonFeaturesDelete(btn, text, butonSizes: tuple):
     fontButton = QtGui.QFont("Times New Roman", 15)
     btn.setFont(fontButton)
     btn.setFixedSize(*butonSizes)
@@ -82,6 +83,16 @@ def getButtonFeaturesTrain(btn, text):
     btn.setText(text)
     btn.setIconSize(QtCore.QSize(*butonSizes))
     btn.setStyleSheet("background-color: #4CAF50; color: white; border-radius: 5px; font-weight: bold;")
+    return btn
+
+
+def getButtonFeaturesLogin(btn: QPushButton, color: str):
+    butonSizes = (120, 50)
+    fontButton = QtGui.QFont("Times New Roman", 15)
+    btn.setFont(fontButton)
+    btn.setFixedSize(*butonSizes)
+    btn.setIconSize(QtCore.QSize(*butonSizes))
+    btn.setStyleSheet("background-color: " + color + "; color: white; border-radius: 5px; font-weight: bold;")
     return btn
 
 

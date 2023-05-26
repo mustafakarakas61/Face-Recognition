@@ -1,4 +1,5 @@
 import os
+import re
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
@@ -6,9 +7,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox
 
-from src.main.python.services.DatabaseService import listModels
+from src.main.python.services.DatabaseService import listModels, compareUser, findUser, insertUser, findUserMail
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
-    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, fontTextBox
+    getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, fontTextBox, fontLabel, \
+    getButtonFeaturesLogin
 from src.main.python.gui.faceScreens.DeleteDataScreen import DeleteFace
 from src.main.python.gui.faceScreens.InfoDataScreen import InfoFace
 from src.main.python.gui.faceScreens.addDataScreens.CameraScreen import Camera
@@ -24,6 +26,7 @@ from src.main.python.gui.testScreens.TestCameraScreen import TestCamera
 from src.main.python.gui.testScreens.TestLocalFileScreen import TestLocalFile
 from src.main.python.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
+from src.main.python.services.MailService import newUser
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathTempFolder, pngInfoBox, pngWarningBox, pathDatasets, pathClippedVideos, \
     pathControlFolder
@@ -35,6 +38,23 @@ class MainWidget(QWidget):
         super().__init__()
 
         # started
+        self.line_security_code = None
+        self.controlRegisterWindow = None
+        self.line_new_mail = None
+        self.line_new_confirm_password = None
+        self.line_new_password = None
+        self.line_new_surname = None
+        self.line_new_name = None
+        self.line_new_username = None
+        self.registerWindow = None
+        self.id = None
+        self.role = None
+        self.surname = None
+        self.name = None
+        self.line_edit_password = None
+        self.line_edit_username = None
+        self.applicationWindow = None
+        self.faceAddWindow = None
         self.comboDatasetsData = None
         self.comboDatasets = None
         self.window = None
@@ -46,6 +66,7 @@ class MainWidget(QWidget):
         self.selectedModel = "Model Seçiniz"
         self.textBoxSuccessRate = getTextBoxSuccessRateFeatures(QLineEdit(self), "90", isEnabled=True, isVisible=False)
         self.isMainScreenClosing = False
+        self.isApplicationQuit = False
 
         # another classes
         # Data
@@ -73,15 +94,281 @@ class MainWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        mainWidth = 500
-        mainHeight = 500
+        mainWidth = 300
+        mainHeight = 250
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
         self.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)), int(screenHeight / 2 - int(mainHeight / 2)),
                          mainWidth, mainHeight)
-        self.setWindowTitle('Yüz Tanıma Projesi created by Mustafa Karakaş')
-        self.setStyleSheet("background-color: white;")
         self.setWindowIcon(QIcon(pngMustafa))
+
+        label_username = QLabel('Kullanıcı Adı:')
+        label_username.setFont(fontLabel)
+        self.line_edit_username = QLineEdit()
+        self.line_edit_username.setFont(fontLabel)
+
+        label_password = QLabel('Şifre:')
+        label_password.setFont(fontLabel)
+        self.line_edit_password = QLineEdit()
+        self.line_edit_password.setEchoMode(QLineEdit.Password)
+        self.line_edit_password.setFont(fontLabel)
+
+        button_login: QPushButton = getButtonFeaturesLogin(QPushButton('Giriş Yap'), "#06c267")
+        button_login.clicked.connect(self.login)
+
+        button_forget: QPushButton = getButtonFeaturesLogin(QPushButton('Şifre Yenile'), "#d41c2b")
+        button_forget.clicked.connect(self.forgetScreen)
+
+        button_register: QPushButton = getButtonFeaturesLogin(QPushButton('Kayıt Ol'), "#06b8c2")
+        button_register.clicked.connect(self.registerScreen)
+
+        button_test: QPushButton = getButtonFeaturesLogin(QPushButton('Test Ortamı'), "#dbbd58")
+        button_test.clicked.connect(self.testEnvironment)
+
+        layout = QVBoxLayout()
+        layout.addWidget(label_username)
+        layout.addWidget(self.line_edit_username)
+        layout.addWidget(label_password)
+        layout.addWidget(self.line_edit_password)
+        layoutH1 = QHBoxLayout()
+        layoutH1.addWidget(button_login)
+        layoutH1.addWidget(button_register)
+        layoutH2 = QHBoxLayout()
+        layoutH2.addWidget(button_forget)
+        layoutH2.addWidget(button_test)
+        layoutH1.setAlignment(button_login, Qt.AlignCenter)
+        layoutH1.setAlignment(button_register, Qt.AlignCenter)
+        layoutH2.setAlignment(button_forget, Qt.AlignCenter)
+        layoutH2.setAlignment(button_test, Qt.AlignCenter)
+        layout.addLayout(layoutH1)
+        layout.addLayout(layoutH2)
+
+        self.setWindowTitle('Yüz Tanıma Projesi')
+        self.setStyleSheet("background-color: white;")
+        self.setLayout(layout)
+        self.show()
+
+    def login(self):
+        username: str = self.line_edit_username.text()
+        password: str = self.line_edit_password.text()
+
+        if len(username) > 5 and len(password) > 5:
+            self.id, self.name, self.surname, self.role = compareUser(username, password)
+            if self.id is None or self.name is None or self.surname is None or self.role is None:
+                QMessageBox.critical(self, 'Hata', 'Kullanıcı adı veya şifre hatalı.')
+            else:
+                self.close()
+                self.application()
+        else:
+            if len(username) < 6 and len(password) < 6:
+                QMessageBox.critical(self, 'Hata', '<b>Kullanıcı Adı</b> ve <b>Şifre</b> en az 6 karakterli olmalıdır.')
+            elif len(username) < 6:
+                QMessageBox.critical(self, 'Hata', '<b>Kullanıcı Adı</b> en az 6 karakterli olmalıdır.')
+            elif len(password) < 6:
+                QMessageBox.critical(self, 'Hata', '<b>Şifre</b> en az 6 karakterli olmalıdır.')
+            else:
+                QMessageBox.critical(self, 'Hata', 'Geçersiz <b>Kullanıcı Adı</b> ve <b>Şifre</b> formatı.')
+
+    def forgetScreen(self):
+        print()
+
+    def registerScreen(self):
+        self.registerWindow = QWidget()
+
+        mainWidth = 300
+        mainHeight = 250
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+        self.registerWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                        int(screenHeight / 2 - int(mainHeight / 2)),
+                                        mainWidth, mainHeight)
+        self.registerWindow.setWindowIcon(QIcon(pngMustafa))
+
+        label_username = QLabel('Kullanıcı Adı:')
+        label_username.setFont(fontLabel)
+        self.line_new_username = QLineEdit()
+        self.line_new_username.setPlaceholderText('Kullanıcı adınızı girin.')
+        self.line_new_username.textChanged.connect(lambda: self.setOldStyle(self.line_new_username))
+        self.line_new_username.setFont(fontLabel)
+
+        label_mail = QLabel('Mail Adresi:')
+        label_mail.setFont(fontLabel)
+        self.line_new_mail = QLineEdit()
+        self.line_new_mail.setPlaceholderText('Mail adresinizi girin.')
+        self.line_new_mail.textChanged.connect(self.validate_email)
+        self.line_new_mail.setFont(fontLabel)
+
+        label_name = QLabel('Ad:')
+        label_name.setFont(fontLabel)
+        self.line_new_name = QLineEdit()
+        self.line_new_name.setPlaceholderText('Adınızı girin.')
+        self.line_new_name.textChanged.connect(lambda: self.setOldStyle(self.line_new_name))
+        self.line_new_name.setFont(fontLabel)
+
+        label_surname = QLabel('Soyad:')
+        label_surname.setFont(fontLabel)
+        self.line_new_surname = QLineEdit()
+        self.line_new_surname.setPlaceholderText('Soyadınızı girin.')
+        self.line_new_surname.textChanged.connect(lambda: self.setOldStyle(self.line_new_surname))
+        self.line_new_surname.setFont(fontLabel)
+
+        label_password = QLabel('Şifre:')
+        label_password.setFont(fontLabel)
+        self.line_new_password = QLineEdit()
+        self.line_new_password.setEchoMode(QLineEdit.Password)
+        self.line_new_password.setPlaceholderText('Şifrenizi girin.')
+        self.line_new_password.textChanged.connect(lambda: self.setOldStyle(self.line_new_password))
+        self.line_new_password.setFont(fontLabel)
+
+        label_confirm_password = QLabel('Şifreyi Onayla:')
+        label_confirm_password.setFont(fontLabel)
+        self.line_new_confirm_password = QLineEdit()
+        self.line_new_confirm_password.setEchoMode(QLineEdit.Password)
+        self.line_new_confirm_password.setPlaceholderText('Şifrenizi tekrar girin.')
+        self.line_new_confirm_password.textChanged.connect(lambda: self.setOldStyle(self.line_new_confirm_password))
+        self.line_new_confirm_password.setFont(fontLabel)
+
+        button_registerScreen = getButtonFeaturesLogin(QPushButton('Kayıt Ol'), "#06b8c2")
+        button_registerScreen.clicked.connect(self.register)
+
+        layout = QVBoxLayout()
+
+        layoutH1 = QHBoxLayout()
+        layoutV1_1 = QVBoxLayout()
+        layoutV1_2 = QVBoxLayout()
+
+        layoutH2 = QHBoxLayout()
+        layoutV2_1 = QVBoxLayout()
+        layoutV2_2 = QVBoxLayout()
+
+        layoutH3 = QHBoxLayout()
+        layoutV3_1 = QVBoxLayout()
+        layoutV3_2 = QVBoxLayout()
+
+
+        layoutV1_1.addWidget(label_username)
+        layoutV1_1.setAlignment(label_username, Qt.AlignLeft)
+        layoutV1_1.addWidget(self.line_new_username)
+        layoutV1_1.setAlignment(self.line_new_username, Qt.AlignLeft)
+        layoutV1_2.addWidget(label_mail)
+        layoutV1_2.setAlignment(label_mail, Qt.AlignLeft)
+        layoutV1_2.addWidget(self.line_new_mail)
+        layoutV1_2.setAlignment(self.line_new_mail, Qt.AlignLeft)
+        layoutH1.addLayout(layoutV1_1)
+        layoutH1.addLayout(layoutV1_2)
+
+        layoutV2_1.addWidget(label_name)
+        layoutV2_1.setAlignment(label_name, Qt.AlignLeft)
+        layoutV2_1.addWidget(self.line_new_name)
+        layoutV2_1.setAlignment(self.line_new_name, Qt.AlignLeft)
+        layoutV2_2.addWidget(label_surname)
+        layoutV2_2.setAlignment(label_surname, Qt.AlignLeft)
+        layoutV2_2.addWidget(self.line_new_surname)
+        layoutV2_2.setAlignment(self.line_new_surname, Qt.AlignLeft)
+        layoutH2.addLayout(layoutV2_1)
+        layoutH2.addLayout(layoutV2_2)
+
+        layoutV3_1.addWidget(label_password)
+        layoutV3_1.setAlignment(label_password, Qt.AlignLeft)
+        layoutV3_1.addWidget(self.line_new_password)
+        layoutV3_1.setAlignment(self.line_new_password, Qt.AlignLeft)
+        layoutV3_2.addWidget(label_confirm_password)
+        layoutV3_2.setAlignment(label_confirm_password, Qt.AlignLeft)
+        layoutV3_2.addWidget(self.line_new_confirm_password)
+        layoutV3_2.setAlignment(self.line_new_confirm_password, Qt.AlignLeft)
+        layoutH3.addLayout(layoutV3_1)
+        layoutH3.addLayout(layoutV3_2)
+
+        layout.addLayout(layoutH1)
+        layout.addLayout(layoutH2)
+        layout.addLayout(layoutH3)
+        layout.addWidget(button_registerScreen)
+        layout.setAlignment(button_registerScreen, Qt.AlignCenter)
+
+        self.registerWindow.setWindowTitle('Kayıt Ol')
+        self.registerWindow.setStyleSheet("background-color: white;")
+        self.registerWindow.setLayout(layout)
+        self.registerWindow.show()
+
+    def register(self):
+        username: str = self.line_new_username.text()
+        mail: str = self.line_new_mail.text()
+        name: str = self.line_new_name.text()
+        surname: str = self.line_new_surname.text()
+        password: str = self.line_new_password.text()
+        confirm_password: str = self.line_new_confirm_password.text()
+
+        if username == '' or mail == '' or name == '' or surname == '' or password == '' or confirm_password == '':
+            QMessageBox.critical(self.registerWindow, 'Hata', 'Tüm bilgileri doldurunuz.')
+            if username == '':
+                self.line_new_username.setStyleSheet('QLineEdit { background-color: red; }')
+            if mail == '':
+                self.line_new_mail.setStyleSheet('QLineEdit { background-color: red; }')
+            if name == '':
+                self.line_new_name.setStyleSheet('QLineEdit { background-color: red; }')
+            if surname == '':
+                self.line_new_surname.setStyleSheet('QLineEdit { background-color: red; }')
+            if password == '':
+                self.line_new_password.setStyleSheet('QLineEdit { background-color: red; }')
+            if confirm_password == '':
+                self.line_new_confirm_password.setStyleSheet('QLineEdit { background-color: red; }')
+        else:
+            if len(username) < 6 or len(password) < 6:
+                QMessageBox.critical(self.registerWindow, 'Hata',
+                                     '<b>Kullanıcı Adı</b> ve <b>Şifre</b> en az 6 karakterli olmalıdır.')
+                if len(username) < 6:
+                    self.line_new_username.setStyleSheet('QLineEdit { background-color: red; }')
+                if len(password) < 6:
+                    self.line_new_password.setStyleSheet('QLineEdit { background-color: red; }')
+            elif password != confirm_password:
+                QMessageBox.critical(self.registerWindow, 'Hata', '<b>Şifreler</b> eşleşmiyor.')
+            else:
+                email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                is_valid = re.match(email_pattern, mail) is not None
+                if is_valid:
+                    user_id, user_mail, user_name, user_surname, user_role = findUser(username)
+                    if user_id is not None:
+                        QMessageBox.critical(self.registerWindow, 'Uyarı', 'Bu <b>Kullanıcı Adı</b> sistemde mevcut.')
+                        self.line_new_username.setStyleSheet('QLineEdit { background-color: orange; }')
+                    else:
+                        userMail_id, userMail_mail, userMail_name, userMail_surname, userMail_role = findUserMail(mail)
+                        if userMail_id is not None:
+                            QMessageBox.critical(self.registerWindow, 'Uyarı', 'Bu <b>Mail Adresi</b> sistemde mevcut.')
+                            self.line_new_mail.setStyleSheet('QLineEdit { background-color: orange; }')
+                        else:
+                            controlCode = newUser(username, mail, name, surname)
+                            if controlCode is not None:
+                                QMessageBox.information(self.registerWindow, 'Bilgi', 'Mail adresinize gelen kodu giriniz.')
+                                self.controlRegisterCodeScreen(controlCode,mail, username, password, name, surname)
+
+                            else:
+                                QMessageBox.critical(self.registerWindow, 'Hata', 'Bir hata oluştu.')
+                else:
+                    QMessageBox.critical(self.registerWindow, 'Hata', 'Geçerli bir <b>mail</b> adresi giriniz.')
+                    self.line_new_mail.setStyleSheet('QLineEdit { background-color: red; }')
+
+    def testEnvironment(self):
+        QMessageBox.information(self, 'Test Ortamı', 'Kayıt olmadan sadece test denemesi yapabilirsiniz.')
+        self.close()
+        self.application()
+
+    def application(self):
+        self.applicationWindow = QWidget()
+        mainWidth = 500
+        mainHeight = 500
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+        self.applicationWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                           int(screenHeight / 2 - int(mainHeight / 2)),
+                                           mainWidth, mainHeight)
+        if self.role is None:
+            self.applicationWindow.setWindowTitle('Test Ortamı')
+        else:
+            self.applicationWindow.setWindowTitle(
+                'Hoşgeldiniz ' + self.name + " " + self.surname + " [" + (
+                    "Standard Kullanıcı" if self.role.__eq__("USER") else self.role) + "]")
+        self.applicationWindow.setStyleSheet("background-color: white;")
+        self.applicationWindow.setWindowIcon(QIcon(pngMustafa))
 
         ###########
         # D A T A #
@@ -155,120 +442,123 @@ class MainWidget(QWidget):
         layoutV.addWidget(self.comboModel)
         layoutV.addLayout(layoutH)
         layoutV.addLayout(layoutTest)
-        self.setLayout(layoutV)
-        self.show()
+        self.applicationWindow.setLayout(layoutV)
+        self.applicationWindow.show()
+        self.applicationWindow.closeEvent = self.closeApplicationEvent
 
     # Main Screens
     def faceAddScreen(self):
         if not self.getIsMainScreenClosing():
-            mainWidth = 330
-            mainHeight = 420
-            screen = QtWidgets.QApplication.desktop().screenGeometry()
-            screenWidth, screenHeight = screen.width(), screen.height()
+            if self.role is not None:
+                mainWidth = 330
+                mainHeight = 420
+                screen = QtWidgets.QApplication.desktop().screenGeometry()
+                screenWidth, screenHeight = screen.width(), screen.height()
 
-            self.window = QWidget()
-            self.window.setWindowTitle('Yüz Verisi Ekle')
-            self.window.setStyleSheet("background-color: white;")
-            self.window.setWindowIcon(QIcon(pngAdd))
+                self.faceAddWindow = QWidget()
+                self.faceAddWindow.setWindowTitle('Yüz Verisi Ekle')
+                self.faceAddWindow.setStyleSheet("background-color: white;")
+                self.faceAddWindow.setWindowIcon(QIcon(pngAdd))
 
-            #############
-            #  D A T A  #
-            #############
-            # Combobox
-            labelDataset: QLabel = getLabelFeatures(QLabel("<b>Veriseti:</b>"), False, True)
-            self.comboDatasets: QComboBox = getComboBoxFeatures(QComboBox(self))
-            self.comboDatasets.setFixedSize(150, 30)
-            self.updateDatasetList()
+                #############
+                #  D A T A  #
+                #############
+                # Combobox
+                labelDataset: QLabel = getLabelFeatures(QLabel("<b>Veriseti:</b>"), False, True)
+                self.comboDatasets: QComboBox = getComboBoxFeatures(QComboBox(self))
+                self.comboDatasets.setFixedSize(150, 30)
+                self.updateDatasetList()
 
-            self.comboDatasetsData: QComboBox = getComboBoxFeatures(QComboBox(self))
-            self.comboDatasetsData.setFixedSize(150, 30)
-            self.comboDatasets.currentIndexChanged.connect(
-                lambda index: self.onComboDatasetsSelection(self.comboDatasets.itemText(index), self.comboDatasetsData))
+                self.comboDatasetsData: QComboBox = getComboBoxFeatures(QComboBox(self))
+                self.comboDatasetsData.setFixedSize(150, 30)
+                self.comboDatasets.currentIndexChanged.connect(
+                    lambda index: self.onComboDatasetsSelection(self.comboDatasets.itemText(index), self.comboDatasetsData))
 
-            layoutHDataset = QHBoxLayout()
-            layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
-            layoutHDataset.addWidget(self.comboDatasets, alignment=Qt.AlignRight)
+                layoutHDataset = QHBoxLayout()
+                layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
+                layoutHDataset.addWidget(self.comboDatasets, alignment=Qt.AlignRight)
 
-            labelDatasetData: QLabel = getLabelFeatures(QLabel("<b>Veri:</b>"), False, True)
-            layoutHDatasetData = QHBoxLayout()
-            layoutHDatasetData.addWidget(labelDatasetData, alignment=Qt.AlignLeft)
-            layoutHDatasetData.addWidget(self.comboDatasetsData, alignment=Qt.AlignRight)
+                labelDatasetData: QLabel = getLabelFeatures(QLabel("<b>Veri:</b>"), False, True)
+                layoutHDatasetData = QHBoxLayout()
+                layoutHDatasetData.addWidget(labelDatasetData, alignment=Qt.AlignLeft)
+                layoutHDatasetData.addWidget(self.comboDatasetsData, alignment=Qt.AlignRight)
 
-            layoutHNew = QHBoxLayout()
-            # Button
-            fontButton = QtGui.QFont("Times New Roman", 15)
-            buttonSizes = (150, 50)
+                layoutHNew = QHBoxLayout()
+                # Button
+                fontButton = QtGui.QFont("Times New Roman", 15)
+                buttonSizes = (150, 50)
 
-            btnNewDataset = QPushButton(self)
-            btnNewDataset.setText("Veriseti Oluştur")
-            btnNewDataset.setFont(fontButton)
-            btnNewDataset.setFixedSize(*buttonSizes)
-            btnNewDataset.setStyleSheet("background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
-            btnNewDataset.clicked.connect(self.newDatasetWidget.newDatasetScreen)
-            layoutHNew.addWidget(btnNewDataset)
+                btnNewDataset = QPushButton(self)
+                btnNewDataset.setText("Veriseti Oluştur")
+                btnNewDataset.setFont(fontButton)
+                btnNewDataset.setFixedSize(*buttonSizes)
+                btnNewDataset.setStyleSheet("background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
+                btnNewDataset.clicked.connect(self.newDatasetWidget.newDatasetScreen)
+                layoutHNew.addWidget(btnNewDataset)
 
-            btnNewDatasetData = QPushButton(self)
-            btnNewDatasetData.setText("Veri Oluştur")
-            btnNewDatasetData.setFont(fontButton)
-            btnNewDatasetData.setFixedSize(*buttonSizes)
-            btnNewDatasetData.setStyleSheet(
-                "background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
-            btnNewDatasetData.clicked.connect(
-                lambda: self.newDatasetDataWidget.newDatasetDataScreen() if not str(self.selectedDatasetName).__eq__(
-                    "Veriseti Seçiniz") and self.selectedDatasetName is not None else getMsgBoxFeatures(
-                    QMessageBox(), pngWarningBox, "Uyarı", "Lütfen bir <b>veriseti</b> seçin.",
-                    QMessageBox.Warning,
-                    QMessageBox.Ok, isQuestion=False).exec_())
-            layoutHNew.addWidget(btnNewDatasetData)
+                btnNewDatasetData = QPushButton(self)
+                btnNewDatasetData.setText("Veri Oluştur")
+                btnNewDatasetData.setFont(fontButton)
+                btnNewDatasetData.setFixedSize(*buttonSizes)
+                btnNewDatasetData.setStyleSheet(
+                    "background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
+                btnNewDatasetData.clicked.connect(
+                    lambda: self.newDatasetDataWidget.newDatasetDataScreen() if not str(self.selectedDatasetName).__eq__(
+                        "Veriseti Seçiniz") and self.selectedDatasetName is not None else getMsgBoxFeatures(
+                        QMessageBox(), pngWarningBox, "Uyarı", "Lütfen bir <b>veriseti</b> seçin.",
+                        QMessageBox.Warning,
+                        QMessageBox.Ok, isQuestion=False).exec_())
+                layoutHNew.addWidget(btnNewDatasetData)
 
-            #############
-            # Y E R E L #
-            #############
-            labelLocal = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
-            btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
-            btnVideoCamera.clicked.connect(self.faceAddCameraWidget.faceAddVideoCameraScreen)
-            btnLocalFile = getButtonFeatures(QPushButton(self), pngFolder)
-            btnLocalFile.clicked.connect(self.faceAddLocalFileWidget.faceAddLocalFileScreen)
-            layoutLocal = QHBoxLayout()
-            layoutLocal.addWidget(btnVideoCamera)
-            layoutLocal.addWidget(btnLocalFile)
+                #############
+                # Y E R E L #
+                #############
+                labelLocal = getLabelFeatures(QLabel('Yerel'), isUseFont=True, isUseSecondFont=False)
+                btnVideoCamera = getButtonFeatures(QPushButton(self), pngCamera)
+                btnVideoCamera.clicked.connect(self.faceAddCameraWidget.faceAddVideoCameraScreen)
+                btnLocalFile = getButtonFeatures(QPushButton(self), pngFolder)
+                btnLocalFile.clicked.connect(self.faceAddLocalFileWidget.faceAddLocalFileScreen)
+                layoutLocal = QHBoxLayout()
+                layoutLocal.addWidget(btnVideoCamera)
+                layoutLocal.addWidget(btnLocalFile)
 
-            #########
-            # W E B #
-            #########
-            labelWeb = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
-            btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
-            btnImageUrl.clicked.connect(self.faceAddImageWidget.faceAddImageUrlScreen)
-            btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
-            btnVideoYoutube.clicked.connect(self.faceAddYoutubeWidget.faceAddVideoYoutubeScreen)
-            layoutWeb = QHBoxLayout()
-            layoutWeb.addWidget(btnImageUrl)
-            layoutWeb.addWidget(btnVideoYoutube)
+                #########
+                # W E B #
+                #########
+                labelWeb = getLabelFeatures(QLabel('Web'), isUseFont=True, isUseSecondFont=False)
+                btnImageUrl = getButtonFeatures(QPushButton(self), pngImageUrl)
+                btnImageUrl.clicked.connect(self.faceAddImageWidget.faceAddImageUrlScreen)
+                btnVideoYoutube = getButtonFeatures(QPushButton(self), pngYoutube)
+                btnVideoYoutube.clicked.connect(self.faceAddYoutubeWidget.faceAddVideoYoutubeScreen)
+                layoutWeb = QHBoxLayout()
+                layoutWeb.addWidget(btnImageUrl)
+                layoutWeb.addWidget(btnVideoYoutube)
 
-            layout = QVBoxLayout()
+                layout = QVBoxLayout()
 
-            layoutV = QVBoxLayout()
-            layoutV.addLayout(layoutHDataset)
-            layoutV.addLayout(layoutHDatasetData)
+                layoutV = QVBoxLayout()
+                layoutV.addLayout(layoutHDataset)
+                layoutV.addLayout(layoutHDatasetData)
 
-            layoutV.addLayout(layoutHNew)
+                layoutV.addLayout(layoutHNew)
 
-            layout.addLayout(layoutV)
-            layout.addWidget(getLine())
-            layout.addWidget(labelLocal)
-            layout.addLayout(layoutLocal)
-            layout.addWidget(getLine())
-            layout.addWidget(labelWeb)
-            layout.addLayout(layoutWeb)
+                layout.addLayout(layoutV)
+                layout.addWidget(getLine())
+                layout.addWidget(labelLocal)
+                layout.addLayout(layoutLocal)
+                layout.addWidget(getLine())
+                layout.addWidget(labelWeb)
+                layout.addLayout(layoutWeb)
 
-            self.window.setLayout(layout)
-            self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
-                                    int(screenHeight / 2 - int(mainHeight / 2)),
-                                    mainWidth, mainHeight)
-            self.window.setAttribute(Qt.WA_DeleteOnClose)
-            # self.window.destroyed.connect(self.onClosedFaceAddScreen)
-            self.window.closeEvent = self.onClosedFaceAddScreen
-            self.window.show()
+                self.faceAddWindow.setLayout(layout)
+                self.faceAddWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                               int(screenHeight / 2 - int(mainHeight / 2)),
+                                               mainWidth, mainHeight)
+                self.faceAddWindow.setAttribute(Qt.WA_DeleteOnClose)
+                self.faceAddWindow.closeEvent = self.onClosedFaceAddScreen
+                self.faceAddWindow.show()
+            else:
+                QMessageBox.critical(self.applicationWindow, 'Dikkat', 'Bu işlem için lütfen kayıt olunuz.')
 
     def testUrlScreen(self):
         if not self.getIsMainScreenClosing():
@@ -293,10 +583,10 @@ class MainWidget(QWidget):
                 screen = QtWidgets.QApplication.desktop().screenGeometry()
                 screenWidth, screenHeight = screen.width(), screen.height()
 
-                self.window = QWidget()
-                self.window.setWindowTitle('Test Web')
-                self.window.setStyleSheet("background-color: white;")
-                self.window.setWindowIcon(QIcon(pngUrl))
+                self.TestWindow = QWidget()
+                self.TestWindow.setWindowTitle('Test Web')
+                self.TestWindow.setStyleSheet("background-color: white;")
+                self.TestWindow.setWindowIcon(QIcon(pngUrl))
 
                 #############
                 # R E S İ M #
@@ -319,30 +609,71 @@ class MainWidget(QWidget):
                 layout.addLayout(layoutImage)
                 layout.addLayout(layoutYoutube)
 
-                self.window.setLayout(layout)
-                self.window.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
-                                        int(screenHeight / 2 - int(mainHeight / 2)),
-                                        mainWidth, mainHeight)
-                self.window.setObjectName("testUrlScreen")
-                self.window.show()
+                self.TestWindow.setLayout(layout)
+                self.TestWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                            int(screenHeight / 2 - int(mainHeight / 2)),
+                                            mainWidth, mainHeight)
+                self.TestWindow.setObjectName("testUrlScreen")
+                self.TestWindow.show()
 
-    def closeEvent(self, event):
-        reply = getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Dikkat!", 'Programdan çıkmak istiyor musun?',
-                                  QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
-                                  isQuestion=True).exec_()
+    def closeApplicationEvent(self, event):
+        if not self.isApplicationQuit:
+            reply = getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Dikkat!", 'Programdan çıkmak istiyor musun?',
+                                      QMessageBox.Question, (QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No),
+                                      isQuestion=True).exec_()
 
-        if reply == QtWidgets.QMessageBox.Yes:
-            self.setIsMainScreenClosing(True)
-            for widget in QtWidgets.QApplication.topLevelWidgets():
-                widget.close()
-            deleteJpgAndMp4FilesOnFolder(pathClippedVideos)
-            deleteJpgAndMp4FilesOnFolder(pathControlFolder)
-            deleteJpgAndMp4FilesOnFolder(pathTempFolder)
-            deleteFoldersOnFolder(pathTempFolder)
+            if reply == QtWidgets.QMessageBox.Yes:
+                self.setIsMainScreenClosing(True)
+                for widget in QtWidgets.QApplication.topLevelWidgets():
+                    widget.close()
+                deleteJpgAndMp4FilesOnFolder(pathClippedVideos)
+                deleteJpgAndMp4FilesOnFolder(pathControlFolder)
+                deleteJpgAndMp4FilesOnFolder(pathTempFolder)
+                deleteFoldersOnFolder(pathTempFolder)
 
-            event.accept()
+                event.accept()
+                MainWidget()
+                self.isApplicationQuit = True
+            else:
+                event.ignore()
+
+    def controlRegisterCodeScreen(self, securityCode, mail, username, password, name, surname):
+        self.controlRegisterWindow = QWidget()
+        mainWidth = 500
+        mainHeight = 500
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+        self.controlRegisterWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                               int(screenHeight / 2 - int(mainHeight / 2)),
+                                               mainWidth, mainHeight)
+        self.controlRegisterWindow.setWindowTitle(
+            'Güvenlik Kodu')
+        self.controlRegisterWindow.setStyleSheet("background-color: white;")
+        self.controlRegisterWindow.setWindowIcon(QIcon(pngMustafa))
+
+        self.line_security_code = QLineEdit()
+        self.line_security_code.setPlaceholderText('Güvenlik kodunu giriniz.')
+        self.line_security_code.setFont(fontLabel)
+
+        button_Accept = getButtonFeaturesLogin(QPushButton('Onayla'), "#6bf2d0")
+        button_Accept.clicked.connect(lambda: self.acceptRegister(securityCode, mail, username, password, name, surname))
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.line_security_code)
+        layout.addWidget(button_Accept)
+        layout.setAlignment(self.line_security_code, Qt.AlignCenter)
+        layout.setAlignment(button_Accept, Qt.AlignCenter)
+        self.controlRegisterWindow.setLayout(layout)
+        self.controlRegisterWindow.show()
+
+    def acceptRegister(self, security: str, mail: str, username: str, password: str, name: str, surname: str):
+        if str(security) == str(self.line_security_code.text()):
+            lastId = insertUser(username, password, name, surname, mail)
+            QMessageBox.information(self.controlRegisterWindow, 'Bilgi', 'Kayıt işlemi başarılı.')
+            self.controlRegisterWindow.close()
+            self.registerWindow.close()
         else:
-            event.ignore()
+            QMessageBox.critical(self.controlRegisterWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
 
     def onClosedFaceAddScreen(self, event):
         if not self.getIsMainScreenClosing():
@@ -421,6 +752,18 @@ class MainWidget(QWidget):
 
     def onComboDatasetsDataSelection(self, newName):
         self.selectedDatasetDataName = newName
+
+    def validate_email(self, text):
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        is_valid = re.match(email_pattern, text) is not None
+
+        if is_valid:
+            self.line_new_mail.setStyleSheet('QLineEdit { color: green; }')
+        else:
+            self.line_new_mail.setStyleSheet('QLineEdit { color: red; }')
+
+    def setOldStyle(self, param):
+        param.setStyleSheet('')
 
 
 if __name__ == '__main__':
