@@ -224,17 +224,6 @@ def updateUserPass(username, password):
     conn.close()
 
 
-def updateSecurityCode(userId, securityCode):
-    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
-                            port=dbPort)
-    cur = conn.cursor()
-
-    cur.execute("UPDATE \"user\" SET security_code=%s WHERE id=%s", (hash_password(securityCode), userId))
-    conn.commit()
-    cur.close()
-    conn.close()
-
-
 def updateAttendance(tableName, studentNo, studentName):
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
                             port=dbPort)

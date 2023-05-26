@@ -4,7 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from src.main.python.services.DatabaseService import findUser, updateSecurityCode
+from src.main.python.services.DatabaseService import findUser
 from utils.Utils import randomInt, randomString
 
 
@@ -107,7 +107,7 @@ def forgetPassword(username):
     try:
         user_id, user_mail, user_name, user_surname, user_role = findUser(username)
         if user_id is None or user_mail is None or user_name is None or user_surname is None or user_role is None:
-            return False
+            return None
         else:
             server = smtplib.SMTP(smtp_server, smtp_port)
             server.ehlo()
@@ -124,8 +124,6 @@ def forgetPassword(username):
             securityCode += str(randomInt(2))
             securityCode += str(randomString(2))
             securityCode += str(randomInt(2))
-
-            updateSecurityCode(user_id, securityCode)
 
             email = MIMEMultipart()
             email['From'] = os.getenv('SENDER_MAIL')
@@ -151,8 +149,8 @@ def forgetPassword(username):
 
             server.sendmail(os.getenv('SENDER_MAIL'), user_mail, email.as_string())
 
-            return True
+            return securityCode
     except Exception as e:
-        return False
+        return None
     finally:
         server.quit()

@@ -27,7 +27,7 @@ from src.main.python.gui.testScreens.TestCameraScreen import TestCamera
 from src.main.python.gui.testScreens.TestLocalFileScreen import TestLocalFile
 from src.main.python.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
-from src.main.python.services.MailService import newUser, renewPassword
+from src.main.python.services.MailService import newUser, renewPassword, forgetPassword
 from src.main.python.services.SecurityService import check_password
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathTempFolder, pngInfoBox, pngWarningBox, pathDatasets, pathClippedVideos, \
@@ -40,13 +40,19 @@ class MainWidget(QWidget):
         super().__init__()
 
         # started
+        self.closeEvent = None
+        self.line_long_security_code = None
+        self.controlAcceptLongCodeWindow = None
+        self.line_reset_password = None
+        self.line_user_username = None
+        self.forgetMyPassWindow = None
         self.line_re_new_confirm_password = None
         self.line_re_new_password = None
         self.line_old_password = None
         self.line_renew_username = None
         self.renewPassWindow = None
         self.line_security_code = None
-        self.controlRegisterWindow = None
+        self.controlAcceptCodeWindow = None
         self.line_new_mail = None
         self.line_new_confirm_password = None
         self.line_new_password = None
@@ -154,6 +160,7 @@ class MainWidget(QWidget):
         self.setStyleSheet("background-color: white;")
         self.setLayout(layout)
         self.show()
+        self.closeEvent = self.closeTopWidgets
 
     def login(self):
         username: str = self.line_edit_username.text()
@@ -436,8 +443,55 @@ class MainWidget(QWidget):
                                 QMessageBox.critical(self.registerWindow, 'Hata', 'Bir hata oluştu.')
 
     def forgetMyPassScreen(self):
-        # username: str = self.line_forget_new_username.text()
-        print()
+        self.forgetMyPassWindow = QWidget()
+        mainWidth = 250
+        mainHeight = 100
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+        self.forgetMyPassWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                            int(screenHeight / 2 - int(mainHeight / 2)),
+                                            mainWidth, mainHeight)
+        self.forgetMyPassWindow.setWindowIcon(QIcon(pngMustafa))
+
+        self.line_user_username = QLineEdit()
+        self.line_user_username.setPlaceholderText('Kullanıcı adınızı girin.')
+        self.line_user_username.textChanged.connect(lambda: self.setOldStyle(self.line_user_username))
+        self.line_user_username.setFont(fontLabel)
+
+        button_reset_password = getButtonFeaturesForget(QPushButton('Şifremi Sıfırla'), "#5c7578")
+        button_reset_password.clicked.connect(self.resetPass)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.line_user_username)
+        layout.setAlignment(self.line_user_username, Qt.AlignCenter)
+        layout.addWidget(button_reset_password)
+        layout.setAlignment(button_reset_password, Qt.AlignCenter)
+
+        self.forgetMyPassWindow.setWindowTitle('Şifre Sıfırla')
+        self.forgetMyPassWindow.setStyleSheet("background-color: white;")
+        self.forgetMyPassWindow.setLayout(layout)
+        self.forgetMyPassWindow.show()
+
+    def resetPass(self):
+        username: str = self.line_user_username.text()
+        if username == '':
+            QMessageBox.critical(self.forgetMyPassWindow, 'Uyarı', 'Kullanıcı adınızı giriniz.')
+        else:
+            if len(username) < 6:
+                self.line_new_username.setStyleSheet('QLineEdit { background-color: red; }')
+            else:
+                user_id, user_mail, user_name, user_surname, user_role = findUser(username)
+                if user_id is None:
+                    QMessageBox.critical(self.forgetMyPassWindow, 'Uyarı', '<b>Kullanıcı Adı</b> sistemde bulunamadı.')
+                else:
+                    longControlCode = forgetPassword(username)
+                    if longControlCode is not None:
+                        QMessageBox.information(self.forgetMyPassWindow, 'Bilgi',
+                                                'Mail adresinize gelen kodu giriniz.')
+                        self.controlAcceptLongCodeScreen(longControlCode, username)
+
+                    else:
+                        QMessageBox.critical(self.forgetMyPassWindow, 'Hata', 'Bir hata oluştu.')
 
     def register(self):
         username: str = self.line_new_username.text()
@@ -769,6 +823,11 @@ class MainWidget(QWidget):
                 self.TestWindow.setObjectName("testUrlScreen")
                 self.TestWindow.show()
 
+    def closeTopWidgets(self, event):
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            widget.close()
+        event.accept()
+
     def closeApplicationEvent(self, event):
         if not self.isApplicationQuit:
             reply = getMsgBoxFeatures(QMessageBox(self), pngWarningBox, "Dikkat!", 'Programdan çıkmak istiyor musun?',
@@ -791,21 +850,22 @@ class MainWidget(QWidget):
                 event.ignore()
 
     def controlAcceptCodeScreen(self, securityCode, mail, username, password, name, surname):
-        self.controlRegisterWindow = QWidget()
+        self.controlAcceptCodeWindow = QWidget()
         mainWidth = 200
         mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
-        self.controlRegisterWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+        self.controlAcceptCodeWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
                                                int(screenHeight / 2 - int(mainHeight / 2)),
                                                mainWidth, mainHeight)
-        self.controlRegisterWindow.setWindowTitle(
+
+        self.controlAcceptCodeWindow.setWindowTitle(
             'Güvenlik Kodu')
-        self.controlRegisterWindow.setStyleSheet("background-color: white;")
-        self.controlRegisterWindow.setWindowIcon(QIcon(pngMustafa))
+        self.controlAcceptCodeWindow.setStyleSheet("background-color: white;")
+        self.controlAcceptCodeWindow.setWindowIcon(QIcon(pngMustafa))
 
         self.line_security_code = QLineEdit()
-        self.line_security_code.setPlaceholderText('Güvenlik kodunu giriniz.')
+        self.line_security_code.setPlaceholderText('Güvenlik kodunu girin.')
         self.line_security_code.setFont(fontLabel)
 
         button_Accept = getButtonFeaturesLogin(QPushButton('Onayla'), "#6bf2d0")
@@ -821,26 +881,84 @@ class MainWidget(QWidget):
         layout.addWidget(button_Accept)
         layout.setAlignment(self.line_security_code, Qt.AlignCenter)
         layout.setAlignment(button_Accept, Qt.AlignCenter)
-        self.controlRegisterWindow.setLayout(layout)
-        self.controlRegisterWindow.show()
+        self.controlAcceptCodeWindow.setLayout(layout)
+        self.controlAcceptCodeWindow.show()
+
+    def controlAcceptLongCodeScreen(self, longControlCode, username):
+        self.controlAcceptLongCodeWindow = QWidget()
+        mainWidth = 200
+        mainHeight = 150
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+        self.controlAcceptLongCodeWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                                     int(screenHeight / 2 - int(mainHeight / 2)),
+                                                     mainWidth, mainHeight)
+
+        self.controlAcceptLongCodeWindow.setWindowTitle(
+            'Şifre Sıfırla')
+        self.controlAcceptLongCodeWindow.setStyleSheet("background-color: white;")
+        self.controlAcceptLongCodeWindow.setWindowIcon(QIcon(pngMustafa))
+
+        label_reset_password = QLabel('Yeni Şifre:')
+        label_reset_password.setFont(fontLabel)
+        self.line_reset_password = QLineEdit()
+        self.line_reset_password.setPlaceholderText('Yeni şifrenizi girin.')
+        self.line_reset_password.setEchoMode(QLineEdit.Password)
+        self.line_reset_password.setFont(fontLabel)
+
+        label_long_security_code = QLabel('Güvenlik Kodu:')
+        label_long_security_code.setFont(fontLabel)
+        self.line_long_security_code = QLineEdit()
+        self.line_long_security_code.setPlaceholderText('Güvenlik kodunu girin.')
+        self.line_long_security_code.setFont(fontLabel)
+
+        button_reset_Accept = getButtonFeaturesLogin(QPushButton('Onayla'), "#6bf2d0")
+
+        button_reset_Accept.clicked.connect(
+            lambda: self.acceptResetPass(longControlCode, username))
+
+        layout = QVBoxLayout()
+        layout.addWidget(label_reset_password)
+        layout.addWidget(self.line_reset_password)
+        layout.addWidget(label_long_security_code)
+        layout.addWidget(self.line_long_security_code)
+        layout.addWidget(button_reset_Accept)
+
+        # layout.setAlignment(self.line_long_security_code, Qt.AlignCenter)
+        layout.setAlignment(button_reset_Accept, Qt.AlignCenter)
+        self.controlAcceptLongCodeWindow.setLayout(layout)
+        self.controlAcceptLongCodeWindow.show()
 
     def acceptRegister(self, security: str, mail: str, username: str, password: str, name: str, surname: str):
         if str(security) == str(self.line_security_code.text()):
             lastId = insertUser(username, password, name, surname, mail)
-            QMessageBox.information(self.controlRegisterWindow, 'Bilgi', 'Kayıt işlemi başarılı.')
-            self.controlRegisterWindow.close()
+            QMessageBox.information(self.controlAcceptCodeWindow, 'Bilgi', 'Kayıt işlemi başarılı.')
+            self.controlAcceptCodeWindow.close()
             self.registerWindow.close()
         else:
-            QMessageBox.critical(self.controlRegisterWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
+            QMessageBox.critical(self.controlAcceptCodeWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
+
+    def acceptResetPass(self, security: str, username: str):
+        if str(security) == str(self.line_long_security_code.text()):
+            if len(self.line_reset_password.text()) > 5:
+                lastId = updateUserPass(username, self.line_reset_password.text())
+                QMessageBox.information(self.controlAcceptLongCodeWindow, 'Bilgi', 'Şifreniz başarıyla güncellendi.')
+                self.controlAcceptLongCodeWindow.close()
+                self.renewPassWindow.close()
+            else:
+                QMessageBox.warning(self.controlAcceptLongCodeWindow, 'Uyarı',
+                                    '<b>Yeni şifreniz</b> en az 6 karakter uzunluğunda olmalıdır.')
+        else:
+            QMessageBox.critical(self.controlAcceptLongCodeWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
 
     def acceptReNewPass(self, security: str, username: str, password: str):
         if str(security) == str(self.line_security_code.text()):
             lastId = updateUserPass(username, password)
-            QMessageBox.information(self.controlRegisterWindow, 'Bilgi', 'Şifreniz başarıyla güncellendi.')
-            self.controlRegisterWindow.close()
+            QMessageBox.information(self.controlAcceptCodeWindow, 'Bilgi', 'Şifreniz başarıyla güncellendi.')
+            self.controlAcceptCodeWindow.close()
             self.renewPassWindow.close()
         else:
-            QMessageBox.critical(self.controlRegisterWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
+            QMessageBox.critical(self.controlAcceptCodeWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
 
     def onClosedFaceAddScreen(self, event):
         if not self.getIsMainScreenClosing():
