@@ -132,6 +132,27 @@ def compareUser(username: str, password: str):
         return None, None, None, None
 
 
+def getUserPass(username: str):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+
+    cur = conn.cursor()
+
+    selectQuery = "SELECT u.id, u.password, u.mail, u.name, u.surname, er.name FROM \"user\" as u left join enum_role as er on er.id = u.role_id WHERE u.username = %s"
+    cur.execute(selectQuery, (username,))
+
+    row = cur.fetchone()
+    if row:
+        user_id, password, mail, name, surname, role = row
+        cur.close()
+        conn.close()
+        return user_id, password, mail, name, surname, role
+    else:
+        cur.close()
+        conn.close()
+        return None, None, None, None, None, None
+
+
 def findUser(username: str):
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
                             port=dbPort)
@@ -143,14 +164,15 @@ def findUser(username: str):
 
     row = cur.fetchone()
     if row:
-        id, mail, name, surname, role = row
+        user_id, mail, name, surname, role = row
         cur.close()
         conn.close()
-        return id, mail, name, surname, role
+        return user_id, mail, name, surname, role
     else:
         cur.close()
         conn.close()
         return None, None, None, None, None
+
 
 def findUserMail(userMail: str):
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
@@ -163,10 +185,10 @@ def findUserMail(userMail: str):
 
     row = cur.fetchone()
     if row:
-        id, mail, name, surname, role = row
+        user_id, mail, name, surname, role = row
         cur.close()
         conn.close()
-        return id, mail, name, surname, role
+        return user_id, mail, name, surname, role
     else:
         cur.close()
         conn.close()
@@ -191,12 +213,23 @@ def insertUser(user_username, user_password, user_name, user_surname, user_mail)
     return lastId
 
 
+def updateUserPass(username, password):
+    conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
+                            port=dbPort)
+    cur = conn.cursor()
+
+    cur.execute("UPDATE \"user\" SET password=%s WHERE username=%s", (hash_password(password), username))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 def updateSecurityCode(userId, securityCode):
     conn = psycopg2.connect(database=dbName, user=dbUser, password=dbPass, host=dbHost,
                             port=dbPort)
     cur = conn.cursor()
 
-    cur.execute("UPDATE \"user\" SET u.security_code=%s WHERE u.id=%s", (hash_password(securityCode), userId))
+    cur.execute("UPDATE \"user\" SET security_code=%s WHERE id=%s", (hash_password(securityCode), userId))
     conn.commit()
     cur.close()
     conn.close()

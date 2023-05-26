@@ -7,10 +7,11 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QLineEdit, QHBoxLayout, QComboBox, \
     QMessageBox
 
-from src.main.python.services.DatabaseService import listModels, compareUser, findUser, insertUser, findUserMail
+from src.main.python.services.DatabaseService import listModels, compareUser, findUser, insertUser, findUserMail, \
+    getUserPass, updateUserPass
 from src.main.python.services.FeaturesService import getMsgBoxFeatures, getLabelFeatures, \
     getButtonFeatures, getComboBoxFeatures, getTextBoxSuccessRateFeatures, fontTextBox, fontLabel, \
-    getButtonFeaturesLogin
+    getButtonFeaturesLogin, getButtonFeaturesForget
 from src.main.python.gui.faceScreens.DeleteDataScreen import DeleteFace
 from src.main.python.gui.faceScreens.InfoDataScreen import InfoFace
 from src.main.python.gui.faceScreens.addDataScreens.CameraScreen import Camera
@@ -26,7 +27,8 @@ from src.main.python.gui.testScreens.TestCameraScreen import TestCamera
 from src.main.python.gui.testScreens.TestLocalFileScreen import TestLocalFile
 from src.main.python.gui.testScreens.webScreens.TestImageScreen import TestImage
 from src.main.python.gui.testScreens.webScreens.TestYoutubeScreen import TestYoutube
-from src.main.python.services.MailService import newUser
+from src.main.python.services.MailService import newUser, renewPassword
+from src.main.python.services.SecurityService import check_password
 from src.resources.Environments import pngAdd, pngDelete, pngInfo, pngTrain, pngCamera, pngUrl, pngMustafa, \
     pngFolder, pngImageUrl, pngYoutube, pathTempFolder, pngInfoBox, pngWarningBox, pathDatasets, pathClippedVideos, \
     pathControlFolder
@@ -38,6 +40,11 @@ class MainWidget(QWidget):
         super().__init__()
 
         # started
+        self.line_re_new_confirm_password = None
+        self.line_re_new_password = None
+        self.line_old_password = None
+        self.line_renew_username = None
+        self.renewPassWindow = None
         self.line_security_code = None
         self.controlRegisterWindow = None
         self.line_new_mail = None
@@ -116,8 +123,8 @@ class MainWidget(QWidget):
         button_login: QPushButton = getButtonFeaturesLogin(QPushButton('Giriş Yap'), "#06c267")
         button_login.clicked.connect(self.login)
 
-        button_forget: QPushButton = getButtonFeaturesLogin(QPushButton('Şifre Yenile'), "#d41c2b")
-        button_forget.clicked.connect(self.forgetScreen)
+        button_forget: QPushButton = getButtonFeaturesLogin(QPushButton('Şifre Yenile'), "#eb6631")
+        button_forget.clicked.connect(self.renewPasswordScreen)
 
         button_register: QPushButton = getButtonFeaturesLogin(QPushButton('Kayıt Ol'), "#06b8c2")
         button_register.clicked.connect(self.registerScreen)
@@ -169,8 +176,97 @@ class MainWidget(QWidget):
             else:
                 QMessageBox.critical(self, 'Hata', 'Geçersiz <b>Kullanıcı Adı</b> ve <b>Şifre</b> formatı.')
 
-    def forgetScreen(self):
-        print()
+    def renewPasswordScreen(self):
+        self.renewPassWindow = QWidget()
+        mainWidth = 300
+        mainHeight = 150
+        screen = QtWidgets.QApplication.desktop().screenGeometry()
+        screenWidth, screenHeight = screen.width(), screen.height()
+        self.renewPassWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
+                                         int(screenHeight / 2 - int(mainHeight / 2)),
+                                         mainWidth, mainHeight)
+        self.renewPassWindow.setWindowIcon(QIcon(pngMustafa))
+
+        label_renew_username = QLabel('Kullanıcı Adı:')
+        label_renew_username.setFont(fontLabel)
+        self.line_renew_username = QLineEdit()
+        self.line_renew_username.setPlaceholderText('Kullanıcı adınızı girin.')
+        self.line_renew_username.textChanged.connect(lambda: self.setOldStyle(self.line_renew_username))
+        self.line_renew_username.setFont(fontLabel)
+
+        label_oldPassword = QLabel('Eski Şifre:')
+        label_oldPassword.setFont(fontLabel)
+        self.line_old_password = QLineEdit()
+        self.line_old_password.setEchoMode(QLineEdit.Password)
+        self.line_old_password.setPlaceholderText('Eski şifrenizi girin.')
+        self.line_old_password.textChanged.connect(lambda: self.setOldStyle(self.line_old_password))
+        self.line_old_password.setFont(fontLabel)
+
+        label_newPassword = QLabel('Yeni Şifre:')
+        label_newPassword.setFont(fontLabel)
+        self.line_re_new_password = QLineEdit()
+        self.line_re_new_password.setEchoMode(QLineEdit.Password)
+        self.line_re_new_password.setPlaceholderText('Yeni şifrenizi girin.')
+        self.line_re_new_password.textChanged.connect(lambda: self.setOldStyle(self.line_re_new_password))
+        self.line_re_new_password.setFont(fontLabel)
+
+        label_reConfirm_password = QLabel('Yeni Şifreyi Onayla:')
+        label_reConfirm_password.setFont(fontLabel)
+        self.line_re_new_confirm_password = QLineEdit()
+        self.line_re_new_confirm_password.setEchoMode(QLineEdit.Password)
+        self.line_re_new_confirm_password.setPlaceholderText('Şifrenizi onaylayın.')
+        self.line_re_new_confirm_password.textChanged.connect(
+            lambda: self.setOldStyle(self.line_re_new_confirm_password))
+        self.line_re_new_confirm_password.setFont(fontLabel)
+
+        button_re_new_password = getButtonFeaturesForget(QPushButton('Şifreyi Yenile'), "#eb6631")
+        button_re_new_password.clicked.connect(self.reNewPass)
+        button_forget_password = getButtonFeaturesForget(QPushButton('Şifremi Unuttum'), "#d40035")
+        button_forget_password.clicked.connect(self.forgetMyPassScreen)
+
+        layout = QVBoxLayout()
+
+        layoutH1 = QHBoxLayout()
+        layoutV1_1 = QVBoxLayout()
+        layoutV1_2 = QVBoxLayout()
+
+        layoutH2 = QHBoxLayout()
+        layoutV2_1 = QVBoxLayout()
+        layoutV2_2 = QVBoxLayout()
+
+        layoutV1_1.addWidget(label_renew_username)
+        layoutV1_1.setAlignment(label_renew_username, Qt.AlignLeft)
+        layoutV1_1.addWidget(self.line_renew_username)
+        layoutV1_1.setAlignment(self.line_renew_username, Qt.AlignLeft)
+        layoutV1_2.addWidget(label_oldPassword)
+        layoutV1_2.setAlignment(label_oldPassword, Qt.AlignLeft)
+        layoutV1_2.addWidget(self.line_old_password)
+        layoutV1_2.setAlignment(self.line_old_password, Qt.AlignLeft)
+        layoutH1.addLayout(layoutV1_1)
+        layoutH1.addLayout(layoutV1_2)
+
+        layoutV2_1.addWidget(label_newPassword)
+        layoutV2_1.setAlignment(label_newPassword, Qt.AlignLeft)
+        layoutV2_1.addWidget(self.line_re_new_password)
+        layoutV2_1.setAlignment(self.line_re_new_password, Qt.AlignLeft)
+        layoutV2_2.addWidget(label_reConfirm_password)
+        layoutV2_2.setAlignment(label_reConfirm_password, Qt.AlignLeft)
+        layoutV2_2.addWidget(self.line_re_new_confirm_password)
+        layoutV2_2.setAlignment(self.line_re_new_confirm_password, Qt.AlignLeft)
+        layoutH2.addLayout(layoutV2_1)
+        layoutH2.addLayout(layoutV2_2)
+
+        layout.addLayout(layoutH1)
+        layout.addLayout(layoutH2)
+        layout.addWidget(button_re_new_password)
+        layout.setAlignment(button_re_new_password, Qt.AlignCenter)
+        layout.addWidget(button_forget_password)
+        layout.setAlignment(button_forget_password, Qt.AlignCenter)
+
+        self.renewPassWindow.setWindowTitle('Şifre Yenile')
+        self.renewPassWindow.setStyleSheet("background-color: white;")
+        self.renewPassWindow.setLayout(layout)
+        self.renewPassWindow.show()
 
     def registerScreen(self):
         self.registerWindow = QWidget()
@@ -245,7 +341,6 @@ class MainWidget(QWidget):
         layoutV3_1 = QVBoxLayout()
         layoutV3_2 = QVBoxLayout()
 
-
         layoutV1_1.addWidget(label_username)
         layoutV1_1.setAlignment(label_username, Qt.AlignLeft)
         layoutV1_1.addWidget(self.line_new_username)
@@ -289,6 +384,60 @@ class MainWidget(QWidget):
         self.registerWindow.setStyleSheet("background-color: white;")
         self.registerWindow.setLayout(layout)
         self.registerWindow.show()
+
+    def reNewPass(self):
+        username: str = self.line_renew_username.text()
+        old_password: str = self.line_old_password.text()
+        new_password: str = self.line_re_new_password.text()
+        confirm_new_password: str = self.line_re_new_confirm_password.text()
+
+        if username == '' or old_password == '' or new_password == '' or confirm_new_password == '':
+            QMessageBox.critical(self.registerWindow, 'Hata', 'Tüm bilgileri doldurunuz.')
+            if username == '':
+                self.line_renew_username.setStyleSheet('QLineEdit { background-color: red; }')
+            if old_password == '':
+                self.line_old_password.setStyleSheet('QLineEdit { background-color: red; }')
+            if new_password == '':
+                self.line_re_new_password.setStyleSheet('QLineEdit { background-color: red; }')
+            if confirm_new_password == '':
+                self.line_re_new_confirm_password.setStyleSheet('QLineEdit { background-color: red; }')
+        else:
+            if len(username) < 6 or len(old_password) < 6 or len(new_password) < 6:
+                QMessageBox.critical(self.renewPassWindow, 'Hata',
+                                     '<b>Kullanıcı Adı</b> ve <b>Şifre</b> en az 6 karakterli olmalıdır.')
+                if len(username) < 6:
+                    self.line_renew_username.setStyleSheet('QLineEdit { background-color: red; }')
+                if len(old_password) < 6:
+                    self.line_old_password.setStyleSheet('QLineEdit { background-color: red; }')
+                if len(new_password) < 6:
+                    self.line_re_new_password.setStyleSheet('QLineEdit { background-color: red; }')
+            elif new_password != confirm_new_password:
+                QMessageBox.critical(self.renewPassWindow, 'Hata', '<b>Yeni Şifreler</b> eşleşmiyor.')
+            else:
+                user_id, hashed_password, user_mail, user_name, user_surname, user_role = getUserPass(username)
+                if user_id is None:
+                    QMessageBox.warning(self.renewPassWindow, 'Uyarı', '<b>Kullanıcı Adı</b> bulunamadı.')
+                    self.line_renew_username.setStyleSheet('QLineEdit { background-color: orange; }')
+                else:
+                    if not check_password(old_password, hashed_password):
+                        QMessageBox.critical(self.renewPassWindow, 'Hata', '<b>Eski Şifreniz</b> uyuşmuyor.')
+                    else:
+                        if old_password == new_password:
+                            QMessageBox.critical(self.renewPassWindow, 'Uyarı',
+                                                 'Yeni şifreniz eski şifrenizden farklı olmalıdır.')
+                        else:
+                            controlCode = renewPassword(username)
+                            if controlCode is not None:
+                                QMessageBox.information(self.renewPassWindow, 'Bilgi',
+                                                        'Mail adresinize gelen kodu giriniz.')
+                                self.controlAcceptCodeScreen(controlCode, None, username, new_password, None, None)
+
+                            else:
+                                QMessageBox.critical(self.registerWindow, 'Hata', 'Bir hata oluştu.')
+
+    def forgetMyPassScreen(self):
+        # username: str = self.line_forget_new_username.text()
+        print()
 
     def register(self):
         username: str = self.line_new_username.text()
@@ -338,8 +487,9 @@ class MainWidget(QWidget):
                         else:
                             controlCode = newUser(username, mail, name, surname)
                             if controlCode is not None:
-                                QMessageBox.information(self.registerWindow, 'Bilgi', 'Mail adresinize gelen kodu giriniz.')
-                                self.controlRegisterCodeScreen(controlCode,mail, username, password, name, surname)
+                                QMessageBox.information(self.registerWindow, 'Bilgi',
+                                                        'Mail adresinize gelen kodu giriniz.')
+                                self.controlAcceptCodeScreen(controlCode, mail, username, password, name, surname)
 
                             else:
                                 QMessageBox.critical(self.registerWindow, 'Hata', 'Bir hata oluştu.')
@@ -472,7 +622,8 @@ class MainWidget(QWidget):
                 self.comboDatasetsData: QComboBox = getComboBoxFeatures(QComboBox(self))
                 self.comboDatasetsData.setFixedSize(150, 30)
                 self.comboDatasets.currentIndexChanged.connect(
-                    lambda index: self.onComboDatasetsSelection(self.comboDatasets.itemText(index), self.comboDatasetsData))
+                    lambda index: self.onComboDatasetsSelection(self.comboDatasets.itemText(index),
+                                                                self.comboDatasetsData))
 
                 layoutHDataset = QHBoxLayout()
                 layoutHDataset.addWidget(labelDataset, alignment=Qt.AlignLeft)
@@ -492,7 +643,8 @@ class MainWidget(QWidget):
                 btnNewDataset.setText("Veriseti Oluştur")
                 btnNewDataset.setFont(fontButton)
                 btnNewDataset.setFixedSize(*buttonSizes)
-                btnNewDataset.setStyleSheet("background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
+                btnNewDataset.setStyleSheet(
+                    "background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
                 btnNewDataset.clicked.connect(self.newDatasetWidget.newDatasetScreen)
                 layoutHNew.addWidget(btnNewDataset)
 
@@ -503,7 +655,8 @@ class MainWidget(QWidget):
                 btnNewDatasetData.setStyleSheet(
                     "background-color: gray; color: white; border-radius: 5px; font-weight: bold;")
                 btnNewDatasetData.clicked.connect(
-                    lambda: self.newDatasetDataWidget.newDatasetDataScreen() if not str(self.selectedDatasetName).__eq__(
+                    lambda: self.newDatasetDataWidget.newDatasetDataScreen() if not str(
+                        self.selectedDatasetName).__eq__(
                         "Veriseti Seçiniz") and self.selectedDatasetName is not None else getMsgBoxFeatures(
                         QMessageBox(), pngWarningBox, "Uyarı", "Lütfen bir <b>veriseti</b> seçin.",
                         QMessageBox.Warning,
@@ -637,10 +790,10 @@ class MainWidget(QWidget):
             else:
                 event.ignore()
 
-    def controlRegisterCodeScreen(self, securityCode, mail, username, password, name, surname):
+    def controlAcceptCodeScreen(self, securityCode, mail, username, password, name, surname):
         self.controlRegisterWindow = QWidget()
-        mainWidth = 500
-        mainHeight = 500
+        mainWidth = 200
+        mainHeight = 150
         screen = QtWidgets.QApplication.desktop().screenGeometry()
         screenWidth, screenHeight = screen.width(), screen.height()
         self.controlRegisterWindow.setGeometry(int(screenWidth / 2 - int(mainWidth / 2)),
@@ -656,7 +809,12 @@ class MainWidget(QWidget):
         self.line_security_code.setFont(fontLabel)
 
         button_Accept = getButtonFeaturesLogin(QPushButton('Onayla'), "#6bf2d0")
-        button_Accept.clicked.connect(lambda: self.acceptRegister(securityCode, mail, username, password, name, surname))
+        if mail is not None and name is not None and surname is not None:
+            button_Accept.clicked.connect(
+                lambda: self.acceptRegister(securityCode, mail, username, password, name, surname))
+        else:
+            button_Accept.clicked.connect(
+                lambda: self.acceptReNewPass(securityCode, username, password))
 
         layout = QVBoxLayout()
         layout.addWidget(self.line_security_code)
@@ -672,6 +830,15 @@ class MainWidget(QWidget):
             QMessageBox.information(self.controlRegisterWindow, 'Bilgi', 'Kayıt işlemi başarılı.')
             self.controlRegisterWindow.close()
             self.registerWindow.close()
+        else:
+            QMessageBox.critical(self.controlRegisterWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
+
+    def acceptReNewPass(self, security: str, username: str, password: str):
+        if str(security) == str(self.line_security_code.text()):
+            lastId = updateUserPass(username, password)
+            QMessageBox.information(self.controlRegisterWindow, 'Bilgi', 'Şifreniz başarıyla güncellendi.')
+            self.controlRegisterWindow.close()
+            self.renewPassWindow.close()
         else:
             QMessageBox.critical(self.controlRegisterWindow, 'Hata', 'Girdiğiniz kod geçersiz.')
 

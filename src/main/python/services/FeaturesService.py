@@ -96,6 +96,16 @@ def getButtonFeaturesLogin(btn: QPushButton, color: str):
     return btn
 
 
+def getButtonFeaturesForget(btn: QPushButton, color: str):
+    butonSizes = (150, 50)
+    fontButton = QtGui.QFont("Times New Roman", 15)
+    btn.setFont(fontButton)
+    btn.setFixedSize(*butonSizes)
+    btn.setIconSize(QtCore.QSize(*butonSizes))
+    btn.setStyleSheet("background-color: " + color + "; color: white; border-radius: 5px; font-weight: bold;")
+    return btn
+
+
 def getComboBoxFeatures(cmbBox):
     fontComboBox = QtGui.QFont("Times New Roman", 15)
     cmbBox.setFont(fontComboBox)
