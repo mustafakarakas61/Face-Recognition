@@ -2,29 +2,42 @@
 
 ## GUI Ekran Görüntüleri
 
-| Ana Ekran                                                                                                                                                                                               | Veri Ekle                                                                                                                                                                                             |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/dataAdd.png](src/resources/projectImages/mainScreen.png) | ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/dataAdd.png ](src/resources/projectImages/dataAdd.png) |
 
-| Veri Sil                                                                                                                                                                                                   |  Veri Bilgisi                                                                                                                                                                                          |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/dataDelete.png](src/resources/projectImages/dataDelete.png) | ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/dataInfo.png](src/resources/projectImages/dataInfo.png) |
+| Giriş Ekranı                               | Kayıt Ekranı                                  |
+|--------------------------------------------|-----------------------------------------------|
+| ![](src/resources/projectImages/login.png) | ![](src/resources/projectImages/register.png) |
 
-| Model Eğitimi                                                                                                                                                                                              | Model Sil                                                                                                                                                                                                    |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/modelTrain.png](src/resources/projectImages/modelTrain.png) | ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/modelDelete.png](src/resources/projectImages/modelDelete.png) |
+| Şifre Yenile                                   | Şifre Sıfırla                                  |
+|------------------------------------------------|------------------------------------------------|
+| ![](src/resources/projectImages/renewPass.png) | ![](src/resources/projectImages/resetPass.png) |
 
-| Model Bilgisi                                                                                                                                                                                            | 
-|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/modelInfo.png](src/resources/projectImages/modelInfo.png) |
+| Ana Ekran                                       | Veri Ekle                                    |
+|-------------------------------------------------|----------------------------------------------|
+| ![](src/resources/projectImages/mainScreen.png) | ![](src/resources/projectImages/dataAdd.png) |
 
-| Test Web                                                                                                                                                                                             | Yerel Klasör Dosya Seçimi                                                                                                                                                                                    |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/testWeb.png](src/resources/projectImages/testWeb.png) | ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/localFolder.png](src/resources/projectImages/localFolder.png) |
+| Veri Sil                                        | Veri Bilgisi                                  |
+|-------------------------------------------------|-----------------------------------------------|
+| ![](src/resources/projectImages/dataDelete.png) | ![](src/resources/projectImages/dataInfo.png) |
 
-| Test Url Image                                                                                                                                                                                                                                                                                                                                                                                                                        | Test Url Youtube                                                                                                                                                                                                                                                                                                                                                                                                                   |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/testUrlImage0.png](src/resources/projectImages/testUrlImage0.png)<br/>![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/testUrlImage1.png](src/resources/projectImages/testUrlImage1.png) | ![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/testYoutube0.png](src/resources/projectImages/testYoutube0.png) <br/>![https://github.com/mustafakarakas61/Face-Recognition/blob/9d852d1b7868b107b0a17697adb6b19d8cd7e21e/src/resources/projectImages/orjinalImages/testYoutube1.png](src/resources/projectImages/testYoutube1.png) |
+| Model Eğitimi                                   | Model Sil                                        |
+|-------------------------------------------------|--------------------------------------------------|
+| ![](src/resources/projectImages/modelTrain.png) | ![](src/resources/projectImages/modelDelete.png) |
+
+| Model Bilgisi                                  | 
+|------------------------------------------------|
+| ![](src/resources/projectImages/modelInfo.png) |
+
+| Model Bilgi Grafiği                        | 
+|--------------------------------------------|
+| ![](src/resources/projectImages/graph.png) |
+
+| Test Web                                     | Yerel Klasör Dosya Seçimi                        |
+|----------------------------------------------|--------------------------------------------------|
+| ![](src/resources/projectImages/testWeb.png) | ![](src/resources/projectImages/localFolder.png) |
+
+| Test Url Image                                                                                            | Test Url Youtube                                                                                         |
+|-----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| ![](src/resources/projectImages/testUrlImage0.png)<br/>![](src/resources/projectImages/testUrlImage1.png) | ![](src/resources/projectImages/testYoutube0.png) <br/>![](src/resources/projectImages/testYoutube1.png) |
 
 ### Model isimlendirmesi:
 
@@ -34,5 +47,5 @@
 | face          | faceset      | v1                 | 20                | 32           | 3            | 128x128            | tga                        | .h5            | face_faceset_v1_20_32_3_128x128_tga.h5 |
 | face          | faceset      | v1                 | 20                | 8            | 2            | 128x128            | wep                        | .h5            | face_faceset_v1_20_8_2_128x128_wep.h5  |
 
-- 'admin' username, password : admin123, admin123
+- 'admin' kullanıcı adı, şifre : admin123, admin123
 - Roller : ADMIN, USER, None

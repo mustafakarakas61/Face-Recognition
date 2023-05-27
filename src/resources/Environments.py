@@ -42,8 +42,6 @@ pathUtils = pathProject + "utils/"
 pathClippedVideos = pathUtils + "clippedVideos/"
 pathTempFolder = pathUtils + "tempFolder/"
 pathControlFolder = pathUtils + "controlFolder/"
-pathNoFace = pathUtils + "NoFace.txt"
-
 
 #  I  C  O  N  S  #
 pathIcons = pathProject + "src/resources/icons/"
