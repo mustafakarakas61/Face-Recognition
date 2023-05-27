@@ -23,7 +23,6 @@ from utils.Utils import randomString, useEnviron
 useEnviron()
 
 
-# todo : Eskisi gibi çeşit çeşit resimler olmalı.
 class TrainModel(QWidget):
     def __init__(self, mainWidget):
         super(TrainModel, self).__init__()
@@ -171,7 +170,6 @@ class TrainModel(QWidget):
         if len(str(datasetName)) > 0 and len(str(trainPercentage)) > 0 and len(str(dropoutRate)) > 0 and len(
                 str(batchSize)) > 0 and len(str(epochsCount)) > 0 and len(str(inputSizeW)) > 0 and len(
             str(inputSizeH)) > 0:
-            # todo : return true olduğunda güncellensin Model Seçiniz vs
             reply = getMsgBoxFeatures(QMessageBox(self), pngInfoBox, "Bilgi", '<b>Model eğitimi başlatılsın mı</b>?'
                                                                               f"<table border=1>"
                                                                               f"<tr><td><b>Veriseti</b></td><td>{datasetName}</td></tr>"
@@ -187,7 +185,6 @@ class TrainModel(QWidget):
 
             if reply == QtWidgets.QMessageBox.Yes:
                 self.window.close()
-                # todo : model eğitiliyor bilgisi ekranı olsun
                 affectedId, trainedModelName = createFaceModel(str(datasetName), int(batchSize),
                                                                float(trainPercentage.replace("%", "")),
                                                                int(inputSizeW),
